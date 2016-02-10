@@ -39,7 +39,7 @@ def LIMD(inps, mdps, potdim, sm, movieflag):
         winit = mdps[0]
         delta = mdps[1]
         hfreq = mdps[2]
-        w = np.array([0])
+        w = np.array([0.0])
         DT = float("inf")
 
     if (sm == 'Well-Tempered Metadynamics'):
@@ -47,22 +47,22 @@ def LIMD(inps, mdps, potdim, sm, movieflag):
         delta = mdps[1]
         hfreq = mdps[2]
         DT = mdps[3]
-        w = np.array([0])
+        w = np.array([0.0])
     if (sm == 'MD'):
         winit = 0
         delta = 1
         hfreq = steps*2
         DT = 10000
-        w = np.array([0])
+        w = np.array([0.0])
     if (sm == "Infrequent WT MetaD"):
         winit = mdps[0]
         delta = mdps[1]
         hfreq = mdps[2]
         DT = mdps[3]
-        w = np.array([0])
+        w = np.array([0.0])
 
     # How often movie is created if desired
-    iratio = 100000
+    iratio = 1000
 
     # print('Parameters:')
     # print('Number of steps '+ str(steps))
@@ -98,9 +98,11 @@ def LIMD(inps, mdps, potdim, sm, movieflag):
 
         time = np.array([0.0])
         walkerpot = np.array([0.0])
-
-        Fbase = force(xlong, s, w, delta, DT, winit)
-        vcalc = Fbase[0]
+        vcalc = np.zeros_like(xlong)
+        for xc in range(0, xlong.size):
+            vcalc[xc] = force(xlong[xc], s, w, delta, DT, winit)[0]
+        # Fbase = force(xlong, s, w, delta, DT, winit)
+        # vcalc = Fbase[0]
         # fb = Fbase[1]
         q[0] = x0
         # Initial Velocity
@@ -208,7 +210,7 @@ def LIMD(inps, mdps, potdim, sm, movieflag):
                     return (totaltime, teff, info)
         # Check if deposit of gaussian
                 if sp.mod(i, hfreq) == 0 and i > 0:
-                    # pdb.set_trace()
+
                     if(i == hfreq):
                         s[0] = q[i]
                         w[0] = winit
@@ -245,12 +247,25 @@ def LIMD(inps, mdps, potdim, sm, movieflag):
                 E[i+1] = 0.5 * p**2 + v2
                 # time and walker potential track for infrequent sampling
                 time = np.append(time, dt*(i+1))
-                walkerpot = np.append(walkerpot,
-                                      sum(w * np.exp(-(q[i+1]-s)**2 /
-                                          2 / delta**2)))
+                if q[i+1] > 4:
+                    walkerpot = np.append(walkerpot,
+                                          sum(w * np.exp(-(q[i+1]-s)**2 /
+                                              2 / delta**2)) +
+                                          ((100 * (q[i+1] - 4)**4) -
+                                           (-5*np.exp(-(q[i+1] - 2/0.75)**2) -
+                                           10*np.exp(-(q[i+1] + 2/0.75)**2))))
+
+                else:
+                    walkerpot = np.append(walkerpot,
+                                          sum(w * np.exp(-(q[i+1]-s)**2 /
+                                              2 / delta**2)))
+
                 # indexing for saving energy values in grid
+
                 index = int(round((round(q[i+1], int(abs(math.log10(xinc)))) +
                             (0-xmin))/xinc))
+                # print index
+                # print q[i+1]
                 if q[i + 1] > xmin and q[i + 1] < xmax:
                     FES[index] = ((FES[index] * (icount[index]) + E[i+1]) /
                                   (icount[index] + 1))
@@ -271,23 +286,23 @@ def LIMD(inps, mdps, potdim, sm, movieflag):
                                        sum(w * np.exp(-(xlong[k] - s)**2 /
                                                       2 / delta**2)))
                             k = k + 1
-            # pdb.set_trace()
-            # Walker
+            # # pdb.set_trace()
+            # # Walker
 
                         v2 = v2 + sum(w * np.exp(-(q[i+1] - s)**2 /
                                                  2/delta**2))
 
             # Plotting
 
-                    # plt.clf()
-                    # plt.plot(xlong, bias, '-r')
-                    # plt.plot(xlong, vcalc, '-b')
-                    # plt.plot(q[i+1], v2, 'ro', markersize=10)
-                    # plt.axis([-4, 4, -12, 6])
-                    # plt.xlabel("CV(s)")
-                    # plt.ylabel("F")
-                    # plt.draw()
-                    # plt.pause(0.0001)
+                    plt.clf()
+                    plt.plot(xlong, bias, '-r')
+                    plt.plot(xlong, vcalc, '-b')
+                    plt.plot(q[i+1], v2, 'ro', markersize=10)
+                    plt.axis([xmin, xmax, min(vcalc)-8, max(vcalc)+8])
+                    plt.xlabel("CV(s)")
+                    plt.ylabel("F")
+                    plt.draw()
+                    plt.pause(0.0001)
                     if (movieflag == 1):
                         filename = "movieframe" + str(frame)
                         plt.savefig(filename + '.png', bbox_inches='tight')
@@ -499,21 +514,24 @@ def LIMD(inps, mdps, potdim, sm, movieflag):
 
 def force(r, s, w, delta, DT, winit):
     """Calculate the force and potential based on location (1-D)."""
-    if (type(r) is np.float64 and r < -4):
+    if (r < -4):
         V = 100 * (r+4)**4
-        F = -100 * 4 * (r+4)**3
-    elif (type(r) is np.float64 and r > 4):
+        Fpot = 100 * 4 * (r+4)**3
+
+    elif (r > 4):
         V = 100 * (r-4)**4
-        F = -100 * 4 * (r-4)**3
+        Fpot = 100 * 4 * (r-4)**3
+
     else:
-        V = -5 * np.exp(-(r - 2/0.75)**2) - 10*np.exp(-(r + 2/0.75)**2)
+        V = (-5 * np.exp(-(r - 2/0.75)**2) - 10*np.exp(-(r + 2/0.75)**2))
         Fpot = (-5 * 2 * -1 * (r - 2/0.75) * np.exp(-(r - 2/0.75)**2) - 10 *
                 2 * -1 * (r + 2/0.75) * np.exp(-(r + 2/0.75)**2))
-        len2 = s.size-1
-        VR = sum(w*np.exp(-(r-s)**2 / 2 / delta**2))
-        w[len2] = winit * np.exp(-VR / (1.987E-3*DT))
-        Fbias = sum(w * (r-s) / delta**2 * np.exp(-(r-s)**2 / 2 / delta**2))
-        F = Fpot * -1 + Fbias
+    len2 = s.size-1
+    ww = np.copy(w)
+    VR = sum(w*np.exp(-(r-s)**2 / 2 / delta**2))
+    ww[len2] = winit * np.exp(-VR / (1.987E-3*DT))
+    Fbias = sum(ww * (r-s) / delta**2 * np.exp(-(r-s)**2 / 2 / delta**2))
+    F = Fpot * -1 + Fbias
     return np.array([V, F])
 
 
