@@ -251,9 +251,7 @@ def LIMD(inps, mdps, potdim, sm, movieflag):
                     walkerpot = np.append(walkerpot,
                                           sum(w * np.exp(-(q[i+1]-s)**2 /
                                               2 / delta**2)) +
-                                          ((100 * (q[i+1] - 4)**4) -
-                                           (-5*np.exp(-(q[i+1] - 2/0.75)**2) -
-                                           10*np.exp(-(q[i+1] + 2/0.75)**2))))
+                                          ((100 * (q[i+1] - 4)**4)))
 
                 else:
                     walkerpot = np.append(walkerpot,
@@ -526,11 +524,7 @@ def force(r, s, w, delta, DT, winit):
         V = (-5 * np.exp(-(r - 2/0.75)**2) - 10*np.exp(-(r + 2/0.75)**2))
         Fpot = (-5 * 2 * -1 * (r - 2/0.75) * np.exp(-(r - 2/0.75)**2) - 10 *
                 2 * -1 * (r + 2/0.75) * np.exp(-(r + 2/0.75)**2))
-    len2 = s.size-1
-    ww = np.copy(w)
-    VR = sum(w*np.exp(-(r-s)**2 / 2 / delta**2))
-    ww[len2] = winit * np.exp(-VR / (1.987E-3*DT))
-    Fbias = sum(ww * (r-s) / delta**2 * np.exp(-(r-s)**2 / 2 / delta**2))
+    Fbias = sum(w * (r-s) / delta**2 * np.exp(-(r-s)**2 / 2 / delta**2))
     F = Fpot * -1 + Fbias
     return np.array([V, F])
 
@@ -558,11 +552,6 @@ def tdforce(x, y, sx, sy, w, delta, DT, winit):
         Fx = (((2*math.pi/3*0.75)*np.sin(2*math.pi*x/3) -
               2*math.pi*(1+4*y)*np.sin(2*math.pi*x)))
         Fy = ((2*math.pi*y+4*np.cos(2*math.pi*x)))
-
-        len2 = sx.size - 1
-        VR = sum(w*np.exp(-(x-sx)**2/2/delta**2) *
-                 np.exp(-(y-sy)**2/2/delta**2))
-        w[len2] = winit*np.exp(-VR/(1.987E-3*DT))
 
         Fbiasx = sum(w*((x-sx)/delta**2) * np.exp(-(x-sx)**2/2/delta**2) *
                      np.exp(-(y-sy)**2/2/delta**2))
