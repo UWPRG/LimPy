@@ -39,7 +39,7 @@ def LIMD(inps, mdps, potdim, sm, movieflag):
         winit = mdps[0]
         delta = mdps[1]
         hfreq = mdps[2]
-        w = np.array([0])
+        w = np.array([0.0])
         DT = float("inf")
 
     if (sm == 'Well-Tempered Metadynamics'):
@@ -47,22 +47,22 @@ def LIMD(inps, mdps, potdim, sm, movieflag):
         delta = mdps[1]
         hfreq = mdps[2]
         DT = mdps[3]
-        w = np.array([0])
+        w = np.array([0.0])
     if (sm == 'MD'):
         winit = 0
         delta = 1
         hfreq = steps*2
         DT = 10000
-        w = np.array([0])
+        w = np.array([0.0])
     if (sm == "Infrequent WT MetaD"):
         winit = mdps[0]
         delta = mdps[1]
         hfreq = mdps[2]
         DT = mdps[3]
-        w = np.array([0])
+        w = np.array([0.0])
 
     # How often movie is created if desired
-    iratio = 100000
+    iratio = 1000
 
     # print('Parameters:')
     # print('Number of steps '+ str(steps))
@@ -98,9 +98,11 @@ def LIMD(inps, mdps, potdim, sm, movieflag):
 
         time = np.array([0.0])
         walkerpot = np.array([0.0])
-
-        Fbase = force(xlong, s, w, delta, DT, winit)
-        vcalc = Fbase[0]
+        vcalc = np.zeros_like(xlong)
+        for xc in range(0, xlong.size):
+            vcalc[xc] = force(xlong[xc], s, w, delta, DT, winit)[0]
+        # Fbase = force(xlong, s, w, delta, DT, winit)
+        # vcalc = Fbase[0]
         # fb = Fbase[1]
         q[0] = x0
         # Initial Velocity
@@ -206,10 +208,11 @@ def LIMD(inps, mdps, potdim, sm, movieflag):
                     totaltime = time[i]
                     walkercalc = np.delete(walkerpot, 0)
                     teff = sum(dt * np.exp(walkercalc * beta))
-                    return (totaltime, teff, info)
+                    hillnum = i/hfreq
+                    return (totaltime, teff, info, hillnum)
         # Check if deposit of gaussian
                 if sp.mod(i, hfreq) == 0 and i > 0:
-                    # pdb.set_trace()
+
                     if(i == hfreq):
                         s[0] = q[i]
                         w[0] = winit
@@ -246,12 +249,23 @@ def LIMD(inps, mdps, potdim, sm, movieflag):
                 E[i+1] = 0.5 * p**2 + v2
                 # time and walker potential track for infrequent sampling
                 time = np.append(time, dt*(i+1))
-                walkerpot = np.append(walkerpot,
-                                      sum(w * np.exp(-(q[i+1]-s)**2 /
-                                          2 / delta**2)))
+                if q[i+1] > 4:
+                    walkerpot = np.append(walkerpot,
+                                          sum(w * np.exp(-(q[i+1]-s)**2 /
+                                              2 / delta**2)) +
+                                          ((100 * (q[i+1] - 4)**4)))
+
+                else:
+                    walkerpot = np.append(walkerpot,
+                                          sum(w * np.exp(-(q[i+1]-s)**2 /
+                                              2 / delta**2)))
+
                 # indexing for saving energy values in grid
+
                 index = int(round((round(q[i+1], int(abs(math.log10(xinc)))) +
                             (0-xmin))/xinc))
+                # print index
+                # print q[i+1]
                 if q[i + 1] > xmin and q[i + 1] < xmax:
                     FES[index] = ((FES[index] * (icount[index]) + E[i+1]) /
                                   (icount[index] + 1))
@@ -272,8 +286,8 @@ def LIMD(inps, mdps, potdim, sm, movieflag):
                                        sum(w * np.exp(-(xlong[k] - s)**2 /
                                                       2 / delta**2)))
                             k = k + 1
-            # pdb.set_trace()
-            # Walker
+            # # pdb.set_trace()
+            # # Walker
 
                         v2 = v2 + sum(w * np.exp(-(q[i+1] - s)**2 /
                                                  2/delta**2))
@@ -284,7 +298,7 @@ def LIMD(inps, mdps, potdim, sm, movieflag):
                     # plt.plot(xlong, bias, '-r')
                     # plt.plot(xlong, vcalc, '-b')
                     # plt.plot(q[i+1], v2, 'ro', markersize=10)
-                    # plt.axis([-4, 4, -12, 6])
+                    # plt.axis([xmin, xmax, min(vcalc)-8, max(vcalc)+8])
                     # plt.xlabel("CV(s)")
                     # plt.ylabel("F")
                     # plt.draw()
@@ -369,7 +383,7 @@ def LIMD(inps, mdps, potdim, sm, movieflag):
                                            (icount[yindex, xindex] + 1))
                     icount[yindex, xindex] = icount[yindex, xindex] + 1
 
-                if sp.mod(i, iratio) == 0 and i > 0:
+                # if sp.mod(i, iratio) == 0 and i > 0:
                     # pdb.set_trace()
                     # bias = np.copy(vcalc)
 
@@ -441,6 +455,7 @@ def LIMD(inps, mdps, potdim, sm, movieflag):
                     # plt.colorbar(cset4)
                     # plt.scatter(q[i+1, 0], q[i+1, 1], marker='o',
                     #             color='r', zorder=10)
+<<<<<<< HEAD
                     # plt.draw()
 		    # plt.pause(0.0001)
                     # if (np.count_nonzero(FES) == FES.size):
@@ -454,6 +469,18 @@ def LIMD(inps, mdps, potdim, sm, movieflag):
                     print('X coordinate ' + str(q[i+1, 0]))
                     print('Y coordinate ' + str(q[i+1, 1]))
                     print('Energy ' + str(E[i+1]))
+=======
+                    # plt.pause(0.0001)
+                    # if (movieflag == 1):
+                    #     filename = "movieframe" + str(frame)
+                    #     plt.savefig(filename + '.png', bbox_inches='tight')
+                    #     frame = frame + 1
+                    
+		    # print('Step ' + str(i))
+                    # print('X coordinate ' + str(q[i+1, 0]))
+                    # print('Y coordinate ' + str(q[i+1, 1]))
+                    # print('Energy ' + str(E[i+1]))
+>>>>>>> 3d96c2d2ba2bbfd80946280d3ef072850289e5d9
 
             i = i + 1
     # if non infrequent sampling, calculate RMSD for convergence
@@ -501,21 +528,20 @@ def LIMD(inps, mdps, potdim, sm, movieflag):
 
 def force(r, s, w, delta, DT, winit):
     """Calculate the force and potential based on location (1-D)."""
-    if (type(r) is np.float64 and r < -4):
+    if (r < -4):
         V = 100 * (r+4)**4
-        F = -100 * 4 * (r+4)**3
-    elif (type(r) is np.float64 and r > 4):
+        Fpot = 100 * 4 * (r+4)**3
+
+    elif (r > 4):
         V = 100 * (r-4)**4
-        F = -100 * 4 * (r-4)**3
+        Fpot = 100 * 4 * (r-4)**3
+
     else:
-        V = -5 * np.exp(-(r - 2/0.75)**2) - 10*np.exp(-(r + 2/0.75)**2)
+        V = (-5 * np.exp(-(r - 2/0.75)**2) - 10*np.exp(-(r + 2/0.75)**2))
         Fpot = (-5 * 2 * -1 * (r - 2/0.75) * np.exp(-(r - 2/0.75)**2) - 10 *
                 2 * -1 * (r + 2/0.75) * np.exp(-(r + 2/0.75)**2))
-        len2 = s.size-1
-        VR = sum(w*np.exp(-(r-s)**2 / 2 / delta**2))
-        w[len2] = winit * np.exp(-VR / (1.987E-3*DT))
-        Fbias = sum(w * (r-s) / delta**2 * np.exp(-(r-s)**2 / 2 / delta**2))
-        F = Fpot * -1 + Fbias
+    Fbias = sum(w * (r-s) / delta**2 * np.exp(-(r-s)**2 / 2 / delta**2))
+    F = Fpot * -1 + Fbias
     return np.array([V, F])
 
 
@@ -543,11 +569,6 @@ def tdforce(x, y, sx, sy, w, delta, DT, winit):
               2*math.pi*(1+4*y)*np.sin(2*math.pi*x)))
         Fy = ((2*math.pi*y+4*np.cos(2*math.pi*x)))
 
-        len2 = sx.size - 1
-        VR = sum(w*np.exp(-(x-sx)**2/2/delta**2) *
-                 np.exp(-(y-sy)**2/2/delta**2))
-        w[len2] = winit*np.exp(-VR/(1.987E-3*DT))
-
         Fbiasx = sum(w*((x-sx)/delta**2) * np.exp(-(x-sx)**2/2/delta**2) *
                      np.exp(-(y-sy)**2/2/delta**2))
         Fbiasy = sum(w*((y-sy)/delta**2) * np.exp(-(x-sx)**2/2/delta**2) *
@@ -556,6 +577,7 @@ def tdforce(x, y, sx, sy, w, delta, DT, winit):
         Fpoty = Fy*-1+Fbiasy
 
         # Boundaries to keep walker in system
+<<<<<<< HEAD
         if x < 0:
             V = 1000 * (x+1)**4
             Fpotx = -4 * 1000*(x+1)**3
@@ -568,6 +590,20 @@ def tdforce(x, y, sx, sy, w, delta, DT, winit):
         elif y > 2:
             V = 1000 * (y-1)**4
             Fpotx = -4 * 1000 * (y-2)**3
+=======
+        # if x < -1:
+            # V = 1000 * (x+1)**4
+            # Fpotx = -4 * 1000*(x+1)**3
+        # elif x > 1:
+            # V = 1000 * (x-1)**4
+            # Fpotx = -4 * 1000 * (x-1)**3
+        # if y < -2:
+            # V = 1000 * (y+1)**4
+            # Fpotx = -4 * 1000 * (y+2)**3
+        # elif y > 2:
+            # V = 1000 * (y-1)**4
+            # Fpotx = -4 * 1000 * (y-2)**3
+>>>>>>> 3d96c2d2ba2bbfd80946280d3ef072850289e5d9
     return [V, Fpotx, Fpoty]
 
 # Functions defining rare events
