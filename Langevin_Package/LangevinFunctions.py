@@ -207,7 +207,8 @@ def LIMD(inps, mdps, potdim, sm, movieflag):
                     totaltime = time[i]
                     walkercalc = np.delete(walkerpot, 0)
                     teff = sum(dt * np.exp(walkercalc * beta))
-                    return (totaltime, teff, info)
+                    hillnum = i/hfreq
+                    return (totaltime, teff, info, hillnum)
         # Check if deposit of gaussian
                 if sp.mod(i, hfreq) == 0 and i > 0:
 
@@ -292,15 +293,15 @@ def LIMD(inps, mdps, potdim, sm, movieflag):
 
             # Plotting
 
-                    plt.clf()
-                    plt.plot(xlong, bias, '-r')
-                    plt.plot(xlong, vcalc, '-b')
-                    plt.plot(q[i+1], v2, 'ro', markersize=10)
-                    plt.axis([xmin, xmax, min(vcalc)-8, max(vcalc)+8])
-                    plt.xlabel("CV(s)")
-                    plt.ylabel("F")
-                    plt.draw()
-                    plt.pause(0.0001)
+                    # plt.clf()
+                    # plt.plot(xlong, bias, '-r')
+                    # plt.plot(xlong, vcalc, '-b')
+                    # plt.plot(q[i+1], v2, 'ro', markersize=10)
+                    # plt.axis([xmin, xmax, min(vcalc)-8, max(vcalc)+8])
+                    # plt.xlabel("CV(s)")
+                    # plt.ylabel("F")
+                    # plt.draw()
+                    # plt.pause(0.0001)
                     if (movieflag == 1):
                         filename = "movieframe" + str(frame)
                         plt.savefig(filename + '.png', bbox_inches='tight')
@@ -381,7 +382,7 @@ def LIMD(inps, mdps, potdim, sm, movieflag):
                                            (icount[yindex, xindex] + 1))
                     icount[yindex, xindex] = icount[yindex, xindex] + 1
 
-                if sp.mod(i, iratio) == 0 and i > 0:
+                # if sp.mod(i, iratio) == 0 and i > 0:
                     # pdb.set_trace()
                     # bias = np.copy(vcalc)
 
@@ -454,17 +455,15 @@ def LIMD(inps, mdps, potdim, sm, movieflag):
                     # plt.scatter(q[i+1, 0], q[i+1, 1], marker='o',
                     #             color='r', zorder=10)
                     # plt.pause(0.0001)
-                    if (np.count_nonzero(FES) == FES.size):
-                        print i
-                        pdb.set_trace()
-                    if (movieflag == 1):
-                        filename = "movieframe" + str(frame)
-                        plt.savefig(filename + '.png', bbox_inches='tight')
-                        frame = frame + 1
-                    print('Step ' + str(i))
-                    print('X coordinate ' + str(q[i+1, 0]))
-                    print('Y coordinate ' + str(q[i+1, 1]))
-                    print('Energy ' + str(E[i+1]))
+                    # if (movieflag == 1):
+                    #     filename = "movieframe" + str(frame)
+                    #     plt.savefig(filename + '.png', bbox_inches='tight')
+                    #     frame = frame + 1
+                    
+		    # print('Step ' + str(i))
+                    # print('X coordinate ' + str(q[i+1, 0]))
+                    # print('Y coordinate ' + str(q[i+1, 1]))
+                    # print('Energy ' + str(E[i+1]))
 
             i = i + 1
     # if non infrequent sampling, calculate RMSD for convergence
@@ -561,18 +560,18 @@ def tdforce(x, y, sx, sy, w, delta, DT, winit):
         Fpoty = Fy*-1+Fbiasy
 
         # Boundaries to keep walker in system
-        if x < -1:
-            V = 1000 * (x+1)**4
-            Fpotx = -4 * 1000*(x+1)**3
-        elif x > 1:
-            V = 1000 * (x-1)**4
-            Fpotx = -4 * 1000 * (x-1)**3
-        if y < -2:
-            V = 1000 * (y+1)**4
-            Fpotx = -4 * 1000 * (y+2)**3
-        elif y > 2:
-            V = 1000 * (y-1)**4
-            Fpotx = -4 * 1000 * (y-2)**3
+        # if x < -1:
+            # V = 1000 * (x+1)**4
+            # Fpotx = -4 * 1000*(x+1)**3
+        # elif x > 1:
+            # V = 1000 * (x-1)**4
+            # Fpotx = -4 * 1000 * (x-1)**3
+        # if y < -2:
+            # V = 1000 * (y+1)**4
+            # Fpotx = -4 * 1000 * (y+2)**3
+        # elif y > 2:
+            # V = 1000 * (y-1)**4
+            # Fpotx = -4 * 1000 * (y-2)**3
     return [V, Fpotx, Fpoty]
 
 # Functions defining rare events
