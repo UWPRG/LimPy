@@ -1,6 +1,6 @@
 """These are the functions for Langevin Integrator, Force, and Rare Events."""
 
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import numpy as np
 import scipy as sp
 
@@ -73,7 +73,7 @@ def LIMD(inps, mdps, potdim, sm, movieflag):
     # print('Timestep '+str(dt))
 
     # Parameters for integrator
-    gamma = 5  # Friction factor
+    gamma = 0.5  # Friction factor
     beta = 1 / T / (1.987E-3)  # units of 1/kcal
     c1 = np.exp(-gamma * dt / 2)  # (Eq.13a)
     c2 = np.sqrt((1 - c1**2) * m / beta)  # (Eq.13b)
@@ -124,6 +124,7 @@ def LIMD(inps, mdps, potdim, sm, movieflag):
         # plt.ylabel("F")
         # plt.draw()
         # plt.pause(0.0001)
+	# pdb.set_trace()
     # Initial Configuration for 2-D
     if (potdim == '2-D Potential'):
         # pdb.set_trace()
@@ -159,7 +160,7 @@ def LIMD(inps, mdps, potdim, sm, movieflag):
         # plt.ion()
         # plt.subplot(221)
         # cmap = plt.cm.PRGn
-        # levels = np.arange(-2, 12, 0.25)
+        # levels = np.arange(-3, 2, 0.25)
         # cset1 = plt.contourf(xlong, ylong, vcalc, levels,
         #                     cmap=plt.cm.get_cmap(cmap, levels.size - 1))
         # plt.colorbar(cset1)
@@ -394,7 +395,7 @@ def LIMD(inps, mdps, potdim, sm, movieflag):
                     # cmap = plt.cm.PRGn
                     # levels = np.arange(-5, 20, 0.1)
 
-                    # # plt.subplot(221)
+                    # plt.subplot(221)
                     # plt.title('2-D Potential')
                     # plt.xlabel("X")
                     # plt.ylabel("Y")
@@ -410,12 +411,12 @@ def LIMD(inps, mdps, potdim, sm, movieflag):
 
                     # plt.plot(xpoints, ypoints, '--r', linewidth=1.0)
                     # cset1 = plt.contourf(xlong, ylong, vcalc, levels,
-                    #                      cmap=plt.cm.get_cmap(cmap,
-                    #                                         levels.size - 1))
+                    #                       cmap=plt.cm.get_cmap(cmap,
+                    #                                            levels.size - 1))
                     # plt.colorbar(cset1)
                     # plt.scatter(q[i+1, 0], q[i+1, 1], marker='o',
-                    #             color='r', zorder=10)
-                    # plt.xlim(-1, 1)
+                    #              color='r', zorder=10)
+                    # plt.xlim(0, 3)
                     # plt.ylim(-2, 2)
                     # plt.plot(xrare, xyrare)
                     # plt.plot(yxrare, yrare)
@@ -440,10 +441,11 @@ def LIMD(inps, mdps, potdim, sm, movieflag):
                     # plt.colorbar(cset4)
                     # plt.scatter(q[i+1, 0], q[i+1, 1], marker='o',
                     #             color='r', zorder=10)
-                    # plt.pause(0.0001)
-                    if (np.count_nonzero(FES) == FES.size):
-                        print i
-                        pdb.set_trace()
+                    # plt.draw()
+		    # plt.pause(0.0001)
+                    # if (np.count_nonzero(FES) == FES.size):
+                        # print i
+                        # pdb.set_trace()
                     if (movieflag == 1):
                         filename = "movieframe" + str(frame)
                         plt.savefig(filename + '.png', bbox_inches='tight')
@@ -554,10 +556,10 @@ def tdforce(x, y, sx, sy, w, delta, DT, winit):
         Fpoty = Fy*-1+Fbiasy
 
         # Boundaries to keep walker in system
-        if x < -1:
+        if x < 0:
             V = 1000 * (x+1)**4
             Fpotx = -4 * 1000*(x+1)**3
-        elif x > 1:
+        elif x > 3:
             V = 1000 * (x-1)**4
             Fpotx = -4 * 1000 * (x-1)**3
         if y < -2:
@@ -581,7 +583,7 @@ def rareevent(X):
 
 def twodrarevent(X, Y):
     """Define Rare event for (2-D) Infrequent MetaD."""
-    if X < 0.1 and Y < -0.5:
+    if X < 0.75 and Y >0 or X > 2.25 and Y >0:
         return True
     else:
         return False
