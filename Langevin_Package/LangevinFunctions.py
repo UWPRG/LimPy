@@ -513,11 +513,11 @@ def LIMD(inps, mdps, potdim, sm, movieflag):
 def force(r, s, w, delta, DT, winit):
     """Calculate the force and potential based on location (1-D)."""
     if (r < -4):
-        V = 100 * (r+4)**4
+        V = 100 * (r+4)**4 - 1.6901
         Fpot = 100 * 4 * (r+4)**3
 
     elif (r > 4):
-        V = 100 * (r-4)**4
+        V = 100 * (r-4)**4 - 0.845067
         Fpot = 100 * 4 * (r-4)**3
 
     else:

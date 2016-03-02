@@ -418,11 +418,12 @@ class Form(QWidget):
                     movieflag = 1
                 # Infrequent Metadynamics Loop
                 if (sm == "Infrequent WT MetaD"):
-                    INFdata = np.zeros([loops, 2])
+                    INFdata = np.zeros([loops, 3])
                     for its in range(0, loops):
                         result = LIMD(inps, mdps, potdim, sm, movieflag)
                         INFdata[its, 0] = result[0]
                         INFdata[its, 1] = result[1]
+                        # INFdata[its, 2] = result[3]
                         print (str(its+1) + ' Trial(s) completed of ' +
                                str(loops))
                     np.savetxt(filetitle+'.csv', INFdata, delimiter=',')
