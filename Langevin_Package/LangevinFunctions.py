@@ -126,7 +126,7 @@ def LIMD(inps, mdps, potdim, sm, movieflag):
         # plt.ylabel("F")
         # plt.draw()
         # plt.pause(0.0001)
-	# pdb.set_trace()
+        # pdb.set_trace()
     # Initial Configuration for 2-D
     if (potdim == '2-D Potential'):
         # pdb.set_trace()
@@ -399,8 +399,6 @@ def LIMD(inps, mdps, potdim, sm, movieflag):
                     #                                          delta**2) *
                     #                             np.exp(-((ycoord[k]-sy)**2) /
                     #                               2 / delta**2)))
-                        # tk=np.append(tk,bias[260,150])
-                        # cc=np.append(cc,i)
                     # v = v2 + sum(w * np.exp(-((q[i+1, 0]-sx)**2) / 2 /
                     #             delta**2)*np.exp(-((q[i+1, 1]-sy)**2) /
                     #                              2 / delta**2))
@@ -426,7 +424,7 @@ def LIMD(inps, mdps, potdim, sm, movieflag):
                     # plt.plot(xpoints, ypoints, '--r', linewidth=1.0)
                     # cset1 = plt.contourf(xlong, ylong, vcalc, levels,
                     #                       cmap=plt.cm.get_cmap(cmap,
-                    #                                            levels.size - 1))
+                    #                                         levels.size - 1))
                     # plt.colorbar(cset1)
                     # plt.scatter(q[i+1, 0], q[i+1, 1], marker='o',
                     #              color='r', zorder=10)
@@ -455,12 +453,10 @@ def LIMD(inps, mdps, potdim, sm, movieflag):
                     # plt.colorbar(cset4)
                     # plt.scatter(q[i+1, 0], q[i+1, 1], marker='o',
                     #             color='r', zorder=10)
-<<<<<<< HEAD
+
                     # plt.draw()
-		    # plt.pause(0.0001)
-                    # if (np.count_nonzero(FES) == FES.size):
-                        # print i
-                        # pdb.set_trace()
+                    # plt.pause(0.0001)
+
                     if (movieflag == 1):
                         filename = "movieframe" + str(frame)
                         plt.savefig(filename + '.png', bbox_inches='tight')
@@ -469,19 +465,6 @@ def LIMD(inps, mdps, potdim, sm, movieflag):
                     print('X coordinate ' + str(q[i+1, 0]))
                     print('Y coordinate ' + str(q[i+1, 1]))
                     print('Energy ' + str(E[i+1]))
-=======
-                    # plt.pause(0.0001)
-                    # if (movieflag == 1):
-                    #     filename = "movieframe" + str(frame)
-                    #     plt.savefig(filename + '.png', bbox_inches='tight')
-                    #     frame = frame + 1
-                    
-		    # print('Step ' + str(i))
-                    # print('X coordinate ' + str(q[i+1, 0]))
-                    # print('Y coordinate ' + str(q[i+1, 1]))
-                    # print('Energy ' + str(E[i+1]))
->>>>>>> 3d96c2d2ba2bbfd80946280d3ef072850289e5d9
-
             i = i + 1
     # if non infrequent sampling, calculate RMSD for convergence
     if(potdim == '1-D Potential' and sm != "Infrequent WT MetaD"):
@@ -577,33 +560,6 @@ def tdforce(x, y, sx, sy, w, delta, DT, winit):
         Fpoty = Fy*-1+Fbiasy
 
         # Boundaries to keep walker in system
-<<<<<<< HEAD
-        if x < 0:
-            V = 1000 * (x+1)**4
-            Fpotx = -4 * 1000*(x+1)**3
-        elif x > 3:
-            V = 1000 * (x-1)**4
-            Fpotx = -4 * 1000 * (x-1)**3
-        if y < -2:
-            V = 1000 * (y+1)**4
-            Fpotx = -4 * 1000 * (y+2)**3
-        elif y > 2:
-            V = 1000 * (y-1)**4
-            Fpotx = -4 * 1000 * (y-2)**3
-=======
-        # if x < -1:
-            # V = 1000 * (x+1)**4
-            # Fpotx = -4 * 1000*(x+1)**3
-        # elif x > 1:
-            # V = 1000 * (x-1)**4
-            # Fpotx = -4 * 1000 * (x-1)**3
-        # if y < -2:
-            # V = 1000 * (y+1)**4
-            # Fpotx = -4 * 1000 * (y+2)**3
-        # elif y > 2:
-            # V = 1000 * (y-1)**4
-            # Fpotx = -4 * 1000 * (y-2)**3
->>>>>>> 3d96c2d2ba2bbfd80946280d3ef072850289e5d9
     return [V, Fpotx, Fpoty]
 
 # Functions defining rare events
@@ -619,7 +575,7 @@ def rareevent(X):
 
 def twodrarevent(X, Y):
     """Define Rare event for (2-D) Infrequent MetaD."""
-    if X < 0.75 and Y >0 or X > 2.25 and Y >0:
+    if X < 0.75 and Y > 0 or X > 2.25 and Y > 0:
         return True
     else:
         return False
