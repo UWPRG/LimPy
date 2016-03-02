@@ -1,6 +1,6 @@
 """These are the functions for Langevin Integrator, Force, and Rare Events."""
 
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import numpy as np
 import scipy as sp
 
@@ -273,10 +273,10 @@ def LIMD(inps, mdps, potdim, sm, movieflag):
 
                 # updating plot
                 if sp.mod(i, iratio) == 0 and i > 0:
-                    # print('Step '+ str(i))
-                    # print('X coordinate '+str(q[i]))
-                    # print('Force '+str(f))
-                    # print('Energy '+str(E[i+1]))
+                    print('Step ' + str(i))
+                    print('X coordinate '+str(q[i]))
+                    print('Force '+str(f))
+                    print('Energy '+str(E[i+1]))
                     bias = np.copy(vcalc)
 
                     if s.size > 1:
@@ -294,15 +294,15 @@ def LIMD(inps, mdps, potdim, sm, movieflag):
 
             # Plotting
 
-                    # plt.clf()
-                    # plt.plot(xlong, bias, '-r')
-                    # plt.plot(xlong, vcalc, '-b')
-                    # plt.plot(q[i+1], v2, 'ro', markersize=10)
-                    # plt.axis([xmin, xmax, min(vcalc)-8, max(vcalc)+8])
-                    # plt.xlabel("CV(s)")
-                    # plt.ylabel("F")
-                    # plt.draw()
-                    # plt.pause(0.0001)
+                    plt.clf()
+                    plt.plot(xlong, bias, '-r')
+                    plt.plot(xlong, vcalc, '-b')
+                    plt.plot(q[i+1], v2, 'ro', markersize=10)
+                    plt.axis([xmin, xmax, min(vcalc)-8, max(vcalc)+8])
+                    plt.xlabel("CV(s)")
+                    plt.ylabel("F")
+                    plt.draw()
+                    plt.pause(0.0001)
                     if (movieflag == 1):
                         filename = "movieframe" + str(frame)
                         plt.savefig(filename + '.png', bbox_inches='tight')
