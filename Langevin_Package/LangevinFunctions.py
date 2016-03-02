@@ -73,7 +73,7 @@ def LIMD(inps, mdps, potdim, sm, movieflag):
     # print('Timestep '+str(dt))
 
     # Parameters for integrator
-    gamma = 0.5  # Friction factor
+    gamma = 5  # Friction factor
     beta = 1 / T / (1.987E-3)  # units of 1/kcal
     c1 = np.exp(-gamma * dt / 2)  # (Eq.13a)
     c2 = np.sqrt((1 - c1**2) * m / beta)  # (Eq.13b)
