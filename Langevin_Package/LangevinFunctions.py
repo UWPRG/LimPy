@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy as sp
 
-import pdb
+# import pdb
 import math
 import os
 # import sys
@@ -64,21 +64,21 @@ def LIMD(inps, mdps, potdim, sm, movieflag):
     # How often movie is created if desired
     iratio = 1000
 
-    # print('Parameters:')
-    # print('Number of steps '+ str(steps))
-    # print('Initial x coordinate '+str(x0))
-    # if (potdim == '2-D Potential'):
-    #    print('Initial y coordinate '+str(y0))
-    # print('Temperature '+str(T))
-    # print('Timestep '+str(dt))
+    print('Parameters:')
+    print('Number of steps ' + str(steps))
+    print('Initial x coordinate '+str(x0))
+    if (potdim == '2-D Potential'):
+        print('Initial y coordinate ' + str(y0))
+    print('Temperature '+str(T))
+    print('Timestep '+str(dt))
 
     # Parameters for integrator
     gamma = 5  # Friction factor
     beta = 1 / T / (1.987E-3)  # units of 1/kcal
     c1 = np.exp(-gamma * dt / 2)  # (Eq.13a)
     c2 = np.sqrt((1 - c1**2) * m / beta)  # (Eq.13b)
-    # print ('c1: '+str(c1))
-    # print ('c2: '+str(c2))
+    print ('c1: '+str(c1))
+    print ('c2: '+str(c2))
     # print 1/beta #kt =[kcal]
     # Determines if .png files created
     if (movieflag == 1):
@@ -118,14 +118,14 @@ def LIMD(inps, mdps, potdim, sm, movieflag):
 
         icount = np.zeros_like(xlong)
         # Initial plotting
-        # plt.ion()
-        # plt.plot(xlong, vcalc, '-b')
-        # plt.plot(x0, v1, 'ro', markersize=10)
-        # plt.axis([-4, 4, -12, 6])
-        # plt.xlabel("CV(s)")
-        # plt.ylabel("F")
-        # plt.draw()
-        # plt.pause(0.0001)
+        plt.ion()
+        plt.plot(xlong, vcalc, '-b')
+        plt.plot(x0, v1, 'ro', markersize=10)
+        plt.axis([-4, 4, -12, 6])
+        plt.xlabel("CV(s)")
+        plt.ylabel("F")
+        plt.draw()
+        plt.pause(0.0001)
         # pdb.set_trace()
     # Initial Configuration for 2-D
     if (potdim == '2-D Potential'):
@@ -158,25 +158,25 @@ def LIMD(inps, mdps, potdim, sm, movieflag):
         # firsty = FTD1[2]
         E[0] = 0.5 * (px**2 + py**2) + v1
         # Initial Plotting
-        # plt.clf()
-        # plt.ion()
-        # plt.subplot(221)
-        # cmap = plt.cm.PRGn
-        # levels = np.arange(-3, 2, 0.25)
-        # cset1 = plt.contourf(xlong, ylong, vcalc, levels,
-        #                     cmap=plt.cm.get_cmap(cmap, levels.size - 1))
-        # plt.colorbar(cset1)
-        # plt.title('2-D Potential')
-        # plt.xlabel("X")
-        # plt.ylabel("Y")
-        # plt.scatter(x0, y0, marker='o', color='r', zorder=10)
-        # plt.subplot(222)
-        # cset2 = plt.contourf(xlong, ylong, vcalc,levels,cmap =
-        # plt.cm.get_cmap(cmap, levels.size - 1))
-        # plt.colorbar(cset2)
+        plt.clf()
+        plt.ion()
+        plt.subplot(221)
+        cmap = plt.cm.PRGn
+        levels = np.arange(-3, 2, 0.25)
+        cset1 = plt.contourf(xlong, ylong, vcalc, levels,
+                             cmap=plt.cm.get_cmap(cmap, levels.size - 1))
+        plt.colorbar(cset1)
+        plt.title('2-D Potential')
+        plt.xlabel("X")
+        plt.ylabel("Y")
+        plt.scatter(x0, y0, marker='o', color='r', zorder=10)
 
-        # plt.draw()
-        # plt.pause(0.0001)
+        plt.subplot(222)
+        cset2 = plt.contourf(xlong, ylong, vcalc, levels,
+                             cmap=plt.cm.get_cmap(cmap, levels.size - 1))
+        plt.colorbar(cset2)
+        plt.draw()
+        plt.pause(0.0001)
 
     # Iteration across steps
     i = int(0)
@@ -188,7 +188,7 @@ def LIMD(inps, mdps, potdim, sm, movieflag):
                 ' Initial Hill Height ' + str(winit) + '\n' +
                 'Hill Width ' + str(delta) + '\n' +
                 'Deposition Frequency (steps)' + str(hfreq) + '\n' +
-                'Well Temperature ' + str(DT))
+                'Well Temperature ' + str(DT)+'\n'+'gamma '+str(gamma))
     elif (potdim == '2-D Potential'):
         info = ('Parameters: \n'+'Number of steps: ' + str(steps) + '\n' +
                 'Initial x coordinate ' + str(x0) + '\n' +
@@ -196,7 +196,8 @@ def LIMD(inps, mdps, potdim, sm, movieflag):
                 str(T) + '\n' + 'Timestep ' + str(dt) + '\n' +
                 'Initial Hill Height ' + str(winit) + '\n' + 'Hill Width ' +
                 str(delta) + '\n' + 'Deposition Frequency (steps)' +
-                str(hfreq) + '\n' + 'Well Temperature ' + str(DT))
+                str(hfreq) + '\n' + 'Well Temperature ' + str(DT) +
+                '\n'+'gamma '+str(gamma))
     # Loop over until rareevent happens or simulation time runs out.
     while i < steps - 1:
 
@@ -383,79 +384,79 @@ def LIMD(inps, mdps, potdim, sm, movieflag):
                                            (icount[yindex, xindex] + 1))
                     icount[yindex, xindex] = icount[yindex, xindex] + 1
 
-                # if sp.mod(i, iratio) == 0 and i > 0:
+                if sp.mod(i, iratio) == 0 and i > 0:
                     # pdb.set_trace()
-                    # bias = np.copy(vcalc)
+                    bias = np.copy(vcalc)
 
-                    # if sx.size > 1:
-                    #     # pdb.set_trace()
-                    #     xcoord = np.arange(-1, 1.01, .01)
-                    #     ycoord = np.arange(-2, 2.01, .01)
-                    #     for k in range(0, ycoord.size-1):
-                    #         for j in range(0, xcoord.size-1):
-                    #             bias[k, j] = (bias[k, j] +
-                    #                           sum(w * np.exp(-((xcoord[j] -
-                    #                                             sx)**2) / 2 /
-                    #                                          delta**2) *
-                    #                             np.exp(-((ycoord[k]-sy)**2) /
-                    #                               2 / delta**2)))
+                    if sx.size > 1:
+                        # pdb.set_trace()
+                        xcoord = np.arange(0, 3.01, .01)
+                        ycoord = np.arange(-2, 2.01, .01)
+                        for k in range(0, ycoord.size-1):
+                            for j in range(0, xcoord.size-1):
+                                bias[k, j] = (bias[k, j] +
+                                              sum(w * np.exp(-((xcoord[j] -
+                                                                sx)**2) / 2 /
+                                                             delta**2) *
+                                                  np.exp(-((ycoord[k]-sy)**2) /
+                                                  2 / delta**2)))
                     # v = v2 + sum(w * np.exp(-((q[i+1, 0]-sx)**2) / 2 /
-                    #             delta**2)*np.exp(-((q[i+1, 1]-sy)**2) /
-                    #                              2 / delta**2))
+                    #              delta**2)*np.exp(-((q[i+1, 1]-sy)**2) /
+                    #                               2 / delta**2))
                     # Plotting
-                    # plt.clf()
-                    # cmap = plt.cm.PRGn
-                    # levels = np.arange(-5, 20, 0.1)
+                    plt.clf()
+                    cmap = plt.cm.PRGn
+                    levels = np.arange(-3, 2, 0.25)
 
-                    # plt.subplot(221)
-                    # plt.title('2-D Potential')
-                    # plt.xlabel("X")
-                    # plt.ylabel("Y")
+                    plt.subplot(221)
+                    plt.title('2-D Potential')
+                    plt.xlabel("X")
+                    plt.ylabel("Y")
                     # xrare = np.array([-1, 1])
                     # xyrare = np.array([-0.5, -0.5])
                     # yrare = np.array([-2, 2])
                     # yxrare = np.array([0.1, 0.1])
-                    # xpoints = np.array([q[0, 0]])
-                    # ypoints = np.array([q[0, 1]])
-                    # for b in range(0, i):
-                    #     xpoints = np.append(xpoints, q[b, 0])
-                    #     ypoints = np.append(ypoints, q[b, 1])
+                    xpoints = np.array([q[0, 0]])
+                    ypoints = np.array([q[0, 1]])
+                    for b in range(0, i):
+                        xpoints = np.append(xpoints, q[b, 0])
+                        ypoints = np.append(ypoints, q[b, 1])
 
-                    # plt.plot(xpoints, ypoints, '--r', linewidth=1.0)
-                    # cset1 = plt.contourf(xlong, ylong, vcalc, levels,
-                    #                       cmap=plt.cm.get_cmap(cmap,
-                    #                                         levels.size - 1))
-                    # plt.colorbar(cset1)
-                    # plt.scatter(q[i+1, 0], q[i+1, 1], marker='o',
-                    #              color='r', zorder=10)
-                    # plt.xlim(0, 3)
-                    # plt.ylim(-2, 2)
+                    plt.plot(xpoints, ypoints, '--r', linewidth=1.0)
+                    cset1 = plt.contourf(xlong, ylong, vcalc, levels,
+                                         cmap=plt.cm.get_cmap(cmap,
+                                                              levels.size - 1))
+                    plt.colorbar(cset1)
+                    plt.scatter(q[i+1, 0], q[i+1, 1], marker='o',
+                                color='r', zorder=10)
+                    plt.xlim(0, 3)
+                    plt.ylim(-2, 2)
                     # plt.plot(xrare, xyrare)
                     # plt.plot(yxrare, yrare)
-                    # plt.subplot(222)
-                    # cset2 = plt.contourf(xlong, ylong, vcalc, levels,
-                    #                      cmap=plt.cm.get_cmap(cmap,
-                    #                                         levels.size - 1))
-                    # plt.colorbar(cset2)
-                    # plt.scatter(q[i+1, 0], q[i+1, 1], marker='o',
-                    #             color='r', zorder=10)
-                    # plt.subplot(223)
-                    # cset3 = plt.contourf(xlong, ylong, bias, levels,
-                    #                      cmap=plt.cm.get_cmap(cmap,
-                    #                                         levels.size - 1))
-                    # plt.colorbar(cset3)
-                    # plt.scatter(q[i+1, 0], q[i+1, 1], marker='o',
-                    #             color='r', zorder=10)
-                    # plt.subplot(224)
-                    # cset4 = plt.contourf(xlong, ylong, bias-vcalc, levels,
-                    #                      cmap=plt.cm.get_cmap(cmap,
-                    #                                         levels.size - 1))
-                    # plt.colorbar(cset4)
-                    # plt.scatter(q[i+1, 0], q[i+1, 1], marker='o',
-                    #             color='r', zorder=10)
+                    plt.subplot(222)
+                    cset2 = plt.contourf(xlong, ylong, vcalc, levels,
+                                         cmap=plt.cm.get_cmap(cmap,
+                                                              levels.size - 1))
+                    plt.colorbar(cset2)
+                    plt.scatter(q[i+1, 0], q[i+1, 1], marker='o',
+                                color='r', zorder=10)
+                    plt.subplot(223)
+                    cset3 = plt.contourf(xlong, ylong, bias, levels,
+                                         cmap=plt.cm.get_cmap(cmap,
+                                                              levels.size - 1))
+                    plt.colorbar(cset3)
+                    plt.scatter(q[i+1, 0], q[i+1, 1], marker='o',
+                                color='r', zorder=10)
+                    plt.subplot(224)
+                    cset4 = plt.contourf(xlong, ylong, bias-vcalc, levels,
+                                         cmap=plt.cm.get_cmap(cmap,
+                                                              levels.size - 1))
+                    plt.colorbar(cset4)
+                    plt.scatter(q[i+1, 0], q[i+1, 1], marker='o',
+                                color='r', zorder=10)
 
-                    # plt.draw()
-                    # plt.pause(0.0001)
+                    plt.draw()
+                    plt.pause(0.0001)
 
                     if (movieflag == 1):
                         filename = "movieframe" + str(frame)
