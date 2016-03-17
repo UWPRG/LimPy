@@ -10,7 +10,7 @@ potentials are supplied by the user
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy as sp
-
+import pandas as pd
 import pdb
 import math
 import os
@@ -63,7 +63,7 @@ def get_parameters(input_file):
     dimension = str(inputs['Dimension'][0])
     method = str(inputs['Method'][0])
     filetitle = str(inputs['Data Filename'][0])
-    inps = np.zeros(16)
+    inps = np.zeros(13)
     inps[0] = float(inputs['Steps'][0])
     inps[1] = float(inputs['Step size'][0])
     inps[2] = float(inputs['X0'][0])
@@ -77,8 +77,7 @@ def get_parameters(input_file):
     inps[10] = float(inputs['Ymax'][0])
     inps[11] = float(inputs['Yincrement'][0])
     inps[12] = float(inputs['Gamma'][0])
-    inps[13] = float(inputs['Movie'][0])
-    makeplot = float(inputs['Plotting'][0])
+    makeplot = str((inputs['Plotting'][0]))
     potfunc = str(inputs['Potential_Function'][0])
     mdps = np.zeros(5)
     mdps[0] = float(inputs['Gaussian Height'][0])
@@ -87,7 +86,7 @@ def get_parameters(input_file):
     mdps[3] = float(inputs['Well Temperature'][0])
     mdps[4] = float(inputs['Trials'][0])
 
-    return (inps, mdps, dimension, method, potfunc, filetitle)
+    return (inps, mdps, dimension, method, potfunc, filetitle, makeplot)
 
 
 def calc_biased_pot(coords, history, w, delta):
@@ -122,7 +121,7 @@ def calc_biased_pot(coords, history, w, delta):
     return VR
 
 
-def calc_biased_force(coords, history, w, delta, DT, base_force):
+def calc_biased_force(coords, history, w, delta, base_force):
     """
         Calculate the biased force and biased potential.
 
@@ -140,9 +139,6 @@ def calc_biased_force(coords, history, w, delta, DT, base_force):
 
         delta       : float
                       Gaussian width
-
-        DT          : float
-                      Well-Temperature
 
         base_force  : float
                        Underlying potential energy
@@ -188,7 +184,8 @@ def calc_teff(walkerpot, beta, dt):
     return teff
 
 
-def integrate_1D_step(coords, history, w,  delta, DT, potfunc, p0, m):
+def integrate_1D_step(coords, history, w,  delta, DT, potfunc, p0, m, dt,
+                      gamma, beta):
     """Move walker by one step in 1D via Langevin Integrator
 
         Parameters:
@@ -217,6 +214,15 @@ def integrate_1D_step(coords, history, w,  delta, DT, potfunc, p0, m):
         m           : float
                       Mass
 
+        dt          : float
+                      time step
+
+        gamma       : float
+                       friction factor
+
+        beta        : float
+                      1/kT
+
         Returns:
         --------
         pnew        : float
@@ -227,11 +233,14 @@ def integrate_1D_step(coords, history, w,  delta, DT, potfunc, p0, m):
 
     """
 
-    pot_dict = get_potential_dict
+    pot_dict = get_potential_dict()
     force = pot_dict[potfunc]
 
+    c1 = np.exp(-gamma * dt / 2)  # (Eq.13a)
+    c2 = np.sqrt((1 - c1**2) * m / beta)  # (Eq.13b)
+
     f = force(coords)[1]
-    fbiased = calc_biased_force(coords, history, w, delta, DT, f)
+    fbiased = calc_biased_force(coords, history, w, delta, f)
 
     R1 = sp.rand(1) - 0.5
     R2 = sp.rand(1) - 0.5
@@ -240,12 +249,12 @@ def integrate_1D_step(coords, history, w,  delta, DT, potfunc, p0, m):
     newcoords = coords + (pplus/m) * dt + fbiased/m * ((dt**2) / 2)
 
     f2 = force(newcoords)[1]
-    f2biased = calc_biased_force(coords, history, w, delta, DT, f2)
+    f2biased = calc_biased_force(coords, history, w, delta, f2)
 
     pminus = pplus + (fbiased/2 + f2biased/2)*dt
     pnew = c1*pminus + c2*R2
 
-    return [pnew, new_coords]
+    return [pnew, newcoords]
 
 
 def recreate_FES(FES, icount, coord, xinc, xmin, xmax, E):
@@ -361,36 +370,35 @@ def simulate_1Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
                          Coordinates of walker
     """
 
-    if(potdim == '1-D Potential'):
-        steps = inps[0]
-        dt = inps[1]
-        x0 = inps[2]
-        T = inps[3]
-        m = inps[4]
-        xmin = inps[5]
-        xmax = inps[6]
-        xinc = inps[7]
+    steps = inps[0]
+    dt = inps[1]
+    x0 = inps[2]
+    T = inps[3]
+    m = inps[4]
+    xmin = inps[5]
+    xmax = inps[6]
+    xinc = inps[7]
 
-    if (sm == 'Metadynamics'):
+    if (method == 'Metadynamics'):
         winit = mdps[0]
         delta = mdps[1]
         hfreq = mdps[2]
         w = np.array([0])
         DT = float("inf")
 
-    if (sm == 'Well-Tempered Metadynamics'):
+    if (method == 'Well-Tempered Metadynamics'):
         winit = mdps[0]
         delta = mdps[1]
         hfreq = mdps[2]
         DT = mdps[3]
         w = np.array([0])
-    if (sm == 'MD'):
+    if (method == 'MD'):
         winit = 0
         delta = 1
         hfreq = steps*2
         DT = 10000
         w = np.array([0])
-    if (sm == "Infrequent WT MetaD"):
+    if (method == "Infrequent WT MetaD"):
         winit = mdps[0]
         delta = mdps[1]
         hfreq = mdps[2]
@@ -410,7 +418,7 @@ def simulate_1Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
     time = np.array([0.0])
     walkerpot = np.array([0.0])
 
-    pot_dict = get_potential_dict
+    pot_dict = get_potential_dict()
     force = pot_dict[potfunc]
 
     baseline = force(xlong)
@@ -418,9 +426,10 @@ def simulate_1Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
     pot_base = baseline[0]
     coords[0] = x0
     if makeplot == 'True':
-        plt.plot(xlong, baseline, '-b')
-        plt.plot(x0, v1, 'ro', markersize=10)
-        plt.axis([xmin, xmax, xmin-xmin/5, xmax+xmax/5])
+        plt.plot(xlong, pot_base, '-b')
+        plt.plot(x0, iv, 'ro', markersize=10)
+        plt.axis([xmin, xmax, min(pot_base)-5,
+                 max(pot_base)+5])
         plt.xlabel("CV(s)")
         plt.ylabel("F")
         plt.draw()
@@ -450,7 +459,7 @@ def simulate_1Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
     i = 0
     while i < steps - 1:
 
-        if (sm == "Infrequent WT MetaD"):
+        if (method == "Infrequent WT MetaD"):
             triggered = force(coords[i])[2]
 
             if triggered is True:
@@ -461,57 +470,57 @@ def simulate_1Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
         if sp.mod(i, hfreq) == 0 and i > 0:
 
             if(i == hfreq):
-                # pdb.set_trace()
-                sx[0] = q[i, 0]
-                sy[0] = q[i, 1]
+
+                history[0] = coords[i]
                 w[0] = winit
             else:
-                if sm == 'Metadynamics':
-                    s = np.append(s, q[i])
+                if method == 'Metadynamics':
+                    history = np.append(s, q[i])
                     w = np.append(w, winit)
-                elif (sm == 'Well-Tempered Metadynamics' or
-                        sm == "Infrequent WT MetaD"):
-                    VR = calc_biased_pot(coords, history, w, delta, DT)
-                    s = np.append(s, q[i])
-                    w = np.append(w, winit * np.exp(-vr /
-                                                    (1.987E-3*DT)))
-        [pnew, newcoord] = integrate_1D_step(coords, history, w,  delta, DT,
-                                             potfunc, p0, m)
+                elif (method == 'Well-Tempered Metadynamics' or
+                        method == "Infrequent WT MetaD"):
+                    VR = calc_biased_pot(coords[i], history, w, delta)
+                    history = np.append(history, coords[i])
+                    w = np.append(w, winit * np.exp(-VR / (1.987E-3*DT)))
+        [pnew, newcoord] = integrate_1D_step(coords[i], history, w,  delta, DT,
+                                             potfunc, p, m, dt, gamma, beta)
         p = pnew
-        coords[i+1] = newcoord
 
-        E[i+1] + 0.5 * p**2 + force(coords[i+1])[0]
+        coords[i+1] = newcoord
+        vnew = force(coords[i+1])[0]
+        E[i+1] = 0.5 * p**2 + vnew
 
         time = np.append(time, dt*(i+1))
 
-        walkerpot = np.append(walkerpot, calc_biased_pot(coords, history,
-                                                         w, delta, DT))
-        if sm != "Infrequent WT MetaD":
-            [FES, icount] = recreate_FES(FES, icount, coord,
+        walkerpot = np.append(walkerpot, calc_biased_pot(coords[i+1], history,
+                                                         w, delta))
+        if method != "Infrequent WT MetaD":
+            [FES, icount] = recreate_FES(FES, icount, coords[i+1],
                                          xinc, xmin, xmax, E[i+1])
-        if plotit == 'True':
-            bias = baseline
-            for xc in xlong.size:
-                bias[xc] = bias[xc] + calc_biased_force(xlong[xc], history,
-                                                        w, delta)
-            walkv = coords[i+1] + calc_biased_force(coords[i+1], history,
-                                                    w, delta)
+        if makeplot == 'True' and sp.mod(i, 100) == 0:
+            bias = np.copy(pot_base)
+            for xc in range(0, xlong.size):
+                bias[xc] = bias[xc] + calc_biased_pot(xlong[xc], history,
+                                                      w, delta)
+            walkv = vnew + calc_biased_pot(coords[i+1], history, w, delta)
             plt.clf()
             plt.plot(xlong, bias, '-r')
-            plt.plot(xlong, baseline, '-b')
+            plt.plot(xlong, pot_base, '-b')
             plt.plot(coords[i+1], walkv, 'ro', markersize=10)
-            plt.axis([xmin, xmax, xmin-xmin/5, xmax+xmax/5])
+            plt.axis([xmin, xmax, min(pot_base)-5,
+                     max(pot_base)+5])
             plt.xlabel("CV(s)")
             plt.ylabel("F")
             plt.draw()
             plt.pause(0.0001)
+
         i = i + 1
 
-    if(sm != "Infrequent WT MetaD"):
-        rmsds = calc_rmsd(FES, beta, baseline)
+    if(method != "Infrequent WT MetaD"):
+        rmsds = calc_rmsd(FES, beta, pot_base)
         return (coords, E, rmsds, info)
 
-    elif(sm == "Infrequent WT MetaD"):
+    elif(method == "Infrequent WT MetaD"):
         teff = 0
         info = info + 'NO RARE EVENT'
         totaltime = 0

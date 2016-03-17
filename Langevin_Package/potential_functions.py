@@ -1,5 +1,7 @@
 """This file contains the various potential functions we have defined"""
 
+import numpy as np
+
 
 def cosine_potential(coords):
     """
@@ -26,9 +28,9 @@ def cosine_potential(coords):
     """
 
     V = np.cos(coords)
-    Fpot = (-1) * np.sin(coords)
+    F = np.sin(coords)
 
-    if coords < -2.0:
+    if type(coords) is np.float64 and (coords < 0 or coords > 2*np.pi):
         Trigger = True
     else:
         Trigger = False
@@ -66,13 +68,19 @@ def two_gaussian_potential(coords):
     else:
         V = (-5 * np.exp(-(coords - 2/0.75)**2) -
              10*np.exp(-(coords + 2/0.75)**2))
-        F = (-5 * 2 * -1 * (coords - 2/0.75) * np.exp(-(coords - 2/0.75)**2) -
-             10 * 2 * -1 * (coords + 2/0.75) * np.exp(-(coords + 2/0.75)**2))
+        F = ((-5 * 2 * -1 * (coords - 2/0.75) * np.exp(-(coords - 2/0.75)**2) -
+             10 * 2 * -1 * (coords + 2/0.75) * np.exp(-(coords + 2/0.75)**2)) *
+             (-1))
         # len2 = s.size-1
         # VR = sum(w*np.exp(-(r-s)**2 / 2 / delta**2))
         # w[len2] = winit * np.exp(-VR / (1.987E-3*DT))
         # Fbias = sum(w * (r-s) / delta**2 * np.exp(-(r-s)**2 / 2 / delta**2))
         # F = Fpot * -1 + Fbias
+    if type(coords) is np.float64 and coords < -2.0:
+        Trigger = True
+    else:
+        Trigger = False
+
     return (V, F, Trigger)
 
 
