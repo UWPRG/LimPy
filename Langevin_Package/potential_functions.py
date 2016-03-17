@@ -3,6 +3,7 @@
 import numpy as np
 import math
 import pdb
+import langevin_functions
 
 
 def cosine_potential(coords):
@@ -29,10 +30,10 @@ def cosine_potential(coords):
                   Has rare event occurred (True) or not (False)
     """
 
-    V = np.cos(coords)
-    F = np.sin(coords)
+    V = np.cos(coords) * 2.5
+    F = np.sin(coords) * 2.5
 
-    if type(coords) is np.float64 and (coords < 0 or coords > 2*np.pi):
+    if type(coords) is np.float64 and (coords < 0 or coords > 6.3):
         Trigger = True
     else:
         Trigger = False
@@ -61,23 +62,12 @@ def two_gaussian_potential(coords):
                   Force
 
     """
-    if (type(coords) is np.float64 and coords < -4):
-        V = 100 * (coords+4)**4
-        F = -100 * 4 * (coords+4)**3
-    elif (type(coords) is np.float64 and coords > 4):
-        V = 100 * (coords-4)**4
-        F = -100 * 4 * (coords-4)**3
-    else:
-        V = (-5 * np.exp(-(coords - 2/0.75)**2) -
-             10*np.exp(-(coords + 2/0.75)**2))
-        F = ((-5 * 2 * -1 * (coords - 2/0.75) * np.exp(-(coords - 2/0.75)**2) -
-             10 * 2 * -1 * (coords + 2/0.75) * np.exp(-(coords + 2/0.75)**2)) *
-             (-1))
-        # len2 = s.size-1
-        # VR = sum(w*np.exp(-(r-s)**2 / 2 / delta**2))
-        # w[len2] = winit * np.exp(-VR / (1.987E-3*DT))
-        # Fbias = sum(w * (r-s) / delta**2 * np.exp(-(r-s)**2 / 2 / delta**2))
-        # F = Fpot * -1 + Fbias
+    V = (-5 * np.exp(-(coords - 2/0.75)**2) -
+         10*np.exp(-(coords + 2/0.75)**2))
+    F = ((-5 * 2 * -1 * (coords - 2/0.75) * np.exp(-(coords - 2/0.75)**2) -
+         10 * 2 * -1 * (coords + 2/0.75) * np.exp(-(coords + 2/0.75)**2)) *
+         (-1))
+
     if type(coords) is np.float64 and coords < -2.0:
         Trigger = True
     else:
@@ -129,6 +119,7 @@ def pv_2D_potential(x, y):
         Trigger = False
 
     else:
+
         V = (np.cos(2*math.pi*x)*(1+4*y) + math.pi*y**2 -
              0.75*np.cos(2*math.pi*x/3))
         Fpotx = (((2*math.pi/3*0.75)*np.sin(2*math.pi*x/3) -
@@ -153,3 +144,56 @@ def get_potential_dict():
                       'pv_2D_potential': pv_2D_potential}
 
     return potential_dict
+
+
+def two_gaussian_potential_bc(vnew, f2, coords):
+    """Applies Boundary Condition to the potential, force, and coordinates
+    """
+
+    if (coords < -4.0):
+        vnew = 100.0 * (coords+4.0)**4.0
+        f2 = -100.0 * 4.0 * (coords+4.0)**3.0
+
+    elif (coords > 4.0):
+
+        vnew = 100.0 * (coords-4.0)**4.0
+        f2 = -100.0 * 4.0 * (coords-4.0)**3.0
+
+    return (vnew, f2, coords)
+
+
+def pv_2D_potential_bc(vnew, f2, coords):
+    """Applies Boundary Condition to the potential, force, and coordinates
+    """
+
+    if (coords[0] < 0):
+        coords[0] = coords[0] + 3
+
+    elif (coords[0] > 3.0):
+        coords[0] = coords[0] - 3
+
+    return (vnew, f2, coords)
+
+
+def cosine_potential_bc(vnew, f2, coords):
+    """Applies Boundary Condition to the potential, force, and coordinates
+    """
+
+    if (coords < 0):
+        coords = coords + 2*np,pi
+
+    elif (coords > 2*np.pi):
+        coords = coords - 2*np.pi
+
+    return (vnew, f2, coords)
+
+
+def get_boundary_condition_dict():
+    """Returns a dictionary of all of the available potential functions
+    """
+
+    bc_dict = {'cosine_potential': cosine_potential_bc,
+               'two_gaussian_potential': two_gaussian_potential_bc,
+               'pv_2D_potential': pv_2D_potential_bc}
+
+    return bc_dict

@@ -15,7 +15,7 @@ import pdb
 import math
 import os
 
-from potential_functions import get_potential_dict
+from potential_functions import get_potential_dict, get_boundary_condition_dict
 
 
 def get_parameters(input_file):
@@ -270,12 +270,16 @@ def integrate_step(coords, history, w,  delta, DT, potfunc, p0, m, dt,
                       new coordinates
 
     """
-    if dimension == '1-D Potential':
-        pot_dict = get_potential_dict()
-        force = pot_dict[potfunc]
 
-        c1 = np.exp(-gamma * dt / 2)  # (Eq.13a)
-        c2 = np.sqrt((1 - c1**2) * m / beta)  # (Eq.13b)
+    pot_dict = get_potential_dict()
+    force = pot_dict[potfunc]
+
+    bc_dict = get_boundary_condition_dict()
+    apply_bc = bc_dict[potfunc]
+    c1 = np.exp(-gamma * dt / 2)  # (Eq.13a)
+    c2 = np.sqrt((1 - c1**2) * m / beta)  # (Eq.13b)
+
+    if dimension == '1-D Potential':
 
         f = force(coords)[1]
         fbiased = calc_biased_force(coords, history, w, delta, f, dimension)
@@ -284,9 +288,10 @@ def integrate_step(coords, history, w,  delta, DT, potfunc, p0, m, dt,
         R2 = sp.rand(1) - 0.5
 
         pplus = c1*p0 + c2*R1
-        newcoords = coords + (pplus/m) * dt + fbiased/m * ((dt**2) / 2)
+        newcoords = (coords + (pplus/m) * dt + fbiased/m * ((dt**2) / 2))[0]
 
-        f2 = force(newcoords)[1]
+        [vnew, f2, _] = force(newcoords)
+        [vnew, f2, newcoords] = apply_bc(vnew, f2, newcoords)
         f2biased = calc_biased_force(newcoords, history, w, delta, f2,
                                      dimension)
 
@@ -294,12 +299,6 @@ def integrate_step(coords, history, w,  delta, DT, potfunc, p0, m, dt,
         pnew = c1*pminus + c2*R2
 
     else:
-        pot_dict = get_potential_dict()
-        force = pot_dict[potfunc]
-
-        c1 = np.exp(-gamma * dt / 2)  # (Eq.13a)
-        c2 = np.sqrt((1 - c1**2) * m / beta)  # (Eq.13b)
-
         f = force(coords[0], coords[1])[1]
         [fbiasedx, fbiasedy] = calc_biased_force(coords, history,
                                                  w, delta, f, dimension)
@@ -310,14 +309,17 @@ def integrate_step(coords, history, w,  delta, DT, potfunc, p0, m, dt,
 
         # x direction
         pplusx = c1*p0[0] + c2*R1x
-        newcoordx = coords[0] + (pplusx/m) * dt + fbiasedx/m * ((dt**2) / 2)
+        newcoordx = (coords[0] +
+                     (pplusx/m) * dt + fbiasedx/m * ((dt**2) / 2))[0]
 
         # y direction
         pplusy = c1*p0[1] + c2*R1y
-        newcoordy = coords[1] + (pplusy/m) * dt + fbiasedy/m * ((dt**2) / 2)
+        newcoordy = (coords[1] +
+                     (pplusy/m) * dt + fbiasedy/m * ((dt**2) / 2))[0]
 
-        f2 = force(newcoordx, newcoordy)[1]
-        newcoords = np.append(newcoordx, newcoordy)
+        [vnew, f2, _] = force(newcoordx, newcoordy)
+        newcoords = np.array([newcoordx, newcoordy])
+        [vnew, f2, newcoords] = apply_bc(vnew, f2, newcoords)
         [f2biasedx, f2biasedy] = calc_biased_force(newcoords, history, w,
                                                    delta, f2, dimension)
 
@@ -329,7 +331,7 @@ def integrate_step(coords, history, w,  delta, DT, potfunc, p0, m, dt,
 
         pnew = np.array([pnewx, pnewy])
 
-    return (pnew, newcoords)
+    return (pnew, vnew, newcoords)
 
 
 def recreate_1DFES(FES, icount, coord, xinc, xmin, xmax, E):
@@ -553,6 +555,9 @@ def simulate_2Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
     pot_dict = get_potential_dict()
     force = pot_dict[potfunc]
 
+    bc_dict = get_boundary_condition_dict()
+    apply_bc = bc_dict[potfunc]
+
     baseline = force(xlong, ylong)
     iv = force(x0, y0)[0]
     pot_base = baseline[0]
@@ -633,9 +638,9 @@ def simulate_2Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
                                                            coords[i, 1]])))
                     w = np.append(w, winit * np.exp(-VR / (1.987E-3*DT)))
 
-        [pnew, newcoord] = integrate_step(coords[i], history, w,  delta, DT,
-                                          potfunc, p, m, dt, gamma, beta,
-                                          dimension)
+        [pnew, vnew, newcoord] = integrate_step(coords[i], history, w,  delta,
+                                                DT, potfunc, p, m, dt, gamma,
+                                                beta, dimension)
         p = pnew
 
         coords[i+1, 0] = newcoord[0]
@@ -811,6 +816,9 @@ def simulate_1Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
     pot_dict = get_potential_dict()
     force = pot_dict[potfunc]
 
+    bc_dict = get_boundary_condition_dict()
+    apply_bc = bc_dict[potfunc]
+
     baseline = force(xlong)
     iv = force(x0)[0]
     pot_base = baseline[0]
@@ -865,7 +873,7 @@ def simulate_1Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
                 w[0] = winit
             else:
                 if method == 'Metadynamics':
-                    history = np.append(s, q[i])
+                    history = np.append(s, coords[i])
                     w = np.append(w, winit)
                 elif (method == 'Well-Tempered Metadynamics' or
                         method == "Infrequent WT MetaD"):
@@ -873,13 +881,12 @@ def simulate_1Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
                                          dimension)
                     history = np.append(history, coords[i])
                     w = np.append(w, winit * np.exp(-VR / (1.987E-3*DT)))
-        [pnew, newcoord] = integrate_step(coords[i], history, w,  delta, DT,
-                                          potfunc, p, m, dt, gamma, beta,
-                                          dimension)
+        [pnew, vnew, newcoord] = integrate_step(coords[i], history, w,  delta,
+                                                DT, potfunc, p, m, dt, gamma,
+                                                beta, dimension)
         p = pnew
 
         coords[i+1] = newcoord
-        vnew = force(coords[i+1])[0]
         E[i+1] = 0.5 * p**2 + vnew
 
         time = np.append(time, dt*(i+1))
