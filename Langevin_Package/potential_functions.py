@@ -1,6 +1,8 @@
 """This file contains the various potential functions we have defined"""
 
 import numpy as np
+import math
+import pdb
 
 
 def cosine_potential(coords):
@@ -84,14 +86,17 @@ def two_gaussian_potential(coords):
     return (V, F, Trigger)
 
 
-def pratyush_voter_2D_potential(coords):
+def pv_2D_potential(x, y):
     """
         Calculate the force and potential based on location (2-D).
         Parameters:
         -----------
 
-        coords  :  array of floats
-                   X and Y coordinates
+        x       : array of floats
+                  X coordinates
+
+        y       : array of floats
+                  Y coordinates
 
         Returns:
         --------
@@ -106,12 +111,10 @@ def pratyush_voter_2D_potential(coords):
                   Force in the y direction
 
     """
-    x = coords[0]
-    y = coords[1]
-    sx = history[0]
-    sy = history[1]
+
     if type(x) is not np.float64:
-        V = np.empty([y.size, x.size])
+
+        V = np.zeros([y.size, x.size])
         Fx = np.empty([y.size, x.size])
         Fy = np.empty([y.size, x.size])
         for k in range(0, y.size - 1):
@@ -121,30 +124,24 @@ def pratyush_voter_2D_potential(coords):
                 Fx = (((2*math.pi/3*0.75)*np.sin(2*math.pi*x[j]/3) -
                       2*math.pi*(1+4*y[k])*np.sin(2*math.pi*x[j])))
                 Fy = ((2*math.pi*y[k]+4*np.cos(2*math.pi*x[j])))
-                Fpotx = Fx * -1
-                Fpoty = Fy * -1
+        Fpotx = Fx * -1
+        Fpoty = Fy * -1
+        Trigger = False
 
-    elif type(x) is np.float64:
-
+    else:
         V = (np.cos(2*math.pi*x)*(1+4*y) + math.pi*y**2 -
              0.75*np.cos(2*math.pi*x/3))
         Fpotx = (((2*math.pi/3*0.75)*np.sin(2*math.pi*x/3) -
                  2*math.pi*(1+4*y)*np.sin(2*math.pi*x)))*-1
         Fpoty = ((2*math.pi*y+4*np.cos(2*math.pi*x)))*-1
 
-        # len2 = sx.size - 1
-        # VR = sum(w*np.exp(-(x-sx)**2/2/delta**2) *
-        #          np.exp(-(y-sy)**2/2/delta**2))
-        # w[len2] = winit*np.exp(-VR/(1.987E-3*DT))
-        #
-        # Fbiasx = sum(w*((x-sx)/delta**2) * np.exp(-(x-sx)**2/2/delta**2) *
-        #              np.exp(-(y-sy)**2/2/delta**2))
-        # Fbiasy = sum(w*((y-sy)/delta**2) * np.exp(-(x-sx)**2/2/delta**2) *
-        #              np.exp(-(y-sy)**2/2/delta**2))
-        # Fpotx = Fx*-1+Fbiasx
-        # Fpoty = Fy*-1+Fbiasy
+        if x < 0.75 and y > 0 or x > 2.25 and y > 0:
+            Trigger = True
+        else:
+            Trigger = False
+    Fpot = np.array([Fpotx, Fpoty])
 
-    return (V, Fpotx, Fpoty)
+    return (V, Fpot, Trigger)
 
 
 def get_potential_dict():
@@ -153,7 +150,6 @@ def get_potential_dict():
 
     potential_dict = {'cosine_potential': cosine_potential,
                       'two_gaussian_potential': two_gaussian_potential,
-                      'pratyush_voter_2D_potential':
-                      pratyush_voter_2D_potential}
+                      'pv_2D_potential': pv_2D_potential}
 
     return potential_dict
