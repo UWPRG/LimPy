@@ -10,7 +10,7 @@ vnew = 0.5
 f2 = 1.0
 
 
-class TestPotentialFunctions(unittest.TestCase):
+class TestCosinePotentialFunctions(unittest.TestCase):
     """Tests for the various potential functions"""
 
     def test_cosine_correct_force(self):

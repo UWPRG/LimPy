@@ -280,10 +280,17 @@ def integrate_step(coords, history, w,  delta, DT, potfunc, p0, m, dt,
     """
 
     pot_dict = get_potential_dict()
-    force = pot_dict[potfunc]
+    try:
+        force = pot_dict[potfunc]
+    except KeyError:
+        print 'That potential function has not been loaded into the dictionary'
 
     bc_dict = get_boundary_condition_dict()
-    apply_bc = bc_dict[potfunc]
+    try:
+        apply_bc = bc_dict[potfunc]
+    except KeyError:
+        print 'That boundary condition has not been loaded into the dictionary'
+
     c1 = np.exp(-gamma * dt / 2)  # (Eq.13a)
     c2 = np.sqrt((1 - c1**2) * m / beta)  # (Eq.13b)
 
@@ -584,11 +591,16 @@ def simulate_2Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
     walkerpot = np.array([0.0])
 
     pot_dict = get_potential_dict()
-    force = pot_dict[potfunc]
+    try:
+        force = pot_dict[potfunc]
+    except KeyError:
+        print 'That potential function has not been loaded into the dictionary'
 
     bc_dict = get_boundary_condition_dict()
-    apply_bc = bc_dict[potfunc]
-
+    try:
+        apply_bc = bc_dict[potfunc]
+    except KeyError:
+        print 'That boundary condition has not been loaded into the dictionary'
     baseline = force(xlong, ylong)
     iv = force(x0, y0)[0]
     pot_base = baseline[0]
@@ -850,11 +862,20 @@ def simulate_1Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
 
     time = np.array([0.0])
     walkerpot = np.array([0.0])
+
     pot_dict = get_potential_dict()
-    force = pot_dict[potfunc]
+
+    try:
+        force = pot_dict[potfunc]
+    except KeyError:
+        print 'That potential function has not been loaded into the dictionary'
 
     bc_dict = get_boundary_condition_dict()
-    apply_bc = bc_dict[potfunc]
+
+    try:
+        apply_bc = bc_dict[potfunc]
+    except KeyError:
+        print 'That potential function has not been loaded into the dictionary'
 
     baseline = force(xlong)
     iv = force(x0)[0]

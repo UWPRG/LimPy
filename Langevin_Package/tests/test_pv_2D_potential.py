@@ -12,7 +12,7 @@ vnew = 0.5
 f2 = np.array([1.0, 1.0])
 
 
-class TestPotentialFunctions(unittest.TestCase):
+class TestPVPotentialFunctions(unittest.TestCase):
     """Tests for the various potential functions"""
 
     def test_pv_2D_potential_correct_force(self):

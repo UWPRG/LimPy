@@ -1,2 +1,0 @@
-Dimension,Method,Potential_Function,Boundary_Condition,Plotting,Steps,Step size,Temperature,Mass,X0,Xmin,Xmax,Xincrement,Y0,Ymin,Ymax,Yincrement,Gaussian Height,Gaussian Width,Deposition Frequency,Well Temperature,Trials,Data Filename,Gamma
-1-D Potential,Well-Tempered Metadynamics,two_gaussian_potential,two_gaussian_potential_bc,True,300000,.01,300,1,2.666,-4,4,0.01,0.5,-2,2,0.01,.25,.1,250,10000,100,25stride1DA,5.0
