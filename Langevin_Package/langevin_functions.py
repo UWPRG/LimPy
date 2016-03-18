@@ -59,7 +59,9 @@ def get_parameters(input_file):
 
     inputsfile = input_file
     inputs = pd.read_csv(inputsfile+'.csv')
-
+    inputs.index = inputs['Parameter']
+    inputs = inputs.transpose()
+    inputs = inputs.ix[1:]
     dimension = str(inputs['Dimension'][0])
     method = str(inputs['Method'][0])
     filetitle = str(inputs['Data Filename'][0])
@@ -266,8 +268,14 @@ def integrate_step(coords, history, w,  delta, DT, potfunc, p0, m, dt,
         pnew        : float
                       new momentum
 
+        vnew        : float
+                      new potential energy
+
         new_coords  : float
                       new coordinates
+
+        bcbias      : float
+                      bias from boundary condition
 
     """
 
@@ -291,10 +299,9 @@ def integrate_step(coords, history, w,  delta, DT, potfunc, p0, m, dt,
         newcoords = (coords + (pplus/m) * dt + fbiased/m * ((dt**2) / 2))[0]
 
         [vnew, f2, _] = force(newcoords)
-        [vnew, f2, newcoords] = apply_bc(vnew, f2, newcoords)
+        [vnew, f2, newcoords, bcbias] = apply_bc(vnew, f2, newcoords)
         f2biased = calc_biased_force(newcoords, history, w, delta, f2,
                                      dimension)
-
         pminus = pplus + (fbiased/2 + f2biased/2)*dt
         pnew = c1*pminus + c2*R2
 
@@ -319,7 +326,7 @@ def integrate_step(coords, history, w,  delta, DT, potfunc, p0, m, dt,
 
         [vnew, f2, _] = force(newcoordx, newcoordy)
         newcoords = np.array([newcoordx, newcoordy])
-        [vnew, f2, newcoords] = apply_bc(vnew, f2, newcoords)
+        [vnew, f2, newcoords, bcbias] = apply_bc(vnew, f2, newcoords)
         [f2biasedx, f2biasedy] = calc_biased_force(newcoords, history, w,
                                                    delta, f2, dimension)
 
@@ -331,7 +338,7 @@ def integrate_step(coords, history, w,  delta, DT, potfunc, p0, m, dt,
 
         pnew = np.array([pnewx, pnewy])
 
-    return (pnew, vnew, newcoords)
+    return (pnew, vnew, newcoords, bcbias)
 
 
 def recreate_1DFES(FES, icount, coord, xinc, xmin, xmax, E):
@@ -359,6 +366,15 @@ def recreate_1DFES(FES, icount, coord, xinc, xmin, xmax, E):
 
             E       : float
                       Energy value to be stored
+
+        Returns:
+        --------
+            FES     : Array of floats
+                      Energy values corresponding to x location on x dimension
+                      (updated)
+
+            icount  : Array of integers
+                      Number of counts sampled at each location (updated)
 
     """
     index = int(round((round(coord, int(abs(math.log10(xinc)))) +
@@ -406,6 +422,14 @@ def recreate_2DFES(FES, icount, coords, xinc, xmin, xmax, yinc, ymin, ymax, E):
             E       : float
                       Energy value to be stored
 
+        Returns:
+        --------
+            FES     : Array of floats
+                      Energy values corresponding to x location on x dimension
+                      (updated)
+
+            icount  : Array of integers
+                      Number of counts sampled at each location (updated)
     """
     xindex = int(round((round(coords[0],
                         int(abs(math.log10(xinc)))) +
@@ -438,6 +462,11 @@ def calc_rmsd(FES, beta, baseline):
 
             baseline : Array of floats
                        Underlying potential saved as a grid
+
+        Returns:
+        --------
+            rmsds    : Array of floats
+                       Holds RMSDs of calculated FES and actual FES
     """
 
     rmsd = np.sqrt(np.sum((((FES-baseline)) * beta)**2) / FES.shape[0])
@@ -448,7 +477,9 @@ def calc_rmsd(FES, beta, baseline):
     rmsalignerr = np.sqrt(np.sum(np.power(((FES-FES.mean()) -
                           (baseline-baseline.mean()))*beta, 2)) /
                           np.size(baseline))
-    return np.array([rmsd, rmskld, rmsalignerr])
+    rmsds = np.array([rmsd, rmskld, rmsalignerr])
+
+    return rmsds
 
 
 def simulate_2Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
@@ -638,9 +669,10 @@ def simulate_2Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
                                                            coords[i, 1]])))
                     w = np.append(w, winit * np.exp(-VR / (1.987E-3*DT)))
 
-        [pnew, vnew, newcoord] = integrate_step(coords[i], history, w,  delta,
-                                                DT, potfunc, p, m, dt, gamma,
-                                                beta, dimension)
+        [pnew, vnew, newcoord, bcbias] = integrate_step(coords[i], history, w,
+                                                        delta, DT, potfunc, p,
+                                                        m, dt, gamma, beta,
+                                                        dimension)
         p = pnew
 
         coords[i+1, 0] = newcoord[0]
@@ -652,9 +684,10 @@ def simulate_2Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
         time = np.append(time, dt*(i+1))
 
         walkerpot = np.append(walkerpot,
-                              calc_biased_pot(np.array([coords[i+1, 0],
-                                                       coords[i+1, 1]]),
-                                              history, w, delta, dimension))
+                              (calc_biased_pot(np.array([coords[i+1, 0],
+                                                        coords[i+1, 1]]),
+                                               history, w, delta, dimension) +
+                               bcbias))
         if method != "Infrequent WT MetaD":
             [FES, icount] = recreate_2DFES(FES, icount,
                                            np.array([coords[i+1, 0],
@@ -812,7 +845,6 @@ def simulate_1Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
 
     time = np.array([0.0])
     walkerpot = np.array([0.0])
-
     pot_dict = get_potential_dict()
     force = pot_dict[potfunc]
 
@@ -881,9 +913,11 @@ def simulate_1Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
                                          dimension)
                     history = np.append(history, coords[i])
                     w = np.append(w, winit * np.exp(-VR / (1.987E-3*DT)))
-        [pnew, vnew, newcoord] = integrate_step(coords[i], history, w,  delta,
-                                                DT, potfunc, p, m, dt, gamma,
-                                                beta, dimension)
+
+        [pnew, vnew, newcoord, bcbias] = integrate_step(coords[i], history, w,
+                                                        delta, DT, potfunc, p,
+                                                        m, dt, gamma, beta,
+                                                        dimension)
         p = pnew
 
         coords[i+1] = newcoord
@@ -892,7 +926,8 @@ def simulate_1Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
         time = np.append(time, dt*(i+1))
 
         walkerpot = np.append(walkerpot, calc_biased_pot(coords[i+1], history,
-                                                         w, delta, dimension))
+                                                         w, delta, dimension) +
+                              bcbias)
         if method != "Infrequent WT MetaD":
             [FES, icount] = recreate_1DFES(FES, icount, coords[i+1],
                                            xinc, xmin, xmax, E[i+1])
@@ -924,4 +959,4 @@ def simulate_1Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
         teff = 0
         info = info + 'NO RARE EVENT'
         totaltime = 0
-        return (coords, E, teff, totaltime, info)
+        return (totaltime, teff, info)

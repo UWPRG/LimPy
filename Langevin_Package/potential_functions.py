@@ -61,6 +61,8 @@ def two_gaussian_potential(coords):
         F       : float (or array of floats)
                   Force
 
+        Trigger : Boolean
+                  Has rare event occurred (True) or not (False)
     """
     V = (-5 * np.exp(-(coords - 2/0.75)**2) -
          10*np.exp(-(coords + 2/0.75)**2))
@@ -94,12 +96,11 @@ def pv_2D_potential(x, y):
         V       : float (or array of floats)
                   Potential Energy
 
-        Fpotx   : float (or array of floats)
-                  Force in the x direction
+        Fpot    : float (or array of floats)
+                  Force in x and y direction
 
-        Fpoty   : float (or array of floats)
-                  Force in the y direction
-
+        Trigger : Boolean
+                  Has rare event occurred (True) or not (False)
     """
 
     if type(x) is not np.float64:
@@ -148,22 +149,76 @@ def get_potential_dict():
 
 def two_gaussian_potential_bc(vnew, f2, coords):
     """Applies Boundary Condition to the potential, force, and coordinates
+
+        Parameters:
+        -----------
+        vnew       : float (or array of floats)
+                     Potential Energy
+
+        f2         : float (or array of floats)
+                     Force
+
+        coords     : float
+                     coordinates
+
+        Returns:
+        --------
+
+        vnew       : float (or array of floats)
+                     Adjusted potential energy from boundary condition
+
+        F          : float (or array of floats)
+                     Adjusted force from boundary condition
+
+        coords     : float
+                     adjusted coordinates from boundary condition
+
+        bcbias     : float
+                     bias applied strictly from the boundary condition
     """
+    vold = vnew
+    bcbias = 0
+    if (coords < -4.3193):
 
-    if (coords < -4.0):
-        vnew = 100.0 * (coords+4.0)**4.0
+        vnew = 100.0 * (coords+4.0)**4.0 - 1.690133
         f2 = -100.0 * 4.0 * (coords+4.0)**3.0
+        bcbias = vnew - vold
+    elif (coords > 4.25882):
 
-    elif (coords > 4.0):
-
-        vnew = 100.0 * (coords-4.0)**4.0
+        vnew = 100.0 * (coords-4.0)**4.0 - 0.845067
         f2 = -100.0 * 4.0 * (coords-4.0)**3.0
-
-    return (vnew, f2, coords)
+        bcbias = vnew - vold
+    return (vnew, f2, coords, bcbias)
 
 
 def pv_2D_potential_bc(vnew, f2, coords):
     """Applies Boundary Condition to the potential, force, and coordinates
+
+        Parameters:
+        -----------
+        vnew       : float (or array of floats)
+                     Potential Energy
+
+        f2         : float (or array of floats)
+                     Force
+
+        coords     : float
+                     coordinates
+
+        Returns:
+        --------
+
+        vnew       : float (or array of floats)
+                     Adjusted potential energy from boundary condition
+
+        F          : float (or array of floats)
+                     Adjusted force from boundary condition
+
+        coords     : float
+                     adjusted coordinates from boundary condition
+
+        bcbias     : float
+                     bias applied strictly from the boundary condition
     """
 
     if (coords[0] < 0):
@@ -171,21 +226,47 @@ def pv_2D_potential_bc(vnew, f2, coords):
 
     elif (coords[0] > 3.0):
         coords[0] = coords[0] - 3
-
-    return (vnew, f2, coords)
+    bcbias = 0
+    return (vnew, f2, coords, bcbias)
 
 
 def cosine_potential_bc(vnew, f2, coords):
     """Applies Boundary Condition to the potential, force, and coordinates
+
+        Parameters:
+        -----------
+        vnew       : float (or array of floats)
+                     Potential Energy
+
+        f2         : float (or array of floats)
+                     Force
+
+        coords     : float
+                     coordinates
+
+        Returns:
+        --------
+
+        vnew       : float (or array of floats)
+                     Adjusted potential energy from boundary condition
+
+        F          : float (or array of floats)
+                     Adjusted force from boundary condition
+
+        coords     : float
+                     adjusted coordinates from boundary condition
+
+        bcbias     : float
+                     bias applied strictly from the boundary condition
     """
 
     if (coords < 0):
-        coords = coords + 2*np,pi
+        coords = coords + 2*np.pi
 
     elif (coords > 2*np.pi):
         coords = coords - 2*np.pi
-
-    return (vnew, f2, coords)
+    bcbias = 0
+    return (vnew, f2, coords, bcbias)
 
 
 def get_boundary_condition_dict():
