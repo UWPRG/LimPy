@@ -3,7 +3,6 @@
 import numpy as np
 import math
 import pdb
-import langevin_functions
 
 
 def cosine_potential(coords):
@@ -103,7 +102,7 @@ def pv_2D_potential(x, y):
                   Has rare event occurred (True) or not (False)
     """
 
-    if type(x) is not np.float64:
+    if hasattr(x, "__len__") is True:
 
         V = np.zeros([y.size, x.size])
         Fx = np.empty([y.size, x.size])
@@ -269,11 +268,13 @@ def two_gaussian_potential_bc(vnew, f2, coords):
         vnew = 100.0 * (coords+4.0)**4.0 - 1.690133
         f2 = -100.0 * 4.0 * (coords+4.0)**3.0
         bcbias = vnew - vold
+
     elif (coords > 4.25882):
 
         vnew = 100.0 * (coords-4.0)**4.0 - 0.845067
         f2 = -100.0 * 4.0 * (coords-4.0)**3.0
         bcbias = vnew - vold
+
     return (vnew, f2, coords, bcbias)
 
 
