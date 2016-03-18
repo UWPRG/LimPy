@@ -713,19 +713,24 @@ def simulate_2Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
             plt.colorbar(cset2)
             plt.scatter(coords[i+1, 0], coords[i+1, 1], marker='o',
                         color='r', zorder=10)
+            plt.xlabel("CV1")
+            plt.ylabel("CV2")
             plt.subplot(222)
             cset3 = plt.contourf(xlong, ylong, bias, levels,
                                  cmap=plt.cm.get_cmap(cmap, levels.size - 1))
             plt.colorbar(cset3)
             plt.scatter(coords[i+1, 0], coords[i+1, 1], marker='o',
                         color='r', zorder=10)
+            plt.xlabel("CV1")
+            plt.ylabel("CV2")
             plt.subplot(223)
             cset4 = plt.contourf(xlong, ylong, bias-pot_base, levels,
                                  cmap=plt.cm.get_cmap(cmap, levels.size - 1))
             plt.colorbar(cset4)
             plt.scatter(coords[i+1, 0], coords[i+1, 1], marker='o',
                         color='r', zorder=10)
-
+            plt.xlabel("CV1")
+            plt.ylabel("CV2")
             plt.draw()
             plt.pause(0.0001)
         i = i + 1
