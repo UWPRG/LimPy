@@ -50,28 +50,29 @@ while checkprogress < trials+1:
                 writer.writerow(['RMSD', 'RMSDkld', 'RMSD alignerr'])
                 writer.writerow([trial[2]])
         break
-with open(filetitle + '_info.csv', "ab") as f:
-            writer = csv.writer(f)
-            writer.writerow([trial[-1]])
+if os.path.isfile('bootstrapped.csv') is False:
+    with open(filetitle + '_info.csv', "ab") as f:
+                writer = csv.writer(f)
+                writer.writerow([trial[-1]])
 
 if method == 'Infrequent WT MetaD':
     ks_results = perform_ks_analysis(filetitle + '_Allevents.csv')
     monitor = 0
-    if os.path.isfile('boostrapped.csv') is False:
-        with open('boostrapped.csv', "ab") as f:
+    if os.path.isfile('bootstrapped.csv') is False:
+        with open('bootstrapped.csv', "ab") as f:
                 writer = csv.writer(f)
                 writer = writer.writerow(['Means', 'Pvals', 'Rejected'])
     while monitor <= 1000:
         (means, pvals, reject) = sampling(filetitle + '_Allevents.csv', 1000,
                                           round(trials/2))
-        with open('boostrapped.csv', "ab") as f:
+        with open('bootstrapped.csv', "ab") as f:
                 writer = csv.writer(f)
                 writer.writerow([means, pvals, reject])
-        checkprogress = pd.read_csv('boostrapped.csv')
+        checkprogress = pd.read_csv('bootstrapped.csv')
         checkaccept = checkprogress[checkprogress['Rejected'] == False]
         monitor = len(checkaccept)
 
-    finisheddata = pd.read_csv('boostrapped.csv')
+    finisheddata = pd.read_csv('bootstrapped.csv')
     validdata = finisheddata[finisheddata['Rejected'] == False]
     rejectedtrials = (len(finisheddata) - len(validdata))
     if os.path.isfile(filetitle + '_statistics.csv') is False:
@@ -83,5 +84,3 @@ if method == 'Infrequent WT MetaD':
                                  validdata['Pvals'].mean(),
                                  rejectedtrials])
                 writer.writerow([ks_results])
-    if os.path.isfile('boostrapped.csv') is True:
-        os.remove('boostrapped.csv')
