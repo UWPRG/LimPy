@@ -1,5 +1,6 @@
 import langevin_functions as lf
 import potential_functions as pf
+from statistical_functions import perform_ks_analysis, sampling
 import sys
 import numpy as np
 import pandas as pd
@@ -51,3 +52,15 @@ while checkprogress < trials+1:
 with open(filetitle + '_info.csv', "ab") as f:
             writer = csv.writer(f)
             writer.writerow([trial[-1]])
+
+if method == 'Infrequent WT MetaD':
+    ks_results = perform_ks_analysis(filetitle + '_Allevents.csv')
+    boot_strapped = sampling(filetitle + '_Allevents.csv', 1000,
+                             round(trials/2))
+
+    with open(filetitle + '_statistics.csv', "ab") as f:
+            writer = csv.writer(f)
+            writer.writerow(['Mean Escape Time', 'Mean p-value',
+                             '# Trial Rejected'])
+            writer.writerow([boot_strapped])
+            writer.writerow([ks_results])

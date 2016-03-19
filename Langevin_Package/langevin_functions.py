@@ -58,7 +58,7 @@ def get_parameters(input_file):
     """
 
     inputsfile = input_file
-    inputs = pd.read_csv(inputsfile+'.csv')
+    inputs = pd.read_csv(inputsfile)
     inputs.index = inputs['Parameter']
     inputs = inputs.transpose()
     inputs = inputs.ix[1:]
