@@ -61,6 +61,6 @@ if method == 'Infrequent WT MetaD':
     with open(filetitle + '_statistics.csv', "ab") as f:
             writer = csv.writer(f)
             writer.writerow(['Mean Escape Time', 'Mean p-value',
-                             '# Trial Rejected'])
+                             '# of Trials Rejected'])
             writer.writerow([boot_strapped])
             writer.writerow([ks_results])
