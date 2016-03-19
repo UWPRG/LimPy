@@ -72,39 +72,39 @@ def sampling(filename, num_iters, sampsize):
     # sampsize = 100
     datain = np.genfromtxt(filename, delimiter=",")
     data = datain[:, 1]
-    means = np.array([0.0])
-    pvals = np.array([0.0])
+    means = 0.0
+    pvals = 0.0
     points = 1e4  # number of sampling points for p-val
     alpha = 0.05
-    reject = 0.0
     # for i in range((num_iters)):
-    while np.size(means) <= num_iters:
-        smalldata = np.random.choice(data, sampsize, replace=True)
-        # hist / CDF fit / etc
-        min = np.min(smalldata)
-        max = np.max(smalldata)
-        bins = 10*np.size(smalldata)
-        time = np.logspace(np.log10(min), np.log10(max), num=bins)
-        mu = np.mean(smalldata)
-        time_centers = np.r_[0.5 * (time[:-1] + time[1:])]
-        hist, bins2 = np.histogram(smalldata, bins=time, density=False)
-        cdf = np.cumsum(hist)*1.0/smalldata.size
-        taufit, pcov = curve_fit(analyticalCDF, time_centers, cdf, mu)
-        # analysis
-        randdata = np.random.gamma(1, taufit, np.size(smalldata)*points)
-        stat, p = ks_2samp(smalldata, randdata)
-        if p > alpha:
-            means[means.size-1] = mu
-            pvals[pvals.size-1] = p
-            # debugprint p, mu
-            means.resize(means.size+1)
-            pvals.resize(pvals.size+1)
-        if p < alpha:
-            reject = reject+1
+    # while np.size(means) <= num_iters:
+    smalldata = np.random.choice(data, sampsize, replace=True)
+    # hist / CDF fit / etc
+    min = np.min(smalldata)
+    max = np.max(smalldata)
+    bins = 10*np.size(smalldata)
+    time = np.logspace(np.log10(min), np.log10(max), num=bins)
+    mu = np.mean(smalldata)
+    time_centers = np.r_[0.5 * (time[:-1] + time[1:])]
+    hist, bins2 = np.histogram(smalldata, bins=time, density=False)
+    cdf = np.cumsum(hist)*1.0/smalldata.size
+    taufit, pcov = curve_fit(analyticalCDF, time_centers, cdf, mu)
+    # analysis
+    randdata = np.random.gamma(1, taufit, np.size(smalldata)*points)
+    stat, p = ks_2samp(smalldata, randdata)
+    if p > alpha:
+        means = mu
+        pvals = p
+        reject = False
+        # debugprint p, mu
+        # means.resize(means.size+1)
+        # pvals.resize(pvals.size+1)
+    if p < alpha:
+        reject = True
     # this is just book keeping to remove the last 0 element
-    means = means[:(means.size-1)]
-    pvals = pvals[:(pvals.size-1)]
-    return np.mean(means), np.mean(pvals), reject
+    # means = means[:(means.size-1)]
+    # pvals = pvals[:(pvals.size-1)]
+    return means, pvals, reject
 
 
 def analyticalCDF(times, tau):

@@ -2,6 +2,7 @@ import langevin_functions as lf
 import potential_functions as pf
 from statistical_functions import perform_ks_analysis, sampling
 import sys
+import os
 import numpy as np
 import pandas as pd
 import csv
@@ -55,12 +56,32 @@ with open(filetitle + '_info.csv', "ab") as f:
 
 if method == 'Infrequent WT MetaD':
     ks_results = perform_ks_analysis(filetitle + '_Allevents.csv')
-    boot_strapped = sampling(filetitle + '_Allevents.csv', 1000,
-                             round(trials/2))
+    monitor = 0
+    if os.path.isfile('boostrapped.csv') is False:
+        with open('boostrapped.csv', "ab") as f:
+                writer = csv.writer(f)
+                writer = writer.writerow(['Means', 'Pvals', 'Rejected'])
+    while monitor <= 1000:
+        (means, pvals, reject) = sampling(filetitle + '_Allevents.csv', 1000,
+                                          round(trials/2))
+        with open('boostrapped.csv', "ab") as f:
+                writer = csv.writer(f)
+                writer.writerow([means, pvals, reject])
+        checkprogress = pd.read_csv('boostrapped.csv')
+        checkaccept = checkprogress[checkprogress['Rejected'] == False]
+        monitor = len(checkaccept)
 
-    with open(filetitle + '_statistics.csv', "ab") as f:
-            writer = csv.writer(f)
-            writer.writerow(['Mean Escape Time', 'Mean p-value',
-                             '# of Trials Rejected'])
-            writer.writerow([boot_strapped])
-            writer.writerow([ks_results])
+    finisheddata = pd.read_csv('boostrapped.csv')
+    validdata = finisheddata[finisheddata['Rejected'] == False]
+    rejectedtrials = (len(finisheddata) - len(validdata))
+    if os.path.isfile(filetitle + '_statistics.csv') is False:
+        with open(filetitle + '_statistics.csv', "ab") as f:
+                writer = csv.writer(f)
+                writer.writerow(['Bootstrapped: Mean Escape Time',
+                                 'Mean p-value', '# of Trials Rejected'])
+                writer.writerow([validdata['Means'].mean(),
+                                 validdata['Pvals'].mean(),
+                                 rejectedtrials])
+                writer.writerow([ks_results])
+    if os.path.isfile('boostrapped.csv') is True:
+        os.remove('boostrapped.csv')
