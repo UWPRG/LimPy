@@ -50,7 +50,7 @@ while checkprogress < trials+1:
                 writer.writerow(['RMSD', 'RMSDkld', 'RMSD alignerr'])
                 writer.writerow([trial[2]])
         break
-if os.path.isfile('bootstrapped.csv') is False:
+if os.path.isfile(filetitle + '_info.csv') is False:
     with open(filetitle + '_info.csv', "ab") as f:
                 writer = csv.writer(f)
                 writer.writerow([trial[-1]])
