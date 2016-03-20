@@ -58,7 +58,7 @@ def get_parameters(input_file):
     """
 
     inputsfile = input_file
-    inputs = pd.read_csv(inputsfile)
+    inputs = pd.read_csv(inputsfile, comment='#')
     inputs.index = inputs['Parameter']
     inputs = inputs.transpose()
     inputs = inputs.ix[1:]
@@ -957,7 +957,7 @@ def simulate_1Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
         if method != "Infrequent WT MetaD":
             [FES, icount] = recreate_1DFES(FES, icount, coords[i+1],
                                            xinc, xmin, xmax, E[i+1])
-        if makeplot == 'True' and sp.mod(i, 1000) == 0:
+        if makeplot == 'True' and sp.mod(i, 10000) == 0:
             bias = np.copy(pot_base)
             for xc in range(0, xlong.size):
                 bias[xc] = bias[xc] + calc_biased_pot(xlong[xc], history,
