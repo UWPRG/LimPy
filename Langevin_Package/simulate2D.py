@@ -1,65 +1,65 @@
+"""Simulate a 1D system."""
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy as sp
-import pandas as pd
-import pdb
-import math
-import os
 
-from potential_functions import get_potential_dict, get_boundary_condition_dict
+import math
+
+
+from potential_functions import get_potential_dict
 import langevin_functions as lf
 
 
 def simulate_2Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
                       makeplot):
-    """Simulates a walker in a 1D potential
-
-        Parameters:
-        -----------
-            inps       : Numpy Array
-                         Input parameters for intializing system
-                         (Steps, step size, X0, Temp, Mass, X min, X max,
-                         X increment, Y0,Y min, Y max, Y increment, Gamma)
-
-            mdps       : Numpy Array
-                         Metadynamics Parameters
-                         (Gaussian Height, Gaussian Width, Deposition
-                         Frequency (step), Well Temperature, Trials)
-
-            dimension  : string
-                         Dimensionality of system ('1-D Potential' or
-                         '2-D Potential')
-
-            method     : string
-                         Defines the sampling method (Molecular Dynamics,
-                         Metadyamics, Well-Tempered Metadynamics, or
-                         Infrequent WT MetaD)
-
-            potfunc    : string
-                         Defines the potential function to integrate
-
-            filetitle  :  string
-                        Name of files for output
-
-            makeplot   : Boolean
-                         If True, make plots, else don't make plots
-        Returns:
-        --------
-            sim_time   : float
-                         Simulation time
-
-            teff       : float
-                         Effective time from bias
-
-            info       : string
-                         Simulation information
-            rmsds      : array of floats
-                         contains rmsd, rmsd aligned to average, and rmsd with
-                         weighting
-            coords     : array of floats
-                         Coordinates of walker
     """
+    Simulate a walker in a 1D potential.
 
+    Parameters:
+    -----------
+        inps       : Numpy Array
+                     Input parameters for intializing system
+                     (Steps, step size, X0, Temp, Mass, X min, X max,
+                     X increment, Y0,Y min, Y max, Y increment, Gamma)
+
+        mdps       : Numpy Array
+                     Metadynamics Parameters
+                     (Gaussian Height, Gaussian Width, Deposition
+                     Frequency (step), Well Temperature, Trials)
+
+        dimension  : string
+                     Dimensionality of system ('1-D Potential' or
+                     '2-D Potential')
+
+        method     : string
+                     Defines the sampling method (Molecular Dynamics,
+                     Metadyamics, Well-Tempered Metadynamics, or
+                     Infrequent WT MetaD)
+
+        potfunc    : string
+                     Defines the potential function to integrate
+
+        filetitle  :  string
+                    Name of files for output
+
+        makeplot   : Boolean
+                     If True, make plots, else don't make plots
+    Returns:
+    --------
+        sim_time   : float
+                     Simulation time
+
+        teff       : float
+                     Effective time from bias
+
+        info       : string
+                     Simulation information
+        rmsds      : array of floats
+                     contains rmsd, rmsd aligned to average, and rmsd with
+                     weighting
+        coords     : array of floats
+                     Coordinates of walker
+    """
     steps = inps[0]
     dt = inps[1]
     x0 = inps[2]
@@ -232,9 +232,6 @@ def simulate_2Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
                                                                  ylong[yc]]),
                                                        history, w, delta,
                                                        dimension))
-            walkv = vnew + lf.calc_biased_pot(np.array([coords[i+1, 0],
-                                                        coords[i+1, 1]]),
-                                              history, w, delta, dimension)
             plt.clf()
             plt.subplot(221)
             cset2 = plt.contourf(xlong, ylong, pot_base, levels,
@@ -283,48 +280,49 @@ def simulate_2Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
 
 
 def recreate_2DFES(FES, icount, coords, xinc, xmin, xmax, yinc, ymin, ymax, E):
-    """Receives and returns an array that recreates the FES
+    """
+    Receive and returns an array that recreates the FES.
 
-        Parameters:
-        -----------
-            FES     : Array of floats
-                      Energy values corresponding to x location on x dimension
+    Parameters:
+    -----------
+        FES     : Array of floats
+                  Energy values corresponding to x location on x dimension
 
-            icount  : Array of integers
-                      Stores number of counts sampled at each location
+        icount  : Array of integers
+                  Stores number of counts sampled at each location
 
-            coord   : float
-                      location of walker
+        coord   : float
+                  location of walker
 
-            xinc    : float
-                      increment of grid
+        xinc    : float
+                  increment of grid
 
-            xmin    : float
-                      minimum value in grid
+        xmin    : float
+                  minimum value in grid
 
-            xmax    : float
-                      maximum value in grid
+        xmax    : float
+                  maximum value in grid
 
-            yinc    : float
-                      increment of grid
+        yinc    : float
+                  increment of grid
 
-            ymin    : float
-                      minimum value in grid
+        ymin    : float
+                  minimum value in grid
 
-            ymax    : float
-                      maximum value in grid
+        ymax    : float
+                  maximum value in grid
 
-            E       : float
-                      Energy value to be stored
+        E       : float
+                  Energy value to be stored
 
-        Returns:
-        --------
-            FES     : Array of floats
-                      Energy values corresponding to x location on x dimension
-                      (updated)
+    Returns:
+    --------
+        FES     : Array of floats
+                  Energy values corresponding to x location on x dimension
+                  (updated)
 
-            icount  : Array of integers
-                      Number of counts sampled at each location (updated)
+        icount  : Array of integers
+                  Number of counts sampled at each location (updated)
     """
     xindex = int(round((round(coords[0],
                         int(abs(math.log10(xinc)))) +

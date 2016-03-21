@@ -280,7 +280,7 @@ def integrate_step(coords, history, w,  delta, DT, potfunc, p0, m, dt,
     """
     pot_dict = get_potential_dict()
     try:
-        force = pot_dict[potfunc]
+        selected_pot = pot_dict[potfunc]
     except KeyError:
         print 'That potential function has not been loaded into the dictionary'
 
@@ -295,7 +295,7 @@ def integrate_step(coords, history, w,  delta, DT, potfunc, p0, m, dt,
 
     if dimension == '1-D Potential':
 
-        f = force(coords)[1]
+        f = selected_pot(coords)[1]
         fbiased = calc_biased_force(coords, history, w, delta, f, dimension)
 
         R1 = sp.rand(1) - 0.5
@@ -304,7 +304,7 @@ def integrate_step(coords, history, w,  delta, DT, potfunc, p0, m, dt,
         pplus = c1*p0 + c2*R1
         newcoords = (coords + (pplus/m) * dt + fbiased/m * ((dt**2) / 2))[0]
 
-        [vnew, f2, _] = force(newcoords)
+        [vnew, f2, _] = selected_pot(newcoords)
         [vnew, f2, newcoords, bcbias] = apply_bc(vnew, f2, newcoords)
         f2biased = calc_biased_force(newcoords, history, w, delta, f2,
                                      dimension)
@@ -312,7 +312,7 @@ def integrate_step(coords, history, w,  delta, DT, potfunc, p0, m, dt,
         pnew = c1*pminus + c2*R2
 
     else:
-        f = force(coords[0], coords[1])[1]
+        f = selected_pot(coords[0], coords[1])[1]
         [fbiasedx, fbiasedy] = calc_biased_force(coords, history,
                                                  w, delta, f, dimension)
         R1x = sp.rand(1) - 0.5
@@ -330,7 +330,7 @@ def integrate_step(coords, history, w,  delta, DT, potfunc, p0, m, dt,
         newcoordy = (coords[1] +
                      (pplusy/m) * dt + fbiasedy/m * ((dt**2) / 2))[0]
 
-        [vnew, f2, _] = force(newcoordx, newcoordy)
+        [vnew, f2, _] = selected_pot(newcoordx, newcoordy)
         newcoords = np.array([newcoordx, newcoordy])
         [vnew, f2, newcoords, bcbias] = apply_bc(vnew, f2, newcoords)
         [f2biasedx, f2biasedy] = calc_biased_force(newcoords, history, w,

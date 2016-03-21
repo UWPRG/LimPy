@@ -1,65 +1,66 @@
+"""Simulate a 1D system."""
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy as sp
-import pandas as pd
-import pdb
-import math
-import os
 
-from potential_functions import get_potential_dict, get_boundary_condition_dict
+
+import math
+
+
+from potential_functions import get_potential_dict
 import langevin_functions as lf
 
 
 def simulate_1Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
                       makeplot):
-    """Simulates a walker in a 1D potential
-
-        Parameters:
-        -----------
-            inps       : Numpy Array
-                         Input parameters for intializing system
-                         (Steps, step size, X0, Temp, Mass, X min, X max,
-                         X increment, Y0,Y min, Y max, Y increment, Gamma)
-
-            mdps       : Numpy Array
-                         Metadynamics Parameters
-                         (Gaussian Height, Gaussian Width, Deposition
-                         Frequency (step), Well Temperature, Trials)
-
-            dimension  : string
-                         Dimensionality of system ('1-D Potential' or
-                         '2-D Potential')
-
-            method     : string
-                         Defines the sampling method (Molecular Dynamics,
-                         Metadyamics, Well-Tempered Metadynamics, or
-                         Infrequent WT MetaD)
-
-            potfunc    : string
-                         Defines the potential function to integrate
-
-            filetitle  :  string
-                        Name of files for output
-
-            makeplot   : Boolean
-                         If True, make plots, else don't make plots
-        Returns:
-        --------
-            sim_time   : float
-                         Simulation time
-
-            teff       : float
-                         Effective time from bias
-
-            info       : string
-                         Simulation information
-            rmsds      : array of floats
-                         contains rmsd, rmsd aligned to average, and rmsd with
-                         weighting
-            coords     : array of floats
-                         Coordinates of walker
     """
+    Simulatesa walker in a 1D potential.
 
+    Parameters:
+    -----------
+        inps       : Numpy Array
+                     Input parameters for intializing system
+                     (Steps, step size, X0, Temp, Mass, X min, X max,
+                     X increment, Y0,Y min, Y max, Y increment, Gamma)
+
+        mdps       : Numpy Array
+                     Metadynamics Parameters
+                     (Gaussian Height, Gaussian Width, Deposition
+                     Frequency (step), Well Temperature, Trials)
+
+        dimension  : string
+                     Dimensionality of system ('1-D Potential' or
+                     '2-D Potential')
+
+        method     : string
+                     Defines the sampling method (Molecular Dynamics,
+                     Metadyamics, Well-Tempered Metadynamics, or
+                     Infrequent WT MetaD)
+
+        potfunc    : string
+                     Defines the potential function to integrate
+
+        filetitle  :  string
+                    Name of files for output
+
+        makeplot   : Boolean
+                     If True, make plots, else don't make plots
+    Returns:
+    --------
+        sim_time   : float
+                     Simulation time
+
+        teff       : float
+                     Effective time from bias
+
+        info       : string
+                     Simulation information
+        rmsds      : array of floats
+                     contains rmsd, rmsd aligned to average, and rmsd with
+                     weighting
+        coords     : array of floats
+                     Coordinates of walker
+    """
     steps = inps[0]
     dt = inps[1]
     x0 = inps[2]
@@ -109,12 +110,12 @@ def simulate_1Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
     pot_dict = get_potential_dict()
 
     try:
-        force = pot_dict[potfunc]
+        selected_pot = pot_dict[potfunc]
     except KeyError:
         print 'That potential function has not been loaded into the dictionary'
 
-    baseline = force(xlong)
-    iv = force(x0)[0]
+    baseline = selected_pot(xlong)
+    iv = selected_pot(x0)[0]
     pot_base = baseline[0]
     coords[0] = x0
     if makeplot == 'True':
@@ -129,8 +130,6 @@ def simulate_1Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
 
     v0 = sp.rand(1)-0.5
     p = v0 * m
-
-    pot0 = iv
 
     FES = np.zeros_like(xlong)
     icount = np.zeros_like(xlong)
@@ -149,7 +148,7 @@ def simulate_1Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
     while i < steps - 1:
 
         if (method == "Infrequent WT MetaD"):
-            triggered = force(coords[i])[2]
+            triggered = selected_pot(coords[i])[2]
 
             if triggered is True:
                 totaltime = time[i]
@@ -164,7 +163,7 @@ def simulate_1Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
                 w[0] = winit
             else:
                 if method == 'Metadynamics':
-                    history = np.append(s, coords[i])
+                    history = np.append(history, coords[i])
                     w = np.append(w, winit)
                 elif (method == 'Well-Tempered Metadynamics' or
                         method == "Infrequent WT MetaD"):
@@ -223,39 +222,40 @@ def simulate_1Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
 
 
 def recreate_1DFES(FES, icount, coord, xinc, xmin, xmax, E):
-    """Receives and returns an array that recreates the FES
+    """
+    Receive and returns an array that recreates the FES.
 
-        Parameters:
-        -----------
-            FES     : Array of floats
-                      Energy values corresponding to x location on x dimension
+    Parameters:
+    -----------
+        FES     : Array of floats
+                  Energy values corresponding to x location on x dimension
 
-            icount  : Array of integers
-                      Stores number of counts sampled at each location
+        icount  : Array of integers
+                  Stores number of counts sampled at each location
 
-            coord   : float
-                      location of walker
+        coord   : float
+                  location of walker
 
-            xinc    : float
-                      increment of grid
+        xinc    : float
+                  increment of grid
 
-            xmin    : float
-                      minimum value in grid
+        xmin    : float
+                  minimum value in grid
 
-            xmax    : float
-                      maximum value in grid
+        xmax    : float
+                  maximum value in grid
 
-            E       : float
-                      Energy value to be stored
+        E       : float
+                  Energy value to be stored
 
-        Returns:
-        --------
-            FES     : Array of floats
-                      Energy values corresponding to x location on x dimension
-                      (updated)
+    Returns:
+    --------
+        FES     : Array of floats
+                  Energy values corresponding to x location on x dimension
+                  (updated)
 
-            icount  : Array of integers
-                      Number of counts sampled at each location (updated)
+        icount  : Array of integers
+                  Number of counts sampled at each location (updated)
 
     """
     index = int(round((round(coord, int(abs(math.log10(xinc)))) +
