@@ -1,1 +1,2 @@
-Parameter,InputDimension,1-D PotentialMethod,Infrequent WT MetaDPotential_Function,two_gaussian_potentialPlotting,FalseSteps,1000000Step size,0.01Temperature,300Mass,1X0,2.666Xmin,-4Xmax,4Xincrement,0.01Y0,0.5Ymin,-2Ymax,2Yincrement,0.01Gaussian Height,0.25Gaussian Width,0.1Deposition Frequency,250Well Temperature,10000Trials,50Data Filename,1dcheckGamma,5
+Parameter,InputDimension,1-D PotentialMethod,Infrequent WT MetaDPotential_Function,two_gaussian_potentialPlotting,FalseSteps,200000Step size,0.01Temperature,300Mass,1X0,2.666Xmin,-4Xmax,4Xincrement,0.01Y0,0.5Ymin,-2Ymax,2Yincrement,0.01Gaussian Height,0.25Gaussian Width,0.1Deposition Frequency,250Well Temperature,10000Trials,100Data Filename,1dcheckGamma,5
+Kb,0.001987

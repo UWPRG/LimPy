@@ -1,5 +1,7 @@
 import langevin_functions as lf
 import potential_functions as pf
+from simulate1D import simulate_1Dsystem
+from simulate2D import simulate_2Dsystem
 from statistical_functions import perform_ks_analysis, sampling
 import sys
 import os
@@ -23,11 +25,11 @@ trials = mdps[-1]
 checkprogress = 0
 while checkprogress < trials+1:
     if dimension == '1-D Potential':
-        trial = lf.simulate_1Dsystem(inps, mdps, dimension, method, potfunc,
-                                     filetitle, makeplot)
+        trial = simulate_1Dsystem(inps, mdps, dimension, method, potfunc,
+                                  filetitle, makeplot)
     else:
-        trial = lf.simulate_2Dsystem(inps, mdps, dimension, method, potfunc,
-                                     filetitle, makeplot)
+        trial = simulate_2Dsystem(inps, mdps, dimension, method, potfunc,
+                                  filetitle, makeplot)
     if method == 'Infrequent WT MetaD':
         with open(filetitle + '_Allevents.csv', "ab") as f:
                 writer = csv.writer(f)
