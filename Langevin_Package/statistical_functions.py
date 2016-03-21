@@ -1,19 +1,13 @@
-"""Statistical Analysis for Langevin Integrator"""
-import matplotlib.pyplot as plt
+"""These are statistical tests for the Infrequent sampling results."""
+
 import numpy as np
-from matplotlib.legend_handler import HandlerLine2D
-import matplotlib.lines as mlines
 from scipy.optimize import curve_fit
-from scipy.misc import factorial
 from scipy.stats import ks_2samp
 from scipy import stats
-import sys
-import pdb
 
 
 def perform_ks_analysis(filename):
-    """Performs the KS Test and determines statistics"""
-
+    """Perform the KS Test and determines statistics."""
     datain = np.genfromtxt(filename, delimiter=",")
     data = datain[:, 1]
     min = np.min(data)
@@ -68,6 +62,7 @@ def perform_ks_analysis(filename):
 
 
 def sampling(filename, num_iters, sampsize):
+    """Perform boostrapping procedure for error analysis."""
     # if sampsize > 100
     # sampsize = 100
     datain = np.genfromtxt(filename, delimiter=",")
@@ -108,6 +103,7 @@ def sampling(filename, num_iters, sampsize):
 
 
 def analyticalCDF(times, tau):
+    """Return analytical CDF for a set of data and tau."""
     return 1-np.exp(-times/tau)
     # lets make some plots
     # fig = plt.figure(figsize=(6, 6))

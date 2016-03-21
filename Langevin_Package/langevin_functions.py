@@ -1,4 +1,6 @@
 """
+Functions used by the simulate functions for the Langevin Integrator.
+
 This is a Langevin Integrator capable of implementing Molecular Dynamics,
 Metadynamics, Well-Tempered Metadynamics (WTMD), and Infrequen Metadynamics.
 It has the capability of operating on 1-D or 2-D potentials, if the
@@ -7,19 +9,16 @@ potentials are supplied by the user
 """
 
 
-import matplotlib.pyplot as plt
 import numpy as np
 import scipy as sp
 import pandas as pd
-import pdb
-import math
-import os
+
 
 from potential_functions import get_potential_dict, get_boundary_condition_dict
 
 
 def get_parameters(input_file):
-    """Organizes input parameters for Langevin Integrator
+    """Organize input parameters for Langevin Integrator.
 
     Parameters
     --------------
@@ -56,7 +55,6 @@ def get_parameters(input_file):
                  True or False as to whether make plots
 
     """
-
     inputsfile = input_file
     inputs = pd.read_csv(inputsfile, comment='#')
     inputs.index = inputs['Parameter']
@@ -94,31 +92,31 @@ def get_parameters(input_file):
 
 def calc_biased_pot(coords, history, w, delta, dimension):
     """
-        Calculate the biased force and biased potential.
+    Calculate the biased force and biased potential.
 
-        Parameters:
-        -----------
+    Parameters:
+    -----------
 
-        coords      :  array of floats
-                       X and Y coordinates
+    coords      :  array of floats
+                   X and Y coordinates
 
-        history     : array of floats
-                      Locations of where gaussians are deposited
+    history     : array of floats
+                  Locations of where gaussians are deposited
 
-        w           : array of floats
-                      Gaussian height
+    w           : array of floats
+                  Gaussian height
 
-        delta       : float
-                      Gaussian width
+    delta       : float
+                  Gaussian width
 
-        dimension   : string
-                      indicates if 1D or 2D potential
+    dimension   : string
+                  indicates if 1D or 2D potential
 
-        Returns:
-        --------
+    Returns:
+    --------
 
-        VR          : float (or array of floats)
-                      Bias potential
+    VR          : float (or array of floats)
+                  Bias potential
 
     """
     if dimension == '1-D Potential':
@@ -135,34 +133,34 @@ def calc_biased_pot(coords, history, w, delta, dimension):
 
 def calc_biased_force(coords, history, w, delta, base_force, dimension):
     """
-        Calculate the biased force and biased potential.
+    Calculate the biased force and biased potential.
 
-        Parameters:
-        -----------
+    Parameters:
+    -----------
 
-        coords      :  array of floats
-                       X and Y coordinates
+    coords      :  array of floats
+                   X and Y coordinates
 
-        history     : array of floats
-                      Locations of where gaussians are deposited
+    history     : array of floats
+                  Locations of where gaussians are deposited
 
-        w           : array of floats
-                      Gaussian height
+    w           : array of floats
+                  Gaussian height
 
-        delta       : float
-                      Gaussian width
+    delta       : float
+                  Gaussian width
 
-        base_force  : float
-                       Underlying potential energy
+    base_force  : float
+                   Underlying potential energy
 
-        dimension   : string
-                      indicates if 1D or 2D potential
+    dimension   : string
+                  indicates if 1D or 2D potential
 
-        Returns:
-        --------
+    Returns:
+    --------
 
-        Fbias       : float (or array of floats)
-                      Biased force
+    Fbias       : float (or array of floats)
+                  Biased force
 
     """
     if dimension == '1-D Potential':
@@ -196,7 +194,8 @@ def calc_biased_force(coords, history, w, delta, base_force, dimension):
 
 
 def calc_teff(walkerpot, beta, dt):
-    """Calculates the effective time
+    """
+    Calculate the effective time.
 
     Parameters:
     -----------
@@ -214,7 +213,6 @@ def calc_teff(walkerpot, beta, dt):
     teff:      float
                Effective time
     """
-
     walkercalc = np.delete(walkerpot, 0)
     teff = sum(dt * np.exp(walkercalc * beta))
 
@@ -223,63 +221,63 @@ def calc_teff(walkerpot, beta, dt):
 
 def integrate_step(coords, history, w,  delta, DT, potfunc, p0, m, dt,
                    gamma, beta, dimension):
-    """Move walker by one step in 1D via Langevin Integrator
+    """
+    Move walker by one step in 1D via Langevin Integrator.
 
-        Parameters:
-        -----------
-        coords      :  array of floats
-                       X and Y coordinates
+    Parameters:
+    -----------
+    coords      :  array of floats
+                   X and Y coordinates
 
-        history     : array of floats
-                      Locations of where gaussians are deposited
+    history     : array of floats
+                  Locations of where gaussians are deposited
 
-        w           : array of floats
-                      Gaussian height
+    w           : array of floats
+                  Gaussian height
 
-        delta       : float
-                      Gaussian width
+    delta       : float
+                  Gaussian width
 
-        DT          : float
-                      Well-Temperature
+    DT          : float
+                  Well-Temperature
 
-        potfunc     : string
-                      potential energy function
+    potfunc     : string
+                  potential energy function
 
-        p0           : float
-                      momentum
+    p0           : float
+                  momentum
 
-        m           : float
-                      Mass
+    m           : float
+                  Mass
 
-        dt          : float
-                      time step
+    dt          : float
+                  time step
 
-        gamma       : float
-                       friction factor
+    gamma       : float
+                   friction factor
 
-        beta        : float
-                      1/kT
+    beta        : float
+                  1/kT
 
-        dimension  : string
-                     Dimensionality of system ('1-D Potential' or
-                     '2-D Potential')
+    dimension  : string
+                 Dimensionality of system ('1-D Potential' or
+                 '2-D Potential')
 
-        Returns:
-        --------
-        pnew        : float
-                      new momentum
+    Returns:
+    --------
+    pnew        : float
+                  new momentum
 
-        vnew        : float
-                      new potential energy
+    vnew        : float
+                  new potential energy
 
-        new_coords  : float
-                      new coordinates
+    new_coords  : float
+                  new coordinates
 
-        bcbias      : float
-                      bias from boundary condition
+    bcbias      : float
+                  bias from boundary condition
 
     """
-
     pot_dict = get_potential_dict()
     try:
         force = pot_dict[potfunc]
@@ -350,25 +348,25 @@ def integrate_step(coords, history, w,  delta, DT, potfunc, p0, m, dt,
 
 
 def calc_rmsd(FES, beta, baseline):
-    """Calculates 3 differed RMSD of the calculated FES and the actual FES
-
-        Parameters:
-        -----------
-            FES      : Array of floats
-                       Representation of the free energy surface
-
-            beta     : float
-                       1/kT
-
-            baseline : Array of floats
-                       Underlying potential saved as a grid
-
-        Returns:
-        --------
-            rmsds    : Array of floats
-                       Holds RMSDs of calculated FES and actual FES
     """
+    Calculate 3 differed RMSD of the calculated FES and the actual FES.
 
+    Parameters:
+    -----------
+        FES      : Array of floats
+                   Representation of the free energy surface
+
+        beta     : float
+                   1/kT
+
+        baseline : Array of floats
+                   Underlying potential saved as a grid
+
+    Returns:
+    --------
+        rmsds    : Array of floats
+                   Holds RMSDs of calculated FES and actual FES
+    """
     rmsd = np.sqrt(np.sum((((FES-baseline)) * beta)**2) / FES.shape[0])
     rmskld = np.sqrt(np.sum(np.multiply(np.power(((FES - FES.mean()) -
                      (baseline-baseline.mean())) * beta, 2),

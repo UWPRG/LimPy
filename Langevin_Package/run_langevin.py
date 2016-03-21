@@ -1,5 +1,7 @@
+"""This is a script to run the langevin integrator."""
+
 import langevin_functions as lf
-import potential_functions as pf
+
 from simulate1D import simulate_1Dsystem
 from simulate2D import simulate_2Dsystem
 from statistical_functions import perform_ks_analysis, sampling
@@ -8,7 +10,6 @@ import os
 import numpy as np
 import pandas as pd
 import csv
-import pdb
 
 inputsfile = sys.argv[1]
 received = lf.get_parameters(inputsfile)
@@ -71,11 +72,11 @@ if method == 'Infrequent WT MetaD':
                 writer = csv.writer(f)
                 writer.writerow([means, pvals, reject])
         checkprogress = pd.read_csv('bootstrapped.csv')
-        checkaccept = checkprogress[checkprogress['Rejected'] == False]
+        checkaccept = checkprogress[checkprogress['Rejected'] == 'False']
         monitor = len(checkaccept)
 
     finisheddata = pd.read_csv('bootstrapped.csv')
-    validdata = finisheddata[finisheddata['Rejected'] == False]
+    validdata = finisheddata[finisheddata['Rejected'] == 'False']
     rejectedtrials = (len(finisheddata) - len(validdata))
     if os.path.isfile(filetitle + '_statistics.csv') is False:
         with open(filetitle + '_statistics.csv', "ab") as f:

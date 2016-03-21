@@ -1,34 +1,32 @@
-"""This file contains the various potential functions we have defined"""
+"""This file contains the various potential functions we have defined."""
 
 import numpy as np
 import math
-import pdb
 
 
 def cosine_potential(coords):
     """
-        Potential Energy and Force of Cos(x)
+    Calculate the Potential Energy and Force of Cos(x).
 
-        Parameters:
-        -----------
+    Parameters:
+    -----------
 
-        coords  : float (or array of floats)
-                Location
+    coords  : float (or array of floats)
+            Location
 
 
-        Returns:
-        --------
+    Returns:
+    --------
 
-        V       : float (or array of floats)
-                  Potential Energy
+    V       : float (or array of floats)
+              Potential Energy
 
-        F       : float (or array of floats)
-                  Force
+    F       : float (or array of floats)
+              Force
 
-        Trigger : Boolean
-                  Has rare event occurred (True) or not (False)
+    Trigger : Boolean
+              Has rare event occurred (True) or not (False)
     """
-
     V = np.cos(coords) * 2.5
     F = np.sin(coords) * 2.5
 
@@ -42,26 +40,26 @@ def cosine_potential(coords):
 
 def two_gaussian_potential(coords):
     """
-        Calculate the force and potential based on location (1-D).
+    Calculate the force and potential based on location (1-D).
 
-        Parameters:
-        -----------
+    Parameters:
+    -----------
 
-        coords  :  array of floats
-                   X and Y coordinates
+    coords  :  array of floats
+               X and Y coordinates
 
 
-        Returns:
-        --------
+    Returns:
+    --------
 
-        V       : float (or array of floats)
-                  Potential Energy
+    V       : float (or array of floats)
+              Potential Energy
 
-        F       : float (or array of floats)
-                  Force
+    F       : float (or array of floats)
+              Force
 
-        Trigger : Boolean
-                  Has rare event occurred (True) or not (False)
+    Trigger : Boolean
+              Has rare event occurred (True) or not (False)
     """
     V = (-5 * np.exp(-(coords - 2/0.75)**2) -
          10*np.exp(-(coords + 2/0.75)**2))
@@ -79,29 +77,29 @@ def two_gaussian_potential(coords):
 
 def pv_2D_potential(x, y):
     """
-        Calculate the force and potential based on location (2-D).
-        Parameters:
-        -----------
+    Calculate the force and potential based on location (2-D).
 
-        x       : array of floats
-                  X coordinates
+    Parameters:
+    -----------
 
-        y       : array of floats
-                  Y coordinates
+    x       : array of floats
+              X coordinates
 
-        Returns:
-        --------
+    y       : array of floats
+              Y coordinates
 
-        V       : float (or array of floats)
-                  Potential Energy
+    Returns:
+    --------
 
-        Fpot    : float (or array of floats)
-                  Force in x and y direction
+    V       : float (or array of floats)
+              Potential Energy
 
-        Trigger : Boolean
-                  Has rare event occurred (True) or not (False)
+    Fpot    : float (or array of floats)
+              Force in x and y direction
+
+    Trigger : Boolean
+              Has rare event occurred (True) or not (False)
     """
-
     if hasattr(x, "__len__") is True:
 
         V = np.zeros([y.size, x.size])
@@ -137,29 +135,29 @@ def pv_2D_potential(x, y):
 
 def muller_brown_potential(x, y):
     """
-        Calculate the force and potential based on location (2-D).
-        Parameters:
-        -----------
+    Calculate the force and potential based on location (2-D).
 
-        x       : array of floats
-                  X coordinates
+    Parameters:
+    -----------
 
-        y       : array of floats
-                  Y coordinates
+    x       : array of floats
+              X coordinates
 
-        Returns:
-        --------
+    y       : array of floats
+              Y coordinates
 
-        V       : float (or array of floats)
-                  Potential Energy
+    Returns:
+    --------
 
-        Fpot    : float (or array of floats)
-                  Force in x and y direction
+    V       : float (or array of floats)
+              Potential Energy
 
-        Trigger : Boolean
-                  Has rare event occurred (True) or not (False)
+    Fpot    : float (or array of floats)
+              Force in x and y direction
+
+    Trigger : Boolean
+              Has rare event occurred (True) or not (False)
     """
-
     if type(x) is not np.float64:
 
         V = np.zeros([y.size, x.size])
@@ -221,9 +219,7 @@ def muller_brown_potential(x, y):
 
 
 def get_potential_dict():
-    """Returns a dictionary of all of the available potential functions
-    """
-
+    """Return a dictionary of all of the available potential functions."""
     potential_dict = {'cosine_potential': cosine_potential,
                       'two_gaussian_potential': two_gaussian_potential,
                       'pv_2D_potential': pv_2D_potential,
@@ -233,33 +229,34 @@ def get_potential_dict():
 
 
 def two_gaussian_potential_bc(vnew, f2, coords):
-    """Applies Boundary Condition to the potential, force, and coordinates
+    """
+    Apply Boundary Condition to the potential, force, and coordinates.
 
-        Parameters:
-        -----------
-        vnew       : float (or array of floats)
-                     Potential Energy
+    Parameters:
+    -----------
+    vnew       : float (or array of floats)
+                 Potential Energy
 
-        f2         : float (or array of floats)
-                     Force
+    f2         : float (or array of floats)
+                 Force
 
-        coords     : float
-                     coordinates
+    coords     : float
+                 coordinates
 
-        Returns:
-        --------
+    Returns:
+    --------
 
-        vnew       : float (or array of floats)
-                     Adjusted potential energy from boundary condition
+    vnew       : float (or array of floats)
+                 Adjusted potential energy from boundary condition
 
-        F          : float (or array of floats)
-                     Adjusted force from boundary condition
+    F          : float (or array of floats)
+                 Adjusted force from boundary condition
 
-        coords     : float
-                     adjusted coordinates from boundary condition
+    coords     : float
+                 adjusted coordinates from boundary condition
 
-        bcbias     : float
-                     bias applied strictly from the boundary condition
+    bcbias     : float
+                 bias applied strictly from the boundary condition
     """
     vold = vnew
     bcbias = 0
@@ -279,35 +276,35 @@ def two_gaussian_potential_bc(vnew, f2, coords):
 
 
 def pv_2D_potential_bc(vnew, f2, coords):
-    """Applies Boundary Condition to the potential, force, and coordinates
-
-        Parameters:
-        -----------
-        vnew       : float (or array of floats)
-                     Potential Energy
-
-        f2         : float (or array of floats)
-                     Force
-
-        coords     : float
-                     coordinates
-
-        Returns:
-        --------
-
-        vnew       : float (or array of floats)
-                     Adjusted potential energy from boundary condition
-
-        F          : float (or array of floats)
-                     Adjusted force from boundary condition
-
-        coords     : float
-                     adjusted coordinates from boundary condition
-
-        bcbias     : float
-                     bias applied strictly from the boundary condition
     """
+    Apply Boundary Condition to the potential, force, and coordinates.
 
+    Parameters:
+    -----------
+    vnew       : float (or array of floats)
+                 Potential Energy
+
+    f2         : float (or array of floats)
+                 Force
+
+    coords     : float
+                 coordinates
+
+    Returns:
+    --------
+
+    vnew       : float (or array of floats)
+                 Adjusted potential energy from boundary condition
+
+    F          : float (or array of floats)
+                 Adjusted force from boundary condition
+
+    coords     : float
+                 adjusted coordinates from boundary condition
+
+    bcbias     : float
+                 bias applied strictly from the boundary condition
+    """
     if (coords[0] < 0):
         coords[0] = coords[0] + 3
 
@@ -318,68 +315,69 @@ def pv_2D_potential_bc(vnew, f2, coords):
 
 
 def mb_2D_potential_bc(vnew, f2, coords):
-    """Applies Boundary Condition to the potential, force, and coordinates
+    """
+    Apply Boundary Condition to the potential, force, and coordinates.
 
-        Parameters:
-        -----------
-        vnew       : float (or array of floats)
-                     Potential Energy
+    Parameters:
+    -----------
+    vnew       : float (or array of floats)
+                 Potential Energy
 
-        f2         : float (or array of floats)
-                     Force
+    f2         : float (or array of floats)
+                 Force
 
-        coords     : float
-                     coordinates
+    coords     : float
+                 coordinates
 
-        Returns:
-        --------
+    Returns:
+    --------
 
-        vnew       : float (or array of floats)
-                     Adjusted potential energy from boundary condition
+    vnew       : float (or array of floats)
+                 Adjusted potential energy from boundary condition
 
-        F          : float (or array of floats)
-                     Adjusted force from boundary condition
+    F          : float (or array of floats)
+                 Adjusted force from boundary condition
 
-        coords     : float
-                     adjusted coordinates from boundary condition
+    coords     : float
+                 adjusted coordinates from boundary condition
 
-        bcbias     : float
-                     bias applied strictly from the boundary condition
+    bcbias     : float
+                 bias applied strictly from the boundary condition
     """
     bcbias = 0
     return (vnew, f2, coords, bcbias)
 
 
 def cosine_potential_bc(vnew, f2, coords):
-    """Applies Boundary Condition to the potential, force, and coordinates
-
-        Parameters:
-        -----------
-        vnew       : float (or array of floats)
-                     Potential Energy
-
-        f2         : float (or array of floats)
-                     Force
-
-        coords     : float
-                     coordinates
-
-        Returns:
-        --------
-
-        vnew       : float (or array of floats)
-                     Adjusted potential energy from boundary condition
-
-        F          : float (or array of floats)
-                     Adjusted force from boundary condition
-
-        coords     : float
-                     adjusted coordinates from boundary condition
-
-        bcbias     : float
-                     bias applied strictly from the boundary condition
     """
+    Apply Boundary Condition to the potential, force, and coordinates.
 
+    Parameters:
+    -----------
+    vnew       : float (or array of floats)
+                 Potential Energy
+
+    f2         : float (or array of floats)
+                 Force
+
+    coords     : float
+                 coordinates
+
+    Returns:
+    --------
+
+    vnew       : float (or array of floats)
+                 Adjusted potential energy from boundary condition
+
+    F          : float (or array of floats)
+                 Adjusted force from boundary condition
+
+    coords     : float
+                 adjusted coordinates from boundary condition
+
+    bcbias     : float
+                 bias applied strictly from the boundary condition
+    """
     if (coords < -0.1*np.pi):
         coords = coords + 2.2*np.pi
 
@@ -390,9 +388,7 @@ def cosine_potential_bc(vnew, f2, coords):
 
 
 def get_boundary_condition_dict():
-    """Returns a dictionary of all of the available potential functions
-    """
-
+    """Return a dictionary of all of the available potential functions."""
     bc_dict = {'cosine_potential': cosine_potential_bc,
                'two_gaussian_potential': two_gaussian_potential_bc,
                'pv_2D_potential': pv_2D_potential_bc,
