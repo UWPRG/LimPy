@@ -380,11 +380,11 @@ def cosine_potential_bc(vnew, f2, coords):
                      bias applied strictly from the boundary condition
     """
 
-    if (coords < 0):
-        coords = coords + 2*np.pi
+    if (coords < -0.1*np.pi):
+        coords = coords + 2.2*np.pi
 
-    elif (coords > 2*np.pi):
-        coords = coords - 2*np.pi
+    elif (coords > 2.1*np.pi):
+        coords = coords - 2.2*np.pi
     bcbias = 0
     return (vnew, f2, coords, bcbias)
 
