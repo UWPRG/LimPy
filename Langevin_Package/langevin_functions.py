@@ -65,7 +65,7 @@ def get_parameters(input_file):
     dimension = str(inputs['Dimension'][0])
     method = str(inputs['Method'][0])
     filetitle = str(inputs['Data Filename'][0])
-    inps = np.zeros(13)
+    inps = np.zeros(14)
     inps[0] = float(inputs['Steps'][0])
     inps[1] = float(inputs['Step size'][0])
     inps[2] = float(inputs['X0'][0])
