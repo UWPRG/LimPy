@@ -161,8 +161,8 @@ def simulate_2Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
             ' Initial Hill Height ' + str(winit) + '\n' +
             'Hill Width ' + str(delta) + '\n' +
             'Deposition Frequency (steps)' + str(hfreq) + '\n' +
-            'Well Temperature ' + '\n' + str(DT)+'Gaussian ' + str(gamma) +
-            '\n' + str(DT)+'Potential ' + str(potfunc))
+            'Well Temperature ' + str(DT) + '\n' + 'Gaussian ' + str(gamma) +
+            '\n' + 'Potential ' + str(potfunc))
     i = 0
     while i < steps - 1:
 
