@@ -7,6 +7,7 @@ from simulate2D import simulate_2Dsystem
 from statistical_functions import perform_ks_analysis, sampling
 import sys
 import os
+import pdb
 import numpy as np
 import pandas as pd
 import csv
@@ -72,11 +73,12 @@ if method == 'Infrequent WT MetaD':
                 writer = csv.writer(f)
                 writer.writerow([means, pvals, reject])
         checkprogress = pd.read_csv('bootstrapped.csv')
-        checkaccept = checkprogress[checkprogress['Rejected'] == 'False']
+        pdb.set_trace()
+        checkaccept = checkprogress[checkprogress['Rejected'] == 'No']
         monitor = len(checkaccept)
 
     finisheddata = pd.read_csv('bootstrapped.csv')
-    validdata = finisheddata[finisheddata['Rejected'] == 'False']
+    validdata = finisheddata[finisheddata['Rejected'] == 'No']
     rejectedtrials = (len(finisheddata) - len(validdata))
     if os.path.isfile(filetitle + '_statistics.csv') is False:
         with open(filetitle + '_statistics.csv', "ab") as f:

@@ -90,12 +90,12 @@ def sampling(filename, num_iters, sampsize):
     if p > alpha:
         means = mu
         pvals = p
-        reject = 'False'
+        reject = 'No'
         # debugprint p, mu
         # means.resize(means.size+1)
         # pvals.resize(pvals.size+1)
     if p < alpha:
-        reject = True
+        reject = 'Yes'
     # this is just book keeping to remove the last 0 element
     # means = means[:(means.size-1)]
     # pvals = pvals[:(pvals.size-1)]
