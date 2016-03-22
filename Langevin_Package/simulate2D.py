@@ -6,7 +6,7 @@ import scipy as sp
 import math
 
 
-from potential_functions import get_potential_dict
+from potential_functions import get_potential_dict, get_boundary_condition_dict
 import langevin_functions as lf
 
 
@@ -113,13 +113,18 @@ def simulate_2Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
     walkerpot = np.array([0.0])
 
     pot_dict = get_potential_dict()
+    bc_dict = get_boundary_condition_dict()
     try:
-        force = pot_dict[potfunc]
+        selected_pot = pot_dict[potfunc]
     except KeyError:
         print 'That potential function has not been loaded into the dictionary'
-
-    baseline = force(xlong, ylong)
-    iv = force(x0, y0)[0]
+    try:
+        selected_bc = bc_dict[potfunc]
+    except KeyError:
+        print 'That potential function has not been loaded into the dictionary'
+    baseline = selected_pot(xlong, ylong)
+    iv = selected_pot(x0, y0)[0]
+    is_periodic = selected_bc(iv, selected_pot(x0)[1], np.array([x0, y0]))[4]
     pot_base = baseline[0]
     FES = np.zeros_like(pot_base)
     icount = np.zeros_like(FES)
@@ -167,7 +172,7 @@ def simulate_2Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
     while i < steps - 1:
 
         if (method == "Infrequent WT MetaD"):
-            triggered = force(coords[i, 0], coords[i, 1])[2]
+            triggered = selected_pot(coords[i, 0], coords[i, 1])[2]
             if triggered is True:
                 totaltime = time[i]
                 teff = lf.calc_teff(walkerpot, beta, dt)
@@ -176,17 +181,32 @@ def simulate_2Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
         if sp.mod(i, hfreq) == 0 and i > 0:
 
             if(i == hfreq):
-
                 history[0] = coords[i, 0]
                 history[1] = coords[i, 1]
                 w[0] = winit
-
             else:
 
                 if method == 'Metadynamics':
                     w = np.append(w, winit)
                     history = np.vstack((history, np.array([coords[i, 0],
                                                            coords[i, 1]])))
+
+                    if is_periodic[0] is True:
+                        history = np.vstack((history, np.array([coords[i, 0] +
+                                             (xmax-xmin), coords[i, 1]])))
+                        history = np.vstack((history, np.array([coords[i, 0] -
+                                             (xmax-xmin), coords[i, 1]])))
+                        w = np.append(w, winit)
+                        w = np.append(w, winit)
+                    if is_periodic[1] is True:
+                        history = np.vstack((history, np.array([coords[i, 0],
+                                                               coords[i, 1] +
+                                                               (ymax-ymin)])))
+                        history = np.vstack((history, np.array([coords[i, 0],
+                                                               coords[i, 1] -
+                                                               (ymax-ymin)])))
+                        w = np.append(w, winit)
+                        w = np.append(w, winit)
 
                 elif (method == 'Well-Tempered Metadynamics' or
                         method == "Infrequent WT MetaD"):
@@ -197,6 +217,23 @@ def simulate_2Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
                                                            coords[i, 1]])))
                     w = np.append(w, winit * np.exp(-VR / (kb*DT)))
 
+                    if is_periodic[0] is True:
+                        history = np.vstack((history, np.array([coords[i, 0] +
+                                             (xmax-xmin), coords[i, 1]])))
+                        history = np.vstack((history, np.array([coords[i, 0] -
+                                             (xmax-xmin), coords[i, 1]])))
+                        w = np.append(w, winit * np.exp(-VR / (kb*DT)))
+                        w = np.append(w, winit * np.exp(-VR / (kb*DT)))
+                    if is_periodic[1] is True:
+                        history = np.vstack((history, np.array([coords[i, 0],
+                                                               coords[i, 1] +
+                                                               (ymax-ymin)])))
+                        history = np.vstack((history, np.array([coords[i, 0],
+                                                               coords[i, 1] -
+                                                               (ymax-ymin)])))
+                        w = np.append(w, winit * np.exp(-VR / (kb*DT)))
+                        w = np.append(w, winit * np.exp(-VR / (kb*DT)))
+
         [pnew, vnew, newcoord, bcbias] = lf.integrate_step(coords[i], history,
                                                            w, delta, DT,
                                                            potfunc, p, m, dt,
@@ -206,7 +243,7 @@ def simulate_2Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
 
         coords[i+1, 0] = newcoord[0]
         coords[i+1, 1] = newcoord[1]
-        vnew = force(coords[i+1, 0], coords[i+1, 1])[0]
+        vnew = selected_pot(coords[i+1, 0], coords[i+1, 1])[0]
 
         E[i+1] = 0.5/m * (p[0]**2 + p[1]**2) + vnew
 

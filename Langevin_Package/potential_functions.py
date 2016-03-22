@@ -312,7 +312,9 @@ def pv_2D_potential_bc(vnew, f2, coords):
     elif (coords[0] > 3.0):
         coords[0] = coords[0] - 3
     bcbias = 0
-    is_periodic = True
+    is_periodic_x = True
+    is_periodic_y = False
+    is_periodic = np.array([is_periodic_x, is_periodic_y])
     return (vnew, f2, coords, bcbias, is_periodic)
 
 
@@ -347,7 +349,9 @@ def mb_2D_potential_bc(vnew, f2, coords):
                  bias applied strictly from the boundary condition
     """
     bcbias = 0
-    is_periodic = False
+    is_periodic_x = False
+    is_periodic_y = False
+    is_periodic = np.array([is_periodic_x, is_periodic_y])
     return (vnew, f2, coords, bcbias, is_periodic)
 
 
