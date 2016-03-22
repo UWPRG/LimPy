@@ -7,7 +7,6 @@ from simulate2D import simulate_2Dsystem
 from statistical_functions import perform_ks_analysis, sampling
 import sys
 import os
-import pdb
 import numpy as np
 import pandas as pd
 import csv
@@ -73,7 +72,6 @@ if method == 'Infrequent WT MetaD':
                 writer = csv.writer(f)
                 writer.writerow([means, pvals, reject])
         checkprogress = pd.read_csv('bootstrapped.csv')
-        pdb.set_trace()
         checkaccept = checkprogress[checkprogress['Rejected'] == 'No']
         monitor = len(checkaccept)
 
