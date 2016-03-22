@@ -260,6 +260,7 @@ def two_gaussian_potential_bc(vnew, f2, coords):
     """
     vold = vnew
     bcbias = 0
+    is_periodic = False
     if (coords < -4.3193):
 
         vnew = 100.0 * (coords+4.0)**4.0 - 1.690133
@@ -272,7 +273,7 @@ def two_gaussian_potential_bc(vnew, f2, coords):
         f2 = -100.0 * 4.0 * (coords-4.0)**3.0
         bcbias = vnew - vold
 
-    return (vnew, f2, coords, bcbias)
+    return (vnew, f2, coords, bcbias, is_periodic)
 
 
 def pv_2D_potential_bc(vnew, f2, coords):
@@ -311,7 +312,8 @@ def pv_2D_potential_bc(vnew, f2, coords):
     elif (coords[0] > 3.0):
         coords[0] = coords[0] - 3
     bcbias = 0
-    return (vnew, f2, coords, bcbias)
+    is_periodic = True
+    return (vnew, f2, coords, bcbias, is_periodic)
 
 
 def mb_2D_potential_bc(vnew, f2, coords):
@@ -345,7 +347,8 @@ def mb_2D_potential_bc(vnew, f2, coords):
                  bias applied strictly from the boundary condition
     """
     bcbias = 0
-    return (vnew, f2, coords, bcbias)
+    is_periodic = False
+    return (vnew, f2, coords, bcbias, is_periodic)
 
 
 def cosine_potential_bc(vnew, f2, coords):
@@ -378,13 +381,14 @@ def cosine_potential_bc(vnew, f2, coords):
     bcbias     : float
                  bias applied strictly from the boundary condition
     """
-    if (coords < -0.1*np.pi):
-        coords = coords + 2.2*np.pi
+    if (coords < -2*np.pi):
+        coords = coords + 6*np.pi
 
-    elif (coords > 2.1*np.pi):
-        coords = coords - 2.2*np.pi
+    elif (coords > 4*np.pi):
+        coords = coords - 6*np.pi
     bcbias = 0
-    return (vnew, f2, coords, bcbias)
+    is_periodic = True
+    return (vnew, f2, coords, bcbias, is_periodic)
 
 
 def get_boundary_condition_dict():

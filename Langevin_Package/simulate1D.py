@@ -5,9 +5,9 @@ import scipy as sp
 
 
 import math
+import pdb
 
-
-from potential_functions import get_potential_dict
+from potential_functions import get_potential_dict, get_boundary_condition_dict
 import langevin_functions as lf
 
 
@@ -108,11 +108,15 @@ def simulate_1Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
     walkerpot = np.array([0.0])
 
     pot_dict = get_potential_dict()
-
+    bc_dict = get_boundary_condition_dict()
     try:
         selected_pot = pot_dict[potfunc]
     except KeyError:
         print 'That potential function has not been loaded into the dictionary'
+    try:
+        selected_bc = bc_dict[potfunc]
+    except KeyError:
+        print 'That boundary condition has not been loaded into the dictionary'
 
     baseline = selected_pot(xlong)
     iv = selected_pot(x0)[0]
@@ -130,6 +134,7 @@ def simulate_1Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
 
     v0 = sp.rand(1)-0.5
     p = v0 * m
+    is_periodic = selected_bc(iv, selected_pot(x0)[1], coords[0])[4]
 
     FES = np.zeros_like(xlong)
     icount = np.zeros_like(xlong)
@@ -156,22 +161,34 @@ def simulate_1Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
                 return (totaltime, teff, info)
 
         if sp.mod(i, hfreq) == 0 and i > 0:
-
             if(i == hfreq):
-
                 history[0] = coords[i]
                 w[0] = winit
+                if is_periodic is True:
+                    history = np.append(history, coords[i]+(xmax-xmin))
+                    history = np.append(history, coords[i]-(xmax-xmin))
+                    w = np.append(w, winit)
+                    w = np.append(w, winit)
             else:
                 if method == 'Metadynamics':
                     history = np.append(history, coords[i])
                     w = np.append(w, winit)
+                    if is_periodic is True:
+                        history = np.append(history, coords[i]+(xmax-xmin))
+                        history = np.append(history, coords[i]-(xmax-xmin))
+                        w = np.append(w, winit)
+                        w = np.append(w, winit)
                 elif (method == 'Well-Tempered Metadynamics' or
                         method == "Infrequent WT MetaD"):
                     VR = lf.calc_biased_pot(coords[i], history, w, delta,
                                             dimension)
                     history = np.append(history, coords[i])
                     w = np.append(w, winit * np.exp(-VR / (kb*DT)))
-
+                    if is_periodic is True:
+                        history = np.append(history, coords[i]+(xmax-xmin))
+                        history = np.append(history, coords[i]-(xmax-xmin))
+                        w = np.append(w, winit * np.exp(-VR / (kb*DT)))
+                        w = np.append(w, winit * np.exp(-VR / (kb*DT)))
         [pnew, vnew, newcoord, bcbias] = lf.integrate_step(coords[i], history,
                                                            w, delta, DT,
                                                            potfunc, p, m, dt,
@@ -212,6 +229,7 @@ def simulate_1Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
 
     if(method != "Infrequent WT MetaD"):
         rmsds = lf.calc_rmsd(FES, beta, pot_base)
+        pdb.set_trace()
         return (coords, E, rmsds, info)
 
     elif(method == "Infrequent WT MetaD"):
