@@ -13,7 +13,7 @@ import langevin_functions as lf
 def simulate_2Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
                       makeplot):
     """
-    Simulate a walker in a 1D potential.
+    Simulate a walker in a 2D potential.
 
     Parameters:
     -----------
@@ -124,7 +124,8 @@ def simulate_2Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
         print 'That potential function has not been loaded into the dictionary'
     baseline = selected_pot(xlong, ylong)
     iv = selected_pot(x0, y0)[0]
-    is_periodic = selected_bc(iv, selected_pot(x0)[1], np.array([x0, y0]))[4]
+    is_periodic = selected_bc(iv, selected_pot(x0, y0)[1],
+                              np.array([x0, y0]))[4]
     pot_base = baseline[0]
     FES = np.zeros_like(pot_base)
     icount = np.zeros_like(FES)
@@ -307,6 +308,7 @@ def simulate_2Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
                     editFES = np.append(editFES, FES[k, j])
                     editvcalc = np.append(editvcalc, pot_base[k, j])
         rmsds = lf.calc_rmsd(FES, beta, pot_base)
+
         return (coords, E, rmsds, info)
 
     elif(method == "Infrequent WT MetaD"):
