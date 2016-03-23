@@ -305,7 +305,7 @@ def integrate_step(coords, history, w,  delta, DT, potfunc, p0, m, dt,
         newcoords = (coords + (pplus/m) * dt + fbiased/m * ((dt**2) / 2))[0]
 
         [vnew, f2, _] = selected_pot(newcoords)
-        [vnew, f2, newcoords, bcbias] = apply_bc(vnew, f2, newcoords)
+        [vnew, f2, newcoords, bcbias, _] = apply_bc(vnew, f2, newcoords)
         f2biased = calc_biased_force(newcoords, history, w, delta, f2,
                                      dimension)
         pminus = pplus + (fbiased/2 + f2biased/2)*dt
@@ -332,7 +332,7 @@ def integrate_step(coords, history, w,  delta, DT, potfunc, p0, m, dt,
 
         [vnew, f2, _] = selected_pot(newcoordx, newcoordy)
         newcoords = np.array([newcoordx, newcoordy])
-        [vnew, f2, newcoords, bcbias] = apply_bc(vnew, f2, newcoords)
+        [vnew, f2, newcoords, bcbias, _] = apply_bc(vnew, f2, newcoords)
         [f2biasedx, f2biasedy] = calc_biased_force(newcoords, history, w,
                                                    delta, f2, dimension)
 
