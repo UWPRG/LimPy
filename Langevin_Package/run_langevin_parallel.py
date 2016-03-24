@@ -50,10 +50,13 @@ for i in range(0, num_iter):
 collected_time_data = comm.gather(timedata, root=0)
 
 if rank == 0:
-    print collected_time_data
     collect = np.asarray(collected_time_data)
     collect = np.reshape(collect, (num_iter*size, 2))
-    np.savetxt(filetitle+'_Allevents.csv', collect, delimiter=',')
+    np.savetxt(filetitle+'_Allevents.csv', collect, delimiter=',') 
+#    for g in range(num_iter*size):
+#    with open(filetitle + '_Allevents.csv', "ab") as f:
+#            writer = csv.writer(f)
+#            writer.writerow([collect[:][0], collect[:][1]])
     ks_results = perform_ks_analysis(filetitle + '_Allevents.csv')
 
     with open(filetitle + '_statistics.csv', "ab") as f:
