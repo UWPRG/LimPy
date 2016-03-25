@@ -139,7 +139,7 @@ def simulate_1Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
     FES = np.zeros_like(xlong)
     icount = np.zeros_like(xlong)
 
-    E[0] = 0.5*p**2 + iv
+    E[0] = 0.5*p**2/m + iv
 
     info = ('Parameters: \n' + 'Number of steps: ' + str(steps) + '\n' +
             'Initial x coordinate ' + str(x0) + '\n' + 'Temperature ' +
@@ -197,7 +197,7 @@ def simulate_1Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
         p = pnew
 
         coords[i+1] = newcoord
-        E[i+1] = 0.5 * p**2 + vnew
+        E[i+1] = 0.5 * p**2/m + vnew
 
         time = np.append(time, dt*(i+1))
 
