@@ -1,6 +1,6 @@
 """This is a script to create a GUI for inputs for Langevin Integrator."""
 # import pdb
-# import os
+import os
 import sys
 # import math
 import csv
@@ -331,9 +331,8 @@ class Form(QWidget):
             movieflag = 0
             # Read in inputs from csv file
             if cb2.isChecked():
-                inputsfile = str(textboxrf.text())
-                filename = pd.read_csv(inputsfile+'.csv')
-                inputdata = lf.get_parameters(filename)
+                inputsfile = os.getcwd() + '/' + str(textboxrf.text())
+                inputdata = lf.get_parameters(inputsfile)
                 inps = inputdata[0]
                 mdps = inputdata[1]
                 dimension = inputdata[2]
@@ -341,7 +340,7 @@ class Form(QWidget):
                 potfunc = inputdata[4]
                 filetitle = inputdata[5]
                 makeplot = inputdata[6]
-                trials = mdps[-1]
+                trials = int(mdps[-1])
                 if method == "Infrequent WT MetaD":
                     for its in range(0, trials):
                         if dimension == '1-D Potential':
