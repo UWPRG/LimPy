@@ -451,7 +451,7 @@ class Form(QWidget):
             movieflag = 0
             # Read in inputs from csv file
             if cb2.isChecked():
-                inputsfile = (os.getcwd() + '/inputsfiles/' +
+                inputsfile = (os.getcwd() + '/inputfiles/' +
                               str(textboxrf.text()))
                 inputdata = lf.get_parameters(inputsfile)
                 inps = inputdata[0]
@@ -461,6 +461,8 @@ class Form(QWidget):
                 potfunc = inputdata[4]
                 filetitle = inputdata[5]
                 makeplot = inputdata[6]
+                plot_freq = int(inputdata[7])
+                make_movie = inputdata[8]
                 trials = int(mdps[-1])
                 if method == "Infrequent WT MetaD":
                     for its in range(0, trials):
@@ -468,12 +470,14 @@ class Form(QWidget):
                             trial = simulate_1Dsystem(inps, mdps,
                                                       dimension, method,
                                                       potfunc, filetitle,
-                                                      makeplot)
+                                                      makeplot, plot_freq,
+                                                      make_movie)
                         else:
                             trial = simulate_2Dsystem(inps, mdps,
                                                       dimension, method,
                                                       potfunc, filetitle,
-                                                      makeplot)
+                                                      makeplot, plot_freq,
+                                                      make_movie)
                         if its == 0:
                             timedata = np.array([trial[0], trial[1]])
                         else:
@@ -494,14 +498,16 @@ class Form(QWidget):
                         trial = simulate_1Dsystem(inps, mdps,
                                                   dimension, method,
                                                   potfunc, filetitle,
-                                                  makeplot)
+                                                  makeplot, plot_freq,
+                                                  make_movie)
                         colvar = pd.DataFrame({'CV': trial[0], 'E': trial[1]})
                         colvar.reset_index('CV')
                     else:
                         trial = simulate_2Dsystem(inps, mdps,
                                                   dimension, method,
                                                   potfunc, filetitle,
-                                                  makeplot)
+                                                  makeplot, plot_freq,
+                                                  make_movie)
                         colvar = pd.DataFrame({'CV1': trial[0][:, 0],
                                                'CV2': trial[0][:, 1],
                                                'E': trial[1]})
@@ -588,8 +594,12 @@ class Form(QWidget):
                                     float(textbox8.text()),
                                     float(textbox9.text())])
                     loops = int(textbox10.text())
-                # if cb.isChecked():
-                #     movieflag = 1
+                plot_freq = float(textboxguf.text())
+                if cb.isChecked():
+                    make_movie = 'True'
+                    makeplot = 'True'
+                else:
+                    make_movie = 'False'
                 # Infrequent Metadynamics Loop
                 if (method == "Infrequent WT MetaD"):
                     for its in range(0, loops):
@@ -597,39 +607,43 @@ class Form(QWidget):
                             trial = simulate_1Dsystem(inps, mdps,
                                                       dimension, method,
                                                       potential, filetitle,
-                                                      makeplot)
+                                                      makeplot, plot_freq,
+                                                      make_movie)
                         else:
                             trial = simulate_2Dsystem(inps, mdps,
                                                       dimension, method,
                                                       potential, filetitle,
-                                                      makeplot)
+                                                      makeplot, plot_freq,
+                                                      make_movie)
                         if its == 0:
                             timedata = np.array([trial[0], trial[1]])
                         else:
                             timedata = np.append(timedata,
                                                  np.array([trial[0],
                                                           trial[1]]))
-                        collect = np.asarray(timedata)
-                        collect = np.reshape(collect, (num_iter*size, 2))
-                        np.savetxt(filetitle+'_Allevents.csv', collect,
-                                   delimiter=',')
-                        with open(filetitle + 'info.csv', "wb") as f:
-                            writer = csv.writer(f)
-                            writer.writerow([trial[2]])
+                    collect = np.asarray(timedata)
+                    collect = np.reshape(collect, (loops, 2))
+                    np.savetxt(filetitle+'_Allevents.csv', collect,
+                               delimiter=',')
+                    with open(filetitle + 'info.csv', "wb") as f:
+                        writer = csv.writer(f)
+                        writer.writerow([trial[2]])
                     # Get converged FES
                 else:
                     if dimension == '1-D Potential':
                         trial = simulate_1Dsystem(inps, mdps,
                                                   dimension, method,
-                                                  potfunc, filetitle,
-                                                  makeplot)
+                                                  potential, filetitle,
+                                                  makeplot, plot_freq,
+                                                  make_movie)
                         colvar = pd.DataFrame({'CV': trial[0], 'E': trial[1]})
                         colvar.reset_index('CV')
                     else:
                         trial = simulate_2Dsystem(inps, mdps,
                                                   dimension, method,
-                                                  potfunc, filetitle,
-                                                  makeplot)
+                                                  potential, filetitle,
+                                                  makeplot, plot_freq,
+                                                  make_movie)
                         colvar = pd.DataFrame({'CV1': trial[0][:, 0],
                                                'CV2': trial[0][:, 1],
                                                'E': trial[1]})

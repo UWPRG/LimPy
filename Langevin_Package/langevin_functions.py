@@ -79,6 +79,8 @@ def get_parameters(input_file):
     inps[12] = float(inputs['Gamma'][0])
     inps[13] = float(inputs['Kb'][0])
     makeplot = str((inputs['Plotting'][0]))
+    plot_freq = str((inputs['Plot Freq'][0]))
+    make_movie = str((inputs['Make Movie'][0]))
     potfunc = str(inputs['Potential_Function'][0])
     mdps = np.zeros(5)
     mdps[0] = float(inputs['Gaussian Height'][0])
@@ -87,7 +89,8 @@ def get_parameters(input_file):
     mdps[3] = float(inputs['Well Temperature'][0])
     mdps[4] = float(inputs['Trials'][0])
 
-    return (inps, mdps, dimension, method, potfunc, filetitle, makeplot)
+    return (inps, mdps, dimension, method, potfunc, filetitle, makeplot,
+            plot_freq, make_movie)
 
 
 def calc_biased_pot(coords, history, w, delta, dimension):

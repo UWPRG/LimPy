@@ -20,17 +20,18 @@ method = received[3]
 potfunc = received[4]
 filetitle = received[5]
 makeplot = received[6]
-
+plot_freq = received[7]
+make_movie = received[8]
 np.set_printoptions(threshold=np.nan)
 trials = mdps[-1]
 checkprogress = 0
 while checkprogress < trials+1:
     if dimension == '1-D Potential':
         trial = simulate_1Dsystem(inps, mdps, dimension, method, potfunc,
-                                  filetitle, makeplot)
+                                  filetitle, makeplot, plot_freq, make_movie)
     else:
         trial = simulate_2Dsystem(inps, mdps, dimension, method, potfunc,
-                                  filetitle, makeplot)
+                                  filetitle, makeplot, plot_freq, make_movie)
     if method == 'Infrequent WT MetaD':
         with open(filetitle + '_Allevents.csv', "ab") as f:
                 writer = csv.writer(f)

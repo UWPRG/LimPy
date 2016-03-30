@@ -2,7 +2,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy as sp
-
+import os
 import math
 
 
@@ -11,7 +11,7 @@ import langevin_functions as lf
 
 
 def simulate_2Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
-                      makeplot):
+                      makeplot, plot_frequency, make_movie):
     """
     Simulate a walker in a 2D potential.
 
@@ -44,6 +44,13 @@ def simulate_2Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
 
         makeplot   : Boolean
                      If True, make plots, else don't make plots
+
+        plot_freq  : integer
+                     Defines how often the plot generated is updated
+
+        make_movie : Boolean
+                     If True, save plot images as pngs. If false, then no
+                     images are saved.
     Returns:
     --------
         sim_time   : float
@@ -98,6 +105,13 @@ def simulate_2Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
         hfreq = mdps[2]
         DT = mdps[3]
         w = np.array([0.0])
+
+    if (make_movie == 'True'):
+        if os.path.exists(filetitle+"_movies"):
+            os.rmdir(filetitle+"_movies")
+        os.mkdir(filetitle+"_movies")
+        frame = 0
+        os.chdir(filetitle+"_movies")
 
     gamma = inps[12]  # Friction factor
     beta = 1 / T / (kb)  # units of 1/kcal
@@ -261,7 +275,7 @@ def simulate_2Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
                                                      coords[i+1, 1]]),
                                            xinc, xmin, xmax,
                                            yinc, ymin, ymax, E[i+1])
-        if makeplot == 'True' and sp.mod(i, 1000) == 0:
+        if makeplot == 'True' and sp.mod(i, plot_freq) == 0:
             bias = np.copy(pot_base)
             for yc in range(0, ylong.size):
                 for xc in range(0, xlong.size):
@@ -297,6 +311,10 @@ def simulate_2Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
             plt.ylabel("CV2")
             plt.draw()
             plt.pause(0.0001)
+            if (make_movie == 'True'):
+                filename = "movieframe" + str(frame)
+                plt.savefig(filename + '.png', bbox_inches='tight')
+                frame = frame + 1
         i = i + 1
 
     if(method != "Infrequent WT MetaD"):
