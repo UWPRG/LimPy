@@ -8,6 +8,7 @@ import csv
 # import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import markdown
 # import scipy as sp
 
 # from mpl_toolkits.mplot3d import Axes3D
@@ -15,7 +16,7 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
 import langevin_functions as lf
-
+import potential_functions as pf
 from simulate1D import simulate_1Dsystem
 from simulate2D import simulate_2Dsystem
 
@@ -34,41 +35,55 @@ class Form(QWidget):
         Label1 = QLabel('Steps')
         layout.addWidget(Label1, 1, 0)
         textbox1 = QLineEdit()
+        textbox1.setText('1000000')
         layout.addWidget(textbox1, 1, 1)
         Label2 = QLabel('Time Step')
         layout.addWidget(Label2, 2, 0)
         textbox2 = QLineEdit()
+        textbox2.setText('0.01')
         layout.addWidget(textbox2, 2, 1)
         Label4 = QLabel('T(K)')
         layout.addWidget(Label4, 3, 0)
         textbox4 = QLineEdit()
+        textbox4.setText('300')
         layout.addWidget(textbox4, 3, 1)
         Label5 = QLabel('Mass')
         layout.addWidget(Label5, 4, 0)
         textbox5 = QLineEdit()
+        textbox5.setText('1')
         layout.addWidget(textbox5, 4, 1)
         btn = QPushButton('Lock in Values')
         layout.addWidget(btn, 16, 0)
-        # cb = QCheckBox('Make Movie')
-        # layout.addWidget(cb, 14, 0)
+        helpbtn = QPushButton('HELP')
+        layout.addWidget(helpbtn, 16, 4)
+        cbsp = QCheckBox('Show Plot')
+        layout.addWidget(cbsp, 1, 4)
+        Labelguf = QLabel('Graph Update Frequency (steps):')
+        layout.addWidget(Labelguf, 3, 4)
+        textboxguf = QLineEdit()
+        textboxguf.setText('1000')
+        layout.addWidget(textboxguf, 4, 4)
+        cb = QCheckBox('Make Movie')
+        layout.addWidget(cb, 2, 4)
         cb2 = QCheckBox('Read File for Inputs')
-        layout.addWidget(cb2, 14, 2)
+        layout.addWidget(cb2, 14, 3)
         Labelfn = QLabel('Data Filename:')
         layout.addWidget(Labelfn, 15, 0)
         textboxfn = QLineEdit()
         layout.addWidget(textboxfn, 15, 1)
         Labelrf = QLabel('Read Filename:')
-        layout.addWidget(Labelrf, 15, 2)
+        layout.addWidget(Labelrf, 15, 3)
         textboxrf = QLineEdit()
-        layout.addWidget(textboxrf, 15, 3)
+        layout.addWidget(textboxrf, 15, 4)
         Labelgm = QLabel('Gamma:')
         layout.addWidget(Labelgm, 13, 0)
         textboxgm = QLineEdit()
+        textboxgm.setText('5')
         layout.addWidget(textboxgm, 13, 1)
+        potential_options = pf.get_potential_dict()
+        po = ["Choose a Potential Function"] + potential_options.keys()
         combo = QComboBox()
-        combo.addItems(["Choose a Potential Function", "cosine_potential",
-                        "two_gaussian_potential", "mueller_brown_potential",
-                        "pv_2D_potential"])
+        combo.addItems(po)
         combo2 = QComboBox()
         combo2.addItems(["Choose a Method", "MD", "Metadynamics",
                         "Well-Tempered Metadynamics", "Infrequent WT MetaD"])
@@ -79,6 +94,24 @@ class Form(QWidget):
         global cc
         cc = 0
         count = 0
+
+        def showhelp():
+            msg = QMessageBox()
+            msg.setText('Steps: Number of time steps in simulation' + 2*'\n' +
+                        'Time step: Step size in units of time' + 2*'\n' +
+                        'T(K): Temperature in units of Kelvin' + 2*'\n' +
+                        'Mass: Mass' + 2*'\n' +
+                        'Gamma: Friction Factor' + 2*'\n' +
+                        'X0: Starting X value' + 2*'\n' +
+                        'Xmin: Minimum Value on X axis' + 2*'\n' +
+                        'Xmax: Maximum Value on X Axis' + 2*'\n' +
+                        'Xinc: X axis grid spacing' + 2*'\n' +
+                        'Y0: Starting Y value' + 2*'\n' +
+                        'Ymin: Minimum Y value on X axis' + 2*'\n' +
+                        'Ymax: Maximum Y value on X Axis' + 2*'\n' +
+                        'Yinc: Y axis grid spacing' + '\n'
+                        )
+            retval = msg.exec_()
 
         def onActivated(text):
             global Label3
@@ -99,8 +132,7 @@ class Form(QWidget):
             global textboxy3
             global count
             # Dropdown menu for 1-D or 2-D Potential
-            if (text == "cosine_potential" or
-               text == "two_gaussian_potential"):
+            if (text == "cosine_potential"):
                 if count == 1:
                     layout.removeWidget(Labely)
                     layout.removeWidget(textboxy)
@@ -122,22 +154,110 @@ class Form(QWidget):
                 Label3 = QLabel('X0')
                 layout.addWidget(Label3, 5, 0)
                 textbox3 = QLineEdit()
+                textbox3.setText('3.14')
                 layout.addWidget(textbox3, 5, 1)
                 Label31 = QLabel('Xmin')
                 layout.addWidget(Label31, 6, 0)
                 textbox31 = QLineEdit()
+                textbox31.setText('-0.31')
                 layout.addWidget(textbox31, 6, 1)
                 Label32 = QLabel('Xmax')
                 layout.addWidget(Label32, 7, 0)
                 textbox32 = QLineEdit()
+                textbox32.setText('6.5')
                 layout.addWidget(textbox32, 7, 1)
                 Label33 = QLabel('X increment')
                 layout.addWidget(Label33, 8, 0)
                 textbox33 = QLineEdit()
+                textbox33.setText('0.01')
                 layout.addWidget(textbox33, 8, 1)
                 count = 0
-            if (text == "mueller_brown_potential" or
-               text == "pv_2D_potential"):
+            if text == "two_gaussian_potential":
+                if count == 1:
+                    layout.removeWidget(Labely)
+                    layout.removeWidget(textboxy)
+                    Labely.deleteLater()
+                    textboxy.deleteLater()
+                    layout.removeWidget(Labely1)
+                    layout.removeWidget(textboxy1)
+                    Labely1.deleteLater()
+                    textboxy1.deleteLater()
+                    layout.removeWidget(Labely2)
+                    layout.removeWidget(textboxy2)
+                    Labely2.deleteLater()
+                    textboxy2.deleteLater()
+                    layout.removeWidget(Labely3)
+                    layout.removeWidget(textboxy3)
+                    Labely3.deleteLater()
+                    textboxy3.deleteLater()
+
+                Label3 = QLabel('X0')
+                layout.addWidget(Label3, 5, 0)
+                textbox3 = QLineEdit()
+                textbox3.setText('2.67')
+                layout.addWidget(textbox3, 5, 1)
+                Label31 = QLabel('Xmin')
+                layout.addWidget(Label31, 6, 0)
+                textbox31 = QLineEdit()
+                textbox31.setText('-4.0')
+                layout.addWidget(textbox31, 6, 1)
+                Label32 = QLabel('Xmax')
+                layout.addWidget(Label32, 7, 0)
+                textbox32 = QLineEdit()
+                textbox32.setText('4.0')
+                layout.addWidget(textbox32, 7, 1)
+                Label33 = QLabel('X increment')
+                layout.addWidget(Label33, 8, 0)
+                textbox33 = QLineEdit()
+                textbox33.setText('0.01')
+                layout.addWidget(textbox33, 8, 1)
+                count = 0
+
+            if (text == "pv_2D_potential"):
+
+                Label3 = QLabel('X0')
+                layout.addWidget(Label3, 5, 0)
+                textbox3 = QLineEdit()
+                textbox3.setText('1.5')
+                layout.addWidget(textbox3, 5, 1)
+                Label31 = QLabel('Xmin')
+                layout.addWidget(Label31, 6, 0)
+                textbox31 = QLineEdit()
+                textbox31.setText('0')
+                layout.addWidget(textbox31, 6, 1)
+                Label32 = QLabel('Xmax')
+                layout.addWidget(Label32, 7, 0)
+                textbox32 = QLineEdit()
+                textbox32.setText('3.0')
+                layout.addWidget(textbox32, 7, 1)
+                Label33 = QLabel('X increment')
+                layout.addWidget(Label33, 8, 0)
+                textbox33 = QLineEdit()
+                textbox33.setText('0.01')
+                layout.addWidget(textbox33, 8, 1)
+                Labely = QLabel('Y0')
+                layout.addWidget(Labely, 9, 0)
+                textboxy = QLineEdit()
+                textboxy.setText('0.6')
+                layout.addWidget(textboxy, 9, 1)
+                Labely1 = QLabel('Ymin')
+                layout.addWidget(Labely1, 10, 0)
+                textboxy1 = QLineEdit()
+                textboxy1.setText('-2.0')
+                layout.addWidget(textboxy1, 10, 1)
+                Labely2 = QLabel('Ymax')
+                layout.addWidget(Labely2, 11, 0)
+                textboxy2 = QLineEdit()
+                textboxy2.setText('2.0')
+                layout.addWidget(textboxy2, 11, 1)
+                Labely3 = QLabel('Y increment')
+                layout.addWidget(Labely3, 12, 0)
+                textboxy3 = QLineEdit()
+                textboxy3.setText('0.01')
+                layout.addWidget(textboxy3, 12, 1)
+                count = 1
+
+            if text == "mueller_brown_potential":
                 Label3 = QLabel('X0')
                 layout.addWidget(Label3, 5, 0)
                 textbox3 = QLineEdit()
@@ -317,7 +437,7 @@ class Form(QWidget):
         layout.addWidget(combo, 0, 1)
         combo2.activated[str].connect(onActive)
         layout.addWidget(combo2, 0, 2)
-        layout.addWidget(combo3, 0, 3)
+        layout.addWidget(combo3, 0, 4)
         w.setLayout(layout)
         w.connect(btn, SIGNAL("clicked()"), w, SLOT("close()"))
 
@@ -331,7 +451,8 @@ class Form(QWidget):
             movieflag = 0
             # Read in inputs from csv file
             if cb2.isChecked():
-                inputsfile = os.getcwd() + '/' + str(textboxrf.text())
+                inputsfile = (os.getcwd() + '/inputsfiles/' +
+                              str(textboxrf.text()))
                 inputdata = lf.get_parameters(inputsfile)
                 inps = inputdata[0]
                 mdps = inputdata[1]
@@ -353,7 +474,7 @@ class Form(QWidget):
                                                       dimension, method,
                                                       potfunc, filetitle,
                                                       makeplot)
-                        if i == 0:
+                        if its == 0:
                             timedata = np.array([trial[0], trial[1]])
                         else:
                             timedata = np.append(timedata,
@@ -374,11 +495,22 @@ class Form(QWidget):
                                                   dimension, method,
                                                   potfunc, filetitle,
                                                   makeplot)
+                        colvar = pd.DataFrame({'CV': trial[0], 'E': trial[1]})
+                        colvar.reset_index('CV')
                     else:
                         trial = simulate_2Dsystem(inps, mdps,
                                                   dimension, method,
                                                   potfunc, filetitle,
                                                   makeplot)
+                        colvar = pd.DataFrame({'CV1': trial[0][:, 0],
+                                               'CV2': trial[0][:, 1],
+                                               'E': trial[1]})
+                        colvar.reset_index('CV1')
+                    colvar.index.name = 'Step'
+                    if method == "MD":
+                        colvar.to_csv(filetitle+'_MD.csv')
+                    else:
+                        colvar.to_csv(filetitle+'_COLVAR.csv')
                     with open(filetitle+'info.csv', "wb") as f:
                         writer = csv.writer(f)
                         writer.writerow(['RMSD', 'RMSDKLD',
@@ -391,7 +523,10 @@ class Form(QWidget):
                         writer.writerow([trial[1]])
 
             else:
-                makeplot = 'True'
+                if cbsp.isChecked():
+                    makeplot = 'True'
+                else:
+                    makeplot = 'False'
                 method = str(combo2.currentText())
                 potential = str(combo.currentText())
                 units = str(combo3.currentText())
@@ -410,7 +545,6 @@ class Form(QWidget):
                 else:
                     dimension = '2-D Potential'
                 filetitle = str(textboxfn.text())
-                makeplot = 'True'
                 if (dimension == '1-D Potential'):
                     inps = np.array([float(textbox1.text()),
                                     float(textbox2.text()),
@@ -469,7 +603,7 @@ class Form(QWidget):
                                                       dimension, method,
                                                       potential, filetitle,
                                                       makeplot)
-                        if i == 0:
+                        if its == 0:
                             timedata = np.array([trial[0], trial[1]])
                         else:
                             timedata = np.append(timedata,
@@ -483,30 +617,41 @@ class Form(QWidget):
                             writer = csv.writer(f)
                             writer.writerow([trial[2]])
                     # Get converged FES
+                else:
+                    if dimension == '1-D Potential':
+                        trial = simulate_1Dsystem(inps, mdps,
+                                                  dimension, method,
+                                                  potfunc, filetitle,
+                                                  makeplot)
+                        colvar = pd.DataFrame({'CV': trial[0], 'E': trial[1]})
+                        colvar.reset_index('CV')
                     else:
-                        if dimension == '1-D Potential':
-                            trial = simulate_1Dsystem(inps, mdps,
-                                                      dimension, method,
-                                                      potential, filetitle,
-                                                      makeplot)
-                        else:
-                            trial = simulate_2Dsystem(inps, mdps,
-                                                      dimension, method,
-                                                      potential, filetitle,
-                                                      makeplot)
-                        with open(filetitle+'info.csv', "wb") as f:
-                            writer = csv.writer(f)
-                            writer.writerow(['RMSD', 'RMSDKLD',
-                                            'RMSDAligned'])
-                            writer.writerow([trial[2]])
-                            writer.writerow([trial[3]])
-                        with open(filetitle+'info.csv', "wb") as f:
-                            writer = csv.writer(f)
-                            writer.writerow([trial[0]])
-                            writer.writerow([trial[1]])
+                        trial = simulate_2Dsystem(inps, mdps,
+                                                  dimension, method,
+                                                  potfunc, filetitle,
+                                                  makeplot)
+                        colvar = pd.DataFrame({'CV1': trial[0][:, 0],
+                                               'CV2': trial[0][:, 1],
+                                               'E': trial[1]})
+                        colvar.reset_index('CV1')
+                    colvar.index.name = 'Step'
+                    if method == "MD":
+                        colvar.to_csv(filetitle+'_MD.csv')
+                    else:
+                        colvar.to_csv(filetitle+'_COLVAR.csv')
+                    with open(filetitle+'info.csv', "wb") as f:
+                        writer = csv.writer(f)
+                        writer.writerow(['RMSD', 'RMSDKLD',
+                                        'RMSDAligned'])
+                        writer.writerow([trial[2]])
+                        writer.writerow([trial[3]])
+                    with open(filetitle+'info.csv', "wb") as f:
+                        writer = csv.writer(f)
+                        writer.writerow([trial[0]])
+                        writer.writerow([trial[1]])
 
         btn.clicked.connect(on_click)
-
+        helpbtn.clicked.connect(showhelp)
 app = QApplication(sys.argv)
 form = Form()
 form.show()

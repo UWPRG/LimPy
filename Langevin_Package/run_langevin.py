@@ -47,6 +47,7 @@ while checkprogress < trials+1:
                                    'CV2': trial[0][:, 1],
                                    'E': trial[1]})
             colvar.reset_index('CV1')
+        colvar.index.name = 'Step'
         colvar.to_csv(filetitle+'_COLVAR.csv')
         with open(filetitle + '_info.csv', "ab") as f:
                 writer = csv.writer(f)
@@ -73,6 +74,9 @@ if method == 'Infrequent WT MetaD':
                 writer.writerow([means, pvals, reject])
         checkprogress = pd.read_csv('bootstrapped.csv')
         checkaccept = checkprogress[checkprogress['Rejected'] == 'No']
+        if ((len(checkprogress) - len(checkaccept))/len(checkprogress) >
+           0.90 and len(checkprogress) > 100):
+            break
         monitor = len(checkaccept)
 
     finisheddata = pd.read_csv('bootstrapped.csv')
