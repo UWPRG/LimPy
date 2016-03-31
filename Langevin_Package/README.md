@@ -9,6 +9,7 @@ This package can be operated to run from the command line (`run_langevin.py`) or
 ## Quick Start:
 ----
 ### Inputs:
+**Input File**
 The inputs specifying the system, method, parameters, and visualization options can be received via an inputs file or through a user interface.
 
 The inputs files contains all of the specified inputs for the system of interest in the format below. Note information following #'s are comments indicating other options for those inputs.
@@ -47,9 +48,10 @@ Kb,0.001987#kcal/mol
 Each of the definitions can be defined in the key below.
 
 ----
- ![alt text](https://github.com/UWPRG/Chris_Scripts/blob/master/Langevin_Package/Input%20Definitions.png)
+ ![alt text](https://github.com/UWPRG/Chris_Scripts/blob/master/Langevin_Package/Images/Input%20Definitions.png)
 ----
+**GUI**
+The user can also input parameters directly through a user interface. For the preloaded potential functions, default variables are preloaded as inputs!
 
+![alt text](https://github.com/UWPRG/Chris_Scripts/blob/master/Langevin_Package/Images/GUI_window.png)
 ----
-#### Parallel:
-The integrator may be called through a .pbs file if operating on a scheduler.
