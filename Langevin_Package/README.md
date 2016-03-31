@@ -96,7 +96,7 @@ def your_potential(coords):
         Trigger = False
 
     return (V, F, Trigger)
-    ```
+```
 2) Then add the new function to the dictionary of function in `get_potential_dict()` in `potential_functions.py`.
 
 3) Define the boundary condition function for the new function (even if there is none).
