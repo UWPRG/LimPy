@@ -146,7 +146,7 @@ def simulate_1Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
         plt.draw()
         plt.pause(0.0001)
 
-    v0 = sp.rand(1)-0.5
+    v0 = np.random.normal(0, 1, 1)
     p = v0 * m
     is_periodic = selected_bc(iv, selected_pot(x0)[1], coords[0])[4]
 

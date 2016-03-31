@@ -147,8 +147,8 @@ def simulate_2Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
     coords[0, 1] = y0
     cmap = plt.cm.PRGn
     levels = np.arange(np.min(pot_base), np.max(pot_base)+0.25, 0.25)
-    v0x = sp.rand(1) - 0.5
-    v0y = sp.rand(1) - 0.5
+    v0x = np.random.normal(0, 1, 1)
+    v0y = np.random.normal(0, 1, 1)
     px = v0x * m
     py = v0y * m
     p = np.array([px, py])
