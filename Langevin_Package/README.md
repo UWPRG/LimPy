@@ -43,7 +43,7 @@ Plot Freq,1000
 Make Movie,True
 Kb,0.001987#kcal/mol
 ```
-**All lines must be included for a properly formatted input file, however a line is not applicable to a system (i.e. Y parameters for a 1-D system), then just ignore those contents are change to values to 0.**
+**All lines must be included for a properly formatted input file, however a line is not applicable to a system (i.e. Y parameters for a 1-D system), then just ignore those contents or change the values to 0.**
 
 Each of the definitions can be defined in the key below.
 
@@ -59,7 +59,7 @@ The user interface also provides the option to read the inputs from an input fil
 ----
 ### Adding a New Potential
 
-While the Langevin_Package comes with potential functions already pre-loaded, a user can add new ones to the package in just a few easy steps!
+While the Langevin_Package comes with potential functions already pre-defined, a user can add new ones to the package in just a few easy steps!
 
 1) Open up `potential_functions.py` and add a new function following the template below. Just fill in the inputs.
 ```python
@@ -137,4 +137,4 @@ def your_potential_bc(vnew,f2,coords):
 ```
 4) Add the new function to the `get_boundary_condition_dict()` in `potential_functions.py` with the same key as the the entry in the `get_potential_dict()`
 
-5) You can now call your new function from an input file or GUI using the key for the dictionary entries.
+5) You can now call your new function from an input file using the key for the dictionary entries or select it from the dropdown menu in the GUI.

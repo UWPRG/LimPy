@@ -1,0 +1,25 @@
+Parameter,Input
+Dimension,1-D Potential
+Method,Infrequent WT MetaD#Well-Tempered Metadynamics, MD, Infrequent WT MetaD, Metadynamics
+Potential_Function,cosine_potential
+Plotting,True
+Steps,5000000
+Step size,.000002
+Temperature,300
+Mass,1
+X0,3.14159
+Xmin,-6.2
+Xmax,12.5
+Xincrement,0.01
+Y0,0.5
+Ymin,-2
+Ymax,2
+Yincrement,0.01
+Gaussian Height,1046
+Gaussian Width,0.07
+Deposition Frequency,1000000
+Well Temperature,10000
+Trials,100
+Data Filename,cosinetenthstep
+Gamma,5
+Kb,8.314
