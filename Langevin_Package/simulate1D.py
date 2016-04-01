@@ -121,7 +121,7 @@ def simulate_1Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
     time = np.array([0.0])
     walkerpot = np.array([0.0])
 
-    pot_dict = get_potential_dict()
+    (pot_dict,_) = get_potential_dict()
     bc_dict = get_boundary_condition_dict()
     try:
         selected_pot = pot_dict[potfunc]
@@ -246,6 +246,7 @@ def simulate_1Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
 
     if(method != "Infrequent WT MetaD"):
         rmsds = lf.calc_rmsd(FES, beta, pot_base)
+        pdb.set_trace()
         return (coords, E, rmsds, info)
 
     elif(method == "Infrequent WT MetaD"):

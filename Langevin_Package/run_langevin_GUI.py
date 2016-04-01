@@ -8,7 +8,7 @@ import csv
 # import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import markdown
+
 # import scipy as sp
 
 # from mpl_toolkits.mplot3d import Axes3D
@@ -80,7 +80,7 @@ class Form(QWidget):
         textboxgm = QLineEdit()
         textboxgm.setText('5')
         layout.addWidget(textboxgm, 13, 1)
-        potential_options = pf.get_potential_dict()
+        (potential_options,_) = pf.get_potential_dict()
         po = ["Choose a Potential Function"] + potential_options.keys()
         combo = QComboBox()
         combo.addItems(po)
@@ -132,7 +132,14 @@ class Form(QWidget):
             global textboxy3
             global count
             # Dropdown menu for 1-D or 2-D Potential
-            if (text == "cosine_potential"):
+            (_,dims) = pf.get_potential_dict()
+            psets = pf.get_GUI_presets_dict()
+            pdim = dims[str(text)]
+            try:
+                presetvals = psets[str(text)]
+            except:
+                presetvals = np.array([0,0,0,0,0,0,0,0]).astype(str)
+            if (pdim == "1-D Potential"):
                 if count == 1:
                     layout.removeWidget(Labely)
                     layout.removeWidget(textboxy)
@@ -154,141 +161,66 @@ class Form(QWidget):
                 Label3 = QLabel('X0')
                 layout.addWidget(Label3, 5, 0)
                 textbox3 = QLineEdit()
-                textbox3.setText('3.14')
+                textbox3.setText(presetvals[0])
                 layout.addWidget(textbox3, 5, 1)
                 Label31 = QLabel('Xmin')
                 layout.addWidget(Label31, 6, 0)
                 textbox31 = QLineEdit()
-                textbox31.setText('-0.31')
+                textbox31.setText(presetvals[1])
                 layout.addWidget(textbox31, 6, 1)
                 Label32 = QLabel('Xmax')
                 layout.addWidget(Label32, 7, 0)
                 textbox32 = QLineEdit()
-                textbox32.setText('6.5')
+                textbox32.setText(presetvals[2])
                 layout.addWidget(textbox32, 7, 1)
                 Label33 = QLabel('X increment')
                 layout.addWidget(Label33, 8, 0)
                 textbox33 = QLineEdit()
-                textbox33.setText('0.01')
+                textbox33.setText(presetvals[3])
                 layout.addWidget(textbox33, 8, 1)
                 count = 0
-            if text == "two_gaussian_potential":
-                if count == 1:
-                    layout.removeWidget(Labely)
-                    layout.removeWidget(textboxy)
-                    Labely.deleteLater()
-                    textboxy.deleteLater()
-                    layout.removeWidget(Labely1)
-                    layout.removeWidget(textboxy1)
-                    Labely1.deleteLater()
-                    textboxy1.deleteLater()
-                    layout.removeWidget(Labely2)
-                    layout.removeWidget(textboxy2)
-                    Labely2.deleteLater()
-                    textboxy2.deleteLater()
-                    layout.removeWidget(Labely3)
-                    layout.removeWidget(textboxy3)
-                    Labely3.deleteLater()
-                    textboxy3.deleteLater()
+
+            if (pdim == "2-D Potential"):
 
                 Label3 = QLabel('X0')
                 layout.addWidget(Label3, 5, 0)
                 textbox3 = QLineEdit()
-                textbox3.setText('2.67')
+                textbox3.setText(presetvals[0])
                 layout.addWidget(textbox3, 5, 1)
                 Label31 = QLabel('Xmin')
                 layout.addWidget(Label31, 6, 0)
                 textbox31 = QLineEdit()
-                textbox31.setText('-4.0')
+                textbox31.setText(presetvals[1])
                 layout.addWidget(textbox31, 6, 1)
                 Label32 = QLabel('Xmax')
                 layout.addWidget(Label32, 7, 0)
                 textbox32 = QLineEdit()
-                textbox32.setText('4.0')
+                textbox32.setText(presetvals[2])
                 layout.addWidget(textbox32, 7, 1)
                 Label33 = QLabel('X increment')
                 layout.addWidget(Label33, 8, 0)
                 textbox33 = QLineEdit()
-                textbox33.setText('0.01')
-                layout.addWidget(textbox33, 8, 1)
-                count = 0
-
-            if (text == "pv_2D_potential"):
-
-                Label3 = QLabel('X0')
-                layout.addWidget(Label3, 5, 0)
-                textbox3 = QLineEdit()
-                textbox3.setText('1.5')
-                layout.addWidget(textbox3, 5, 1)
-                Label31 = QLabel('Xmin')
-                layout.addWidget(Label31, 6, 0)
-                textbox31 = QLineEdit()
-                textbox31.setText('0')
-                layout.addWidget(textbox31, 6, 1)
-                Label32 = QLabel('Xmax')
-                layout.addWidget(Label32, 7, 0)
-                textbox32 = QLineEdit()
-                textbox32.setText('3.0')
-                layout.addWidget(textbox32, 7, 1)
-                Label33 = QLabel('X increment')
-                layout.addWidget(Label33, 8, 0)
-                textbox33 = QLineEdit()
-                textbox33.setText('0.01')
+                textbox33.setText(presetvals[3])
                 layout.addWidget(textbox33, 8, 1)
                 Labely = QLabel('Y0')
                 layout.addWidget(Labely, 9, 0)
                 textboxy = QLineEdit()
-                textboxy.setText('0.6')
+                textboxy.setText(presetvals[4])
                 layout.addWidget(textboxy, 9, 1)
                 Labely1 = QLabel('Ymin')
                 layout.addWidget(Labely1, 10, 0)
                 textboxy1 = QLineEdit()
-                textboxy1.setText('-2.0')
+                textboxy1.setText(presetvals[5])
                 layout.addWidget(textboxy1, 10, 1)
                 Labely2 = QLabel('Ymax')
                 layout.addWidget(Labely2, 11, 0)
                 textboxy2 = QLineEdit()
-                textboxy2.setText('2.0')
+                textboxy2.setText(presetvals[6])
                 layout.addWidget(textboxy2, 11, 1)
                 Labely3 = QLabel('Y increment')
                 layout.addWidget(Labely3, 12, 0)
                 textboxy3 = QLineEdit()
-                textboxy3.setText('0.01')
-                layout.addWidget(textboxy3, 12, 1)
-                count = 1
-
-            if text == "mueller_brown_potential":
-                Label3 = QLabel('X0')
-                layout.addWidget(Label3, 5, 0)
-                textbox3 = QLineEdit()
-                layout.addWidget(textbox3, 5, 1)
-                Label31 = QLabel('Xmin')
-                layout.addWidget(Label31, 6, 0)
-                textbox31 = QLineEdit()
-                layout.addWidget(textbox31, 6, 1)
-                Label32 = QLabel('Xmax')
-                layout.addWidget(Label32, 7, 0)
-                textbox32 = QLineEdit()
-                layout.addWidget(textbox32, 7, 1)
-                Label33 = QLabel('X increment')
-                layout.addWidget(Label33, 8, 0)
-                textbox33 = QLineEdit()
-                layout.addWidget(textbox33, 8, 1)
-                Labely = QLabel('Y0')
-                layout.addWidget(Labely, 9, 0)
-                textboxy = QLineEdit()
-                layout.addWidget(textboxy, 9, 1)
-                Labely1 = QLabel('Ymin')
-                layout.addWidget(Labely1, 10, 0)
-                textboxy1 = QLineEdit()
-                layout.addWidget(textboxy1, 10, 1)
-                Labely2 = QLabel('Ymax')
-                layout.addWidget(Labely2, 11, 0)
-                textboxy2 = QLineEdit()
-                layout.addWidget(textboxy2, 11, 1)
-                Labely3 = QLabel('Y increment')
-                layout.addWidget(Labely3, 12, 0)
-                textboxy3 = QLineEdit()
+                textboxy3.setText(presetvals[7])
                 layout.addWidget(textboxy3, 12, 1)
                 count = 1
 
@@ -658,11 +590,9 @@ class Form(QWidget):
                         writer.writerow(['RMSD', 'RMSDKLD',
                                         'RMSDAligned'])
                         writer.writerow([trial[2]])
-                        writer.writerow([trial[3]])
                     with open(filetitle+'info.csv', "wb") as f:
                         writer = csv.writer(f)
-                        writer.writerow([trial[0]])
-                        writer.writerow([trial[1]])
+                        writer.writerow([trial[3]])
 
         btn.clicked.connect(on_click)
         helpbtn.clicked.connect(showhelp)

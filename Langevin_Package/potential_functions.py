@@ -285,10 +285,31 @@ def get_potential_dict():
                       'two_gaussian_potential': two_gaussian_potential,
                       'pv_2D_potential': pv_2D_potential,
                       'muller_brown_potential': muller_brown_potential,
-		              'LJ_potential': LJ_potential,
                       'C_Cl_potential': C_Cl_potential}
 
-    return potential_dict
+    dimension_dict = {'cosine_potential': '1-D Potential',
+                      'two_gaussian_potential': '1-D Potential',
+                      'pv_2D_potential': '2-D Potential',
+                      'muller_brown_potential': '2-D Potential',
+                      'C_Cl_potential': '2-D Potential'}
+
+    return potential_dict, dimension_dict
+
+
+def get_GUI_presets_dict():
+    """Return a dictionary of all of the available potential functions."""
+    preset_dict = {'cosine_potential': np.array([3.14,-6.28,12.57,0.01,0,
+                                                    0,0,0]).astype(str),
+                      'two_gaussian_potential': np.array([2.67,-4,4,0.01,
+                                                          0,0,0,0]).astype(str),
+                      'pv_2D_potential': np.array([1.5,0,3.0,0.01,0.6,-2.0,
+                                                   2.0,0.01]).astype(str),
+                      'muller_brown_potential': np.array([0,0,0,0,0,0,0,
+                                                          0]).astype(str),
+                      'C_Cl_potential': np.array([0,0,0,0,0,0,0,0]).astype(str)
+                    }
+
+    return preset_dict
 
 
 def two_gaussian_potential_bc(vnew, f2, coords):

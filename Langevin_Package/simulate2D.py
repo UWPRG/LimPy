@@ -126,7 +126,7 @@ def simulate_2Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
     time = np.array([0.0])
     walkerpot = np.array([0.0])
 
-    pot_dict = get_potential_dict()
+    (pot_dict,_) = get_potential_dict()
     bc_dict = get_boundary_condition_dict()
     try:
         selected_pot = pot_dict[potfunc]

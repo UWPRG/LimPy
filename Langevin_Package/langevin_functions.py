@@ -60,7 +60,7 @@ def get_parameters(input_file):
     inputs.index = inputs['Parameter']
     inputs = inputs.transpose()
     inputs = inputs.ix[1:]
-    dimension = str(inputs['Dimension'][0])
+    (_,dims) = get_potential_dict()
     method = str(inputs['Method'][0])
     filetitle = str(inputs['Data Filename'][0])
     inps = np.zeros(14)
@@ -82,6 +82,7 @@ def get_parameters(input_file):
     plot_freq = int((inputs['Plot Freq'][0]))
     make_movie = str((inputs['Make Movie'][0]))
     potfunc = str(inputs['Potential_Function'][0])
+    dimension = dims[potfunc]
     mdps = np.zeros(5)
     mdps[0] = float(inputs['Gaussian Height'][0])
     mdps[1] = float(inputs['Gaussian Width'][0])
@@ -281,7 +282,7 @@ def integrate_step(coords, history, w,  delta, DT, potfunc, p0, m, dt,
                   bias from boundary condition
 
     """
-    pot_dict = get_potential_dict()
+    (pot_dict,_) = get_potential_dict()
     try:
         selected_pot = pot_dict[potfunc]
     except KeyError:
