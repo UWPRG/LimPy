@@ -147,7 +147,9 @@ def simulate_1Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
         plt.pause(0.0001)
 
     v0 = np.random.normal(0, 1, 1)
-    p = v0 * m
+    T1 = m*v0**2/kb
+    vscaled = v0 *np.sqrt(300/T1)
+    p = vscaled * m
     is_periodic = selected_bc(iv, selected_pot(x0)[1], coords[0])[4]
 
     FES = np.zeros_like(xlong)

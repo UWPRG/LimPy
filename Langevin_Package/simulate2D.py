@@ -149,8 +149,12 @@ def simulate_2Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
     levels = np.arange(np.min(pot_base), np.max(pot_base)+0.25, 0.25)
     v0x = np.random.normal(0, 1, 1)
     v0y = np.random.normal(0, 1, 1)
-    px = v0x * m
-    py = v0y * m
+    T1x = m*v0x**2/kb
+    T1y = m*v0y**2/kb
+    vscaledx = v0x *np.sqrt(300/T1x)
+    vscaledy = v0y *np.sqrt(300/T1y)
+    px = vscaledx * m
+    py = vscaledy * m
     p = np.array([px, py])
     E[0] = 0.5 * (px**2 + py**2) + iv
 
