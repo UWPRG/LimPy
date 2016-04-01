@@ -54,6 +54,7 @@ while checkprogress < trials+1:
                 writer = csv.writer(f)
                 writer.writerow(['RMSD', 'RMSDkld', 'RMSD alignerr'])
                 writer.writerow([trial[2]])
+                writer.writerow([trial[3]])
         break
 if os.path.isfile(filetitle + '_info.csv') is False:
     with open(filetitle + '_info.csv', "ab") as f:

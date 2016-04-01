@@ -16,7 +16,6 @@ The inputs files contains all of the specified inputs for the system of interest
 
 ```
 Parameter,Input
-Dimension,1-D Potential#2-D Potential
 Method,Well-Tempered Metadynamics#Well-Tempered Metadynamics, MD, Infrequent WT MetaD, Metadynamics
 Potential_Function,cosine_potential
 Plotting,True
@@ -97,9 +96,9 @@ def your_potential(coords):
 
     return (V, F, Trigger)
 ```
-2) Then add the new function to the dictionary of function in `get_potential_dict()` in `potential_functions.py`.
+2) Then add the new function to the dictionary of function in `get_potential_dict()` in `potential_functions.py` and add an entry to the `dimension_dict` as well to indicate if it is a 1 or 2 dimensions. Note the entry must be present in both dictionaries and the dimension entry must be `1-D Potential` or `2-D Potential`.
 
-3) Define the boundary condition function for the new function (even if there is none).
+4) Define the boundary condition function for the new function (even if there is none).
 
 ```python
 def your_potential_bc(vnew,f2,coords):
@@ -138,6 +137,8 @@ def your_potential_bc(vnew,f2,coords):
     # Add changes that need to occur to potential, force, coordinates, or bias.
     return (vnew, f2, coords, bcbias, is_periodic)
 ```
-4) Add the new function to `get_boundary_condition_dict()` in `potential_functions.py` with the same key as the entry in the `get_potential_dict()`
+5) Add the new function to `get_boundary_condition_dict()` in `potential_functions.py` with the same key as the entry in the `get_potential_dict()`.
 
-5) You can now call your new function from an input file using the key for the dictionary entries or select it from the dropdown menu in the GUI.
+6) If you have a set of desired parameters you would like to run through the GUI, add them as a dictionary entry in `get_GUI_presets_dict()`. The key must be the same as the one used in the other dictionaries and the information is an array of strings of {x0,xmin,xmax,xinc,y0,ymin,ymax,yinc}.
+
+7) You can now call your new function from an input file using the key for the dictionary entries or select it from the dropdown menu in the GUI.

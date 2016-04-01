@@ -5,7 +5,6 @@ import scipy as sp
 import os
 
 import math
-import pdb
 
 from potential_functions import get_potential_dict, get_boundary_condition_dict
 import langevin_functions as lf
@@ -40,8 +39,8 @@ def simulate_1Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
         potfunc    : string
                      Defines the potential function to integrate
 
-        filetitle  :  string
-                    Name of files for output
+        filetitle  : string
+                     Name of files for output
 
         makeplot   : Boolean
                      If True, make plots, else don't make plots
@@ -248,7 +247,6 @@ def simulate_1Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
 
     if(method != "Infrequent WT MetaD"):
         rmsds = lf.calc_rmsd(FES, beta, pot_base)
-        pdb.set_trace()
         return (coords, E, rmsds, info)
 
     elif(method == "Infrequent WT MetaD"):

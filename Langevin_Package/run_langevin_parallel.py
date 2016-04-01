@@ -23,9 +23,7 @@ if rank == 0:
 else:
     received = None
 inputdata = comm.bcast(received, root=0)
-# print 'rank:', rank
-# print 'inputdata:', inputdata
-# print 'type:', type(inputdata)
+
 inps = inputdata[0]
 mdps = inputdata[1]
 dimension = inputdata[2]
@@ -37,30 +35,44 @@ plot_freq = inputdata[7]
 make_movie = inputdata[8]
 trials = mdps[-1]
 num_iter = 3
-for i in range(0, num_iter):
-    if dimension == '1-D Potential':
-        trial = simulate_1Dsystem(inps, mdps, dimension, method, potfunc,
-                                  filetitle, makeplot, plot_freq, make_movie)
-    else:
-        trial = simulate_2Dsystem(inps, mdps, dimension, method, potfunc,
-                                  filetitle, makeplot, plot_freq, make_movie)
-    if i == 0:
-        timedata = np.array([trial[0], trial[1]])
-    else:
-        timedata = np.append(timedata, np.array([trial[0], trial[1]]))
-# print timedata
-collected_time_data = comm.gather(timedata, root=0)
+if potfunc == 'Infrequent WT MetaD':
+    for i in range(0, num_iter):
+        if dimension == '1-D Potential':
+            trial = simulate_1Dsystem(inps, mdps, dimension, method, potfunc,
+                                      filetitle, makeplot, plot_freq, make_movie)
+        else:
+            trial = simulate_2Dsystem(inps, mdps, dimension, method, potfunc,
+                                      filetitle, makeplot, plot_freq, make_movie)
+        if i == 0:
+            timedata = np.array([trial[0], trial[1]])
+        else:
+            timedata = np.append(timedata, np.array([trial[0], trial[1]]))
+    # print timedata
+    collected_time_data = comm.gather(timedata, root=0)
 
-if rank == 0:
-    collect = np.asarray(collected_time_data)
-    collect = np.reshape(collect, (num_iter*size, 2))
-    np.savetxt(filetitle+'_Allevents.csv', collect, delimiter=',')
-#    for g in range(num_iter*size):
-#    with open(filetitle + '_Allevents.csv', "ab") as f:
-#            writer = csv.writer(f)
-#            writer.writerow([collect[:][0], collect[:][1]])
-    ks_results = perform_ks_analysis(filetitle + '_Allevents.csv')
+    if rank == 0:
+        collect = np.asarray(collected_time_data)
+        collect = np.reshape(collect, (num_iter*size, 2))
+        np.savetxt(filetitle+'_Allevents.csv', collect, delimiter=',')
+        ks_results = perform_ks_analysis(filetitle + '_Allevents.csv')
 
-    with open(filetitle + '_statistics.csv', "ab") as f:
-            writer = csv.writer(f)
-            writer.writerow([ks_results])
+        with open(filetitle + '_statistics.csv', "ab") as f:
+                writer = csv.writer(f)
+                writer.writerow([ks_results])
+else:
+        if dimension == '1-D Potential':
+            colvar = pd.DataFrame({'CV': trial[0], 'E': trial[1]})
+            colvar.reset_index('CV')
+        else:
+            colvar = pd.DataFrame({'CV1': trial[0][:, 0],
+                                   'CV2': trial[0][:, 1],
+                                   'E': trial[1]})
+            colvar.reset_index('CV1')
+        colvar.index.name = 'Step'
+        if rank == 0:
+            colvar.to_csv(filetitle+'_COLVAR.csv')
+            with open(filetitle + '_info.csv', "ab") as f:
+                    writer = csv.writer(f)
+                    writer.writerow(['RMSD', 'RMSDkld', 'RMSD alignerr'])
+                    writer.writerow([trial[2]])
+                    writer.writerow([trial[3]])

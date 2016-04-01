@@ -590,7 +590,7 @@ class Form(QWidget):
                         writer.writerow(['RMSD', 'RMSDKLD',
                                         'RMSDAligned'])
                         writer.writerow([trial[2]])
-                    with open(filetitle+'info.csv', "wb") as f:
+                    with open(filetitle+'info.csv', "ab") as f:
                         writer = csv.writer(f)
                         writer.writerow([trial[3]])
 
