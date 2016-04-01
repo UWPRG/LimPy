@@ -1,4 +1,4 @@
-# Langevin_Package (Still a work in Progress)
+# Langevin_Package (Still a work in progress)
 ----
 Langevin_Package is a Langevin Integrator capable of carrying out Molecular Dynamics
 (MD), Metadynamics, Well-Tempered Metadynamics, and Infrequent Metadynamics.
@@ -131,10 +131,13 @@ def your_potential_bc(vnew,f2,coords):
 
     bcbias     : float
                  bias applied strictly from the boundary condition
+
+    is_periodic: Boolean
+                 indicates if the boundary is periodic (True) or not (False)
     """
     # Add changes that need to occur to potential, force, coordinates, or bias.
-    return (vnew, f2, coords, bcbias)
+    return (vnew, f2, coords, bcbias, is_periodic)
 ```
-4) Add the new function to the `get_boundary_condition_dict()` in `potential_functions.py` with the same key as the the entry in the `get_potential_dict()`
+4) Add the new function to `get_boundary_condition_dict()` in `potential_functions.py` with the same key as the entry in the `get_potential_dict()`
 
 5) You can now call your new function from an input file using the key for the dictionary entries or select it from the dropdown menu in the GUI.

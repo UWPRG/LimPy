@@ -2,6 +2,10 @@
 
 import numpy as np
 import math
+try:
+    import cPickle as pickle
+except:
+    import pickle
 
 
 def cosine_potential(coords):
@@ -26,6 +30,7 @@ def cosine_potential(coords):
 
     Trigger : Boolean
               Has rare event occurred (True) or not (False)
+
     """
     V = np.cos(coords) * 2.5
     F = np.sin(coords) * 2.5
@@ -60,13 +65,13 @@ def two_gaussian_potential(coords):
 
     Trigger : Boolean
               Has rare event occurred (True) or not (False)
+
     """
     V = (-5 * np.exp(-(coords - 2/0.75)**2) -
          10*np.exp(-(coords + 2/0.75)**2))
     F = ((-5 * 2 * -1 * (coords - 2/0.75) * np.exp(-(coords - 2/0.75)**2) -
          10 * 2 * -1 * (coords + 2/0.75) * np.exp(-(coords + 2/0.75)**2)) *
          (-1))
-
     if type(coords) is np.float64 and coords < -2.0:
         Trigger = True
     else:
@@ -99,6 +104,7 @@ def pv_2D_potential(x, y):
 
     Trigger : Boolean
               Has rare event occurred (True) or not (False)
+
     """
     if hasattr(x, "__len__") is True:
 
@@ -129,42 +135,20 @@ def pv_2D_potential(x, y):
         else:
             Trigger = False
     Fpot = np.array([Fpotx, Fpoty])
-
     return (V, Fpot, Trigger)
 
-#def get_distances(x,y,z):
-def get_distances(coord):
-  Natoms = len(coord)
-  distance = []
-  for atom_i in range(Natoms):
-    matrix_line = []
-    x_i, y_i, z_i = coord[atom_i]
-    for atom_j in range(Natoms):
-      x_j, y_j, z_j = coord[atom_j]
-      d = sqrt( (x_i-x_j)**2 + (y_i-y_j)**2 + (z_i-z_j)**2 )
-      matrix_line.append( d )
-    distance.append(matrix_line)
-  return distance
-#def read_data	
-def read_atom_coord(Natoms):
-  print ("For each atom: x, y, z")
-  result = []
-  for i in range(Natoms):
-    line = sys.stdin.readline()
-    xyz = [ float(i) for i in line.split() ]
-    result.append(xyz)
-  return result
-
-def LJ_potential(coords):
+def C_Cl_potential(x, y):
     """
-    Calculate the Potential Energy and Force from a Lennard-Jones Potential.
+    Calculate the force and potential based on location (2-D).
 
     Parameters:
     -----------
 
-    coords  : float (or array of floats)
-            Location
+    x       : array of floats
+              X coordinates
 
+    y       : array of floats
+              Y coordinates
 
     Returns:
     --------
@@ -172,33 +156,43 @@ def LJ_potential(coords):
     V       : float (or array of floats)
               Potential Energy
 
-    F       : float (or array of floats)
-              Force
+    Fpot    : float (or array of floats)
+              Force in x and y direction
 
     Trigger : Boolean
               Has rare event occurred (True) or not (False)
-    """
-    sigma=1.#0.3345#1.
-    epsilon=10.#0.0661#1.
-    
-    Natoms=2.
-    #distance = get_distances(coord)
-    V = 0.
-    F = 0.
-    r=coords#coord
-    #for atom_i in range(Natoms):
-    #   for atom_j in range(atom_i+1,Natoms):
-    V = 4.*epsilon*((sigma/r)**12 - (sigma/r)**6)
-   # F = (48/r**2)*((sigma/r**12)**12-(0.5*(sigma/r**6))) # should be like that for 3D V=V(x,y,z)
-    F = -(24*(r**6-2.)*epsilon)/r**13
-          #update force??
 
-    if type(coords) is np.float64 and coords < -2.0:
-        Trigger = True
-    else:
+    """
+    pot = pickle.load(open("kfpotential.p", "rb"))
+    if hasattr(x, "__len__") is True:
+
+        V = np.zeros([y.size, x.size])
+        Fx = np.empty([y.size, x.size])
+        Fy = np.empty([y.size, x.size])
+        for k in range(0, y.size - 1):
+            for j in range(0, x.size - 1):
+                V[k, j] = pot(k, j)
+                Fy = pot(k, j, dx=1)
+                Fx = pot(k, j, dy=1)
+        Fpotx = Fx * -1
+        Fpoty = Fy * -1
         Trigger = False
-    return (V, F, Trigger)
- 
+
+    else:
+
+        V[k, j] = pot(k, j)
+        Fy = pot(k, j, dx=1)
+        Fx = pot(k, j, dy=1)
+        Fpotx = Fx * -1
+        Fpoty = Fy * -1
+
+        if x > 0.25 and y < 0.20:
+            Trigger = True
+        else:
+            Trigger = False
+    Fpot = np.array([Fpotx, Fpoty])
+    return (V, Fpot, Trigger)
+
 
 def muller_brown_potential(x, y):
     """
@@ -224,6 +218,7 @@ def muller_brown_potential(x, y):
 
     Trigger : Boolean
               Has rare event occurred (True) or not (False)
+
     """
     if type(x) is not np.float64:
 
@@ -281,7 +276,6 @@ def muller_brown_potential(x, y):
         else:
             Trigger = False
     Fpot = np.array([Fpotx, Fpoty])
-
     return (V, Fpot, Trigger)
 
 
@@ -291,7 +285,8 @@ def get_potential_dict():
                       'two_gaussian_potential': two_gaussian_potential,
                       'pv_2D_potential': pv_2D_potential,
                       'muller_brown_potential': muller_brown_potential,
-		      'LJ_potential': LJ_potential}			
+		              'LJ_potential': LJ_potential,
+                      'C_Cl_potential': C_Cl_potential}
 
     return potential_dict
 
@@ -384,6 +379,44 @@ def pv_2D_potential_bc(vnew, f2, coords):
     is_periodic_y = False
     is_periodic = np.array([is_periodic_x, is_periodic_y])
     return (vnew, f2, coords, bcbias, is_periodic)
+
+
+def C_Cl_potential_bc(vnew, f2, coords):
+    """
+    Apply Boundary Condition to the potential, force, and coordinates.
+
+    Parameters:
+    -----------
+    vnew       : float (or array of floats)
+                 Potential Energy
+
+    f2         : float (or array of floats)
+                 Force
+
+    coords     : float
+                 coordinates
+
+    Returns:
+    --------
+
+    vnew       : float (or array of floats)
+                 Adjusted potential energy from boundary condition
+
+    F          : float (or array of floats)
+                 Adjusted force from boundary condition
+
+    coords     : float
+                 adjusted coordinates from boundary condition
+
+    bcbias     : float
+                 bias applied strictly from the boundary condition
+    """
+    bcbias = 0
+    is_periodic_x = False
+    is_periodic_y = False
+    is_periodic = np.array([is_periodic_x, is_periodic_y])
+    return (vnew, f2, coords, bcbias, is_periodic)
+
 
 def LJ_potential_bc(vnew,f2,coords):
     """
@@ -502,6 +535,7 @@ def get_boundary_condition_dict():
                'two_gaussian_potential': two_gaussian_potential_bc,
                'pv_2D_potential': pv_2D_potential_bc,
                'muller_brown_potential': mb_2D_potential_bc,
-               'LJ_potential': LJ_potential_bc}
+               'LJ_potential': LJ_potential_bc,
+               'C_Cl_potential': C_Cl_potential_bc}
 
     return bc_dict

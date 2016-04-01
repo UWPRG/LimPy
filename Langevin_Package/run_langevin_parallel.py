@@ -33,15 +33,17 @@ method = inputdata[3]
 potfunc = inputdata[4]
 filetitle = inputdata[5]
 makeplot = inputdata[6]
+plot_freq = inputdata[7]
+make_movie = inputdata[8]
 trials = mdps[-1]
 num_iter = 3
 for i in range(0, num_iter):
     if dimension == '1-D Potential':
         trial = simulate_1Dsystem(inps, mdps, dimension, method, potfunc,
-                                  filetitle, makeplot)
+                                  filetitle, makeplot, plot_freq, make_movie)
     else:
         trial = simulate_2Dsystem(inps, mdps, dimension, method, potfunc,
-                                  filetitle, makeplot)
+                                  filetitle, makeplot, plot_freq, make_movie)
     if i == 0:
         timedata = np.array([trial[0], trial[1]])
     else:
