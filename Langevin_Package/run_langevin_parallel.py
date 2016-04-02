@@ -44,15 +44,19 @@ if potfunc == 'Infrequent WT MetaD':
             trial = simulate_2Dsystem(inps, mdps, dimension, method, potfunc,
                                       filetitle, makeplot, plot_freq, make_movie)
         if i == 0:
-            timedata = np.array([trial[0], trial[1]])
+            timedata = pd.DataFrame({'Time': [trial[0]],
+                                     'Teff': [trial[1]],
+                                     'Event': [trial[3]]})
         else:
-            timedata = np.append(timedata, np.array([trial[0], trial[1]]))
+            newdata = pd.DataFrame({'Time': [trial[0]],
+                                     'Teff': [trial[1]],
+                                     'Event': [trial[3]]})
     # print timedata
     collected_time_data = comm.gather(timedata, root=0)
 
     if rank == 0:
         collect = np.asarray(collected_time_data)
-        collect = np.reshape(collect, (num_iter*size, 2))
+        collect = np.reshape(collect, (num_iter*size, 3))
         np.savetxt(filetitle+'_Allevents.csv', collect, delimiter=',')
         ks_results = perform_ks_analysis(filetitle + '_Allevents.csv')
 

@@ -191,11 +191,11 @@ def simulate_2Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
     while i < steps - 1:
 
         if (method == "Infrequent WT MetaD"):
-            triggered = selected_pot(coords[i, 0], coords[i, 1])[2]
+            (_,_,triggered,path) = selected_pot(coords[i, 0], coords[i, 1])
             if triggered is True:
                 totaltime = time[i]
                 teff = lf.calc_teff(walkerpot, beta, dt)
-                return (totaltime, teff, info)
+                return (totaltime, teff, info, path)
 
         if sp.mod(i, hfreq) == 0 and i > 0:
 
@@ -337,7 +337,8 @@ def simulate_2Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
         teff = 0
         info = info + 'NO RARE EVENT'
         totaltime = 0
-        return (coords, E, teff, totaltime, info)
+        path="NULL"
+        return (coords, E, teff, totaltime, info, path)
 
 
 def recreate_2DFES(FES, icount, coords, xinc, xmin, xmax, yinc, ymin, ymax, E):

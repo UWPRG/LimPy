@@ -19,7 +19,7 @@ import langevin_functions as lf
 import potential_functions as pf
 from simulate1D import simulate_1Dsystem
 from simulate2D import simulate_2Dsystem
-
+import pdb
 
 class Form(QWidget):
 
@@ -411,11 +411,11 @@ class Form(QWidget):
                                                       makeplot, plot_freq,
                                                       make_movie)
                         if its == 0:
-                            timedata = np.array([trial[0], trial[1]])
+                            timedata = np.array([trial[0], trial[1],trial[3]])
                         else:
                             timedata = np.append(timedata,
                                                  np.array([trial[0],
-                                                          trial[1]]))
+                                                          trial[1],trial[3]]))
                     collect = np.asarray(timedata)
                     collect = np.reshape(collect, (num_iter*size, 2))
                     np.savetxt(filetitle+'_Allevents.csv', collect,
@@ -548,15 +548,18 @@ class Form(QWidget):
                                                       makeplot, plot_freq,
                                                       make_movie)
                         if its == 0:
-                            timedata = np.array([trial[0], trial[1]])
+                            timedata = pd.DataFrame({'Time': [trial[0]],
+                                                     'Teff': [trial[1]],
+                                                     'Event': [trial[3]]})
                         else:
-                            timedata = np.append(timedata,
-                                                 np.array([trial[0],
-                                                          trial[1]]))
-                    collect = np.asarray(timedata)
-                    collect = np.reshape(collect, (loops, 2))
-                    np.savetxt(filetitle+'_Allevents.csv', collect,
-                               delimiter=',')
+                            newdata = pd.DataFrame({'Time': [trial[0]],
+                                                     'Teff': [trial[1]],
+                                                     'Event': [trial[3]]})
+                            timedata = timedata.append(newdata,
+                                                       ignore_index=True)
+                    # collect = np.asarray(timedata)
+                    # collect = np.reshape(collect, (loops, 3))
+                    timedata.to_csv(filetitle+'_Allevents.csv', delimiter=',')
                     with open(filetitle + 'info.csv', "wb") as f:
                         writer = csv.writer(f)
                         writer.writerow([trial[2]])

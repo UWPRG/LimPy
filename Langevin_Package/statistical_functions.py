@@ -9,7 +9,7 @@ from scipy import stats
 def perform_ks_analysis(filename):
     """Perform the KS Test and determines statistics."""
     datain = np.genfromtxt(filename, delimiter=",")
-    data = datain[:, 1]
+    data = datain[:, 1].astype(float)
     min = np.min(data)
     max = np.max(data)
     bins = 10*np.size(data)

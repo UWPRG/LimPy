@@ -35,7 +35,7 @@ while checkprogress < trials+1:
     if method == 'Infrequent WT MetaD':
         with open(filetitle + '_Allevents.csv', "ab") as f:
                 writer = csv.writer(f)
-                writer.writerow([trial[0], trial[1]])
+                writer.writerow([trial[3], trial[0], trial[1],])
         data = pd.read_csv(filetitle + '_Allevents.csv')
         checkprogress = len(data) + 2  # (1 to discount header, other the +1)
     else:

@@ -34,13 +34,17 @@ def cosine_potential(coords):
     """
     V = np.cos(coords) * 2.5
     F = np.sin(coords) * 2.5
-
-    if type(coords) is np.float64 and (coords < 0 or coords > 6.3):
+    Event=''
+    if hasattr(coords, "__len__") is False and coords < 0:
         Trigger = True
+        Event = 'A'
+    elif hasattr(coords, "__len__") is False and coords > 6.3:
+        Trigger = True
+        Event = 'B'
     else:
         Trigger = False
 
-    return (V, F, Trigger)
+    return (V, F, Trigger,Event)
 
 
 def two_gaussian_potential(coords):
@@ -72,12 +76,13 @@ def two_gaussian_potential(coords):
     F = ((-5 * 2 * -1 * (coords - 2/0.75) * np.exp(-(coords - 2/0.75)**2) -
          10 * 2 * -1 * (coords + 2/0.75) * np.exp(-(coords + 2/0.75)**2)) *
          (-1))
+    Event=''
     if type(coords) is np.float64 and coords < -2.0:
         Trigger = True
     else:
         Trigger = False
 
-    return (V, F, Trigger)
+    return (V, F, Trigger,Event)
 
 
 def pv_2D_potential(x, y):
@@ -130,12 +135,16 @@ def pv_2D_potential(x, y):
                  2*math.pi*(1+4*y)*np.sin(2*math.pi*x)))*-1
         Fpoty = ((2*math.pi*y+4*np.cos(2*math.pi*x)))*-1
 
-        if x < 0.75 and y > 0 or x > 2.25 and y > 0:
+        if x < 0.75 and y > 0:
             Trigger = True
+            Event = 'A'
+        elif x > 2.25 and y > 0:
+            Trigger = True
+            Event = 'B'
         else:
             Trigger = False
     Fpot = np.array([Fpotx, Fpoty])
-    return (V, Fpot, Trigger)
+    return (V, Fpot, Trigger,Event)
 
 def C_Cl_potential(x, y):
     """
@@ -191,7 +200,8 @@ def C_Cl_potential(x, y):
         else:
             Trigger = False
     Fpot = np.array([Fpotx, Fpoty])
-    return (V, Fpot, Trigger)
+    Event=''
+    return (V, Fpot, Trigger,Event)
 
 
 def muller_brown_potential(x, y):
@@ -276,6 +286,7 @@ def muller_brown_potential(x, y):
         else:
             Trigger = False
     Fpot = np.array([Fpotx, Fpoty])
+    Event=''
     return (V, Fpot, Trigger)
 
 
