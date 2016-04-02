@@ -4,12 +4,12 @@ import numpy as np
 from scipy.optimize import curve_fit
 from scipy.stats import ks_2samp
 from scipy import stats
-
+import pandas as pd
 
 def perform_ks_analysis(filename):
     """Perform the KS Test and determines statistics."""
-    datain = np.genfromtxt(filename, delimiter=",")
-    data = datain[:, 1].astype(float)
+    datain = pd.read_csv(filename, delimiter=",")
+    data = datain['Teff']
     min = np.min(data)
     max = np.max(data)
     bins = 10*np.size(data)

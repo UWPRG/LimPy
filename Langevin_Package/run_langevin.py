@@ -33,11 +33,15 @@ while checkprogress < trials+1:
         trial = simulate_2Dsystem(inps, mdps, dimension, method, potfunc,
                                   filetitle, makeplot, plot_freq, make_movie)
     if method == 'Infrequent WT MetaD':
-        with open(filetitle + '_Allevents.csv', "ab") as f:
-                writer = csv.writer(f)
-                writer.writerow([trial[3], trial[0], trial[1],])
-        data = pd.read_csv(filetitle + '_Allevents.csv')
-        checkprogress = len(data) + 2  # (1 to discount header, other the +1)
+        if checkprogress == 0:
+            timedata = pd.DataFrame({'Time': [trial[0]],
+                                     'Teff': [trial[1]],
+                                     'Event': [trial[3]]})
+        else:
+            newdata = pd.DataFrame({'Time': [trial[0]],
+                                     'Teff': [trial[1]],
+                                     'Event': [trial[3]]})
+            timedata = timedata.append(newdata,ignore_index=True)
     else:
 
         if dimension == '1-D Potential':
@@ -62,6 +66,7 @@ if os.path.isfile(filetitle + '_info.csv') is False:
                 writer.writerow([trial[-1]])
 
 if method == 'Infrequent WT MetaD':
+    timedata.to_csv(filetitle + '_Allevents.csv', delimiter=',')
     ks_results = perform_ks_analysis(filetitle + '_Allevents.csv')
     monitor = 0
     if os.path.isfile('bootstrapped.csv') is False:
