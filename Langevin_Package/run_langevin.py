@@ -9,6 +9,7 @@ import sys
 import os
 import numpy as np
 import pandas as pd
+import pdb
 import csv
 
 inputsfile = sys.argv[1]
@@ -25,23 +26,27 @@ make_movie = received[8]
 np.set_printoptions(threshold=np.nan)
 trials = mdps[-1]
 checkprogress = 0
-while checkprogress < trials+1:
+
+while checkprogress < trials:
     if dimension == '1-D Potential':
         trial = simulate_1Dsystem(inps, mdps, dimension, method, potfunc,
                                   filetitle, makeplot, plot_freq, make_movie)
     else:
         trial = simulate_2Dsystem(inps, mdps, dimension, method, potfunc,
                                   filetitle, makeplot, plot_freq, make_movie)
+
     if method == 'Infrequent WT MetaD':
         if checkprogress == 0:
             timedata = pd.DataFrame({'Time': [trial[0]],
                                      'Teff': [trial[1]],
                                      'Event': [trial[3]]})
+            checkprogress = len(timedata)
         else:
             newdata = pd.DataFrame({'Time': [trial[0]],
                                      'Teff': [trial[1]],
                                      'Event': [trial[3]]})
             timedata = timedata.append(newdata,ignore_index=True)
+            checkprogress = len(timedata)
     else:
 
         if dimension == '1-D Potential':
@@ -63,38 +68,38 @@ while checkprogress < trials+1:
 if os.path.isfile(filetitle + '_info.csv') is False:
     with open(filetitle + '_info.csv', "ab") as f:
                 writer = csv.writer(f)
-                writer.writerow([trial[-1]])
+                writer.writerow([trial[-2]])
 
 if method == 'Infrequent WT MetaD':
     timedata.to_csv(filetitle + '_Allevents.csv', delimiter=',')
     ks_results = perform_ks_analysis(filetitle + '_Allevents.csv')
     monitor = 0
-    if os.path.isfile('bootstrapped.csv') is False:
-        with open('bootstrapped.csv', "ab") as f:
-                writer = csv.writer(f)
-                writer = writer.writerow(['Means', 'Pvals', 'Rejected'])
-    while monitor <= 1000:
-        (means, pvals, reject) = sampling(filetitle + '_Allevents.csv', 1000,
-                                          round(trials/2))
-        with open('bootstrapped.csv', "ab") as f:
-                writer = csv.writer(f)
-                writer.writerow([means, pvals, reject])
-        checkprogress = pd.read_csv('bootstrapped.csv')
-        checkaccept = checkprogress[checkprogress['Rejected'] == 'No']
-        if ((len(checkprogress) - len(checkaccept))/len(checkprogress) >
-           0.90 and len(checkprogress) > 100):
-            break
-        monitor = len(checkaccept)
-
-    finisheddata = pd.read_csv('bootstrapped.csv')
-    validdata = finisheddata[finisheddata['Rejected'] == 'No']
-    rejectedtrials = (len(finisheddata) - len(validdata))
+    # if os.path.isfile('bootstrapped.csv') is False:
+    #     with open('bootstrapped.csv', "ab") as f:
+    #             writer = csv.writer(f)
+    #             writer = writer.writerow(['Means', 'Pvals', 'Rejected'])
+    # while monitor <= 1000:
+    #     (means, pvals, reject) = sampling(filetitle + '_Allevents.csv', 1000,
+    #                                       round(len(timedata)/2))
+    #     with open('bootstrapped.csv', "ab") as f:
+    #             writer = csv.writer(f)
+    #             writer.writerow([means, pvals, reject])
+    #     checkprogress = pd.read_csv('bootstrapped.csv')
+    #     checkaccept = checkprogress[checkprogress['Rejected'] == 'No']
+    #     if ((len(checkprogress) - len(checkaccept))/len(checkprogress) >
+    #        0.90 and len(checkprogress) > 100):
+    #         break
+    #     monitor = len(checkaccept)
+    #
+    # finisheddata = pd.read_csv('bootstrapped.csv')
+    # validdata = finisheddata[finisheddata['Rejected'] == 'No']
+    # rejectedtrials = (len(finisheddata) - len(validdata))
     if os.path.isfile(filetitle + '_statistics.csv') is False:
         with open(filetitle + '_statistics.csv', "ab") as f:
                 writer = csv.writer(f)
-                writer.writerow(['Bootstrapped: Mean Escape Time',
-                                 'Mean p-value', '# of Trials Rejected'])
-                writer.writerow([validdata['Means'].mean(),
-                                 validdata['Pvals'].mean(),
-                                 rejectedtrials])
+                # writer.writerow(['Bootstrapped: Mean Escape Time',
+                #                  'Mean p-value', '# of Trials Rejected'])
+                # writer.writerow([validdata['Means'].mean(),
+                #                  validdata['Pvals'].mean(),
+                #                  rejectedtrials])
                 writer.writerow([ks_results])

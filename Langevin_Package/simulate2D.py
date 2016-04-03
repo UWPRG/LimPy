@@ -151,8 +151,8 @@ def simulate_2Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
     v0y = np.random.normal(0, 1, 1)
     T1x = m*v0x**2/kb
     T1y = m*v0y**2/kb
-    vscaledx = v0x *np.sqrt(T/T1x)
-    vscaledy = v0y *np.sqrt(T/T1y)
+    vscaledx = v0x *(T/T1x)**(0.5)
+    vscaledy = v0y *(T/T1y)**(0.5)
     px = vscaledx * m
     py = vscaledy * m
     p = np.array([px, py])

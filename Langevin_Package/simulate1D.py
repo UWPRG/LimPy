@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy as sp
 import os
-
+import pdb
 import math
 
 from potential_functions import get_potential_dict, get_boundary_condition_dict
@@ -147,7 +147,7 @@ def simulate_1Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
 
     v0 = np.random.normal(0, 1, 1)
     T1 = m*v0**2/kb
-    vscaled = v0 *np.sqrt(T/T1)
+    vscaled = v0 *(T/T1)**(0.5)
     p = vscaled * m
     is_periodic = selected_bc(iv, selected_pot(x0)[1], coords[0])[4]
 
@@ -171,6 +171,7 @@ def simulate_1Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
             (_,_,triggered,path) = selected_pot(coords[i])
 
             if triggered is True:
+
                 totaltime = time[i]
                 teff = lf.calc_teff(walkerpot, beta, dt)
                 return (totaltime, teff, info, path)

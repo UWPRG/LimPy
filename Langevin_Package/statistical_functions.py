@@ -65,8 +65,8 @@ def sampling(filename, num_iters, sampsize):
     """Perform boostrapping procedure for error analysis."""
     # if sampsize > 100
     # sampsize = 100
-    datain = np.genfromtxt(filename, delimiter=",")
-    data = datain[:, 1]
+    datain = pd.read_csv(filename, delimiter=",")
+    data = datain['Teff']
     means = 0.0
     pvals = 0.0
     points = 1e4  # number of sampling points for p-val
