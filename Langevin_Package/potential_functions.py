@@ -38,7 +38,7 @@ def cosine_potential(coords):
     if hasattr(coords, "__len__") is False and coords < -2.0:
         Trigger = True
         Event = 'A'
-    elif hasattr(coords, "__len__") is False and coords > 8.0:
+    elif hasattr(coords, "__len__") is False and coords > 8.28:
         Trigger = True
         Event = 'B'
     else:
