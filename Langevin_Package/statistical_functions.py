@@ -6,10 +6,9 @@ from scipy.stats import ks_2samp
 from scipy import stats
 import pandas as pd
 
-def perform_ks_analysis(filename):
+def perform_ks_analysis(dataframe):
     """Perform the KS Test and determines statistics."""
-    datain = pd.read_csv(filename, delimiter=",")
-    data = datain['Teff']
+    data = dataframe['Teff']
     min = np.min(data)
     max = np.max(data)
     bins = 10*np.size(data)
@@ -61,12 +60,11 @@ def perform_ks_analysis(filename):
     # random sampling on data set
 
 
-def sampling(filename, num_iters, sampsize):
+def sampling(dataframe, num_iters, sampsize):
     """Perform boostrapping procedure for error analysis."""
     # if sampsize > 100
     # sampsize = 100
-    datain = pd.read_csv(filename, delimiter=",")
-    data = datain['Teff']
+    data = dataframe['Teff']
     means = 0.0
     pvals = 0.0
     points = 1e4  # number of sampling points for p-val

@@ -72,7 +72,9 @@ if os.path.isfile(filetitle + '_info.csv') is False:
 
 if method == 'Infrequent WT MetaD':
     timedata.to_csv(filetitle + '_Allevents.csv', delimiter=',')
-    ks_results = perform_ks_analysis(filetitle + '_Allevents.csv')
+    ks_results = perform_ks_analysis(timedata)
+    ks_resultsA = perform_ks_analysis(timedata[timedata['Event']=='A'])
+    ks_resultsB = perform_ks_analysis(timedata[timedata['Event']=='B'])
     monitor = 0
     # if os.path.isfile('bootstrapped.csv') is False:
     #     with open('bootstrapped.csv', "ab") as f:
@@ -102,4 +104,9 @@ if method == 'Infrequent WT MetaD':
                 # writer.writerow([validdata['Means'].mean(),
                 #                  validdata['Pvals'].mean(),
                 #                  rejectedtrials])
+                writer.writerow(['All events'])
                 writer.writerow([ks_results])
+                writer.writerow(['A events'])
+                writer.writerow([ks_resultsA])
+                writer.writerow(['B events'])
+                writer.writerow([ks_resultsB])

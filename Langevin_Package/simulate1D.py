@@ -230,6 +230,7 @@ def simulate_1Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
                                                          w, delta, dimension)
             walkv = vnew + lf.calc_biased_pot(coords[i+1], history, w, delta,
                                               dimension)
+            
             plt.clf()
             plt.plot(xlong, bias, '-r')
             plt.plot(xlong, pot_base, '-b')
