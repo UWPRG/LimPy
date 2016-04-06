@@ -120,7 +120,7 @@ def simulate_1Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
     time = np.array([0.0])
     walkerpot = np.array([0.0])
 
-    (pot_dict,_) = get_potential_dict()
+    (pot_dict, _) = get_potential_dict()
     bc_dict = get_boundary_condition_dict()
     try:
         selected_pot = pot_dict[potfunc]
@@ -147,7 +147,7 @@ def simulate_1Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
 
     v0 = np.random.normal(0, 1, 1)
     T1 = m*v0**2/kb
-    vscaled = v0 *(T/T1)**(0.5)
+    vscaled = v0 * (T/T1)**(0.5)
     p = vscaled * m
     is_periodic = selected_bc(iv, selected_pot(x0)[1], coords[0])[4]
 
@@ -168,7 +168,7 @@ def simulate_1Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
     while i < steps - 1:
 
         if (method == "Infrequent WT MetaD"):
-            (_,_,triggered,path) = selected_pot(coords[i])
+            (_, _, triggered, path) = selected_pot(coords[i])
 
             if triggered is True:
 
@@ -230,7 +230,7 @@ def simulate_1Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
                                                          w, delta, dimension)
             walkv = vnew + lf.calc_biased_pot(coords[i+1], history, w, delta,
                                               dimension)
-            
+
             plt.clf()
             plt.plot(xlong, bias, '-r')
             plt.plot(xlong, pot_base, '-b')

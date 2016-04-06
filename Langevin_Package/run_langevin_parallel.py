@@ -8,7 +8,7 @@ from statistical_functions import perform_ks_analysis
 
 from mpi4py import MPI
 import sys
-import pandas as pd# import os
+import pandas as pd
 
 import numpy as np
 import csv
@@ -41,26 +41,28 @@ if method == 'Infrequent WT MetaD':
     for i in range(0, num_iter):
         if dimension == '1-D Potential':
             trial = simulate_1Dsystem(inps, mdps, dimension, method, potfunc,
-                                      filetitle, makeplot, plot_freq, make_movie)
+                                      filetitle, makeplot, plot_freq,
+                                      make_movie)
         else:
             trial = simulate_2Dsystem(inps, mdps, dimension, method, potfunc,
-                                      filetitle, makeplot, plot_freq, make_movie)
+                                      filetitle, makeplot, plot_freq,
+                                      make_movie)
         if i == 0:
             timedata = pd.DataFrame({'Time': [trial[0]],
                                      'Teff': [trial[1]],
                                      'Event': [trial[3]]})
         else:
             newdata = pd.DataFrame({'Time': [trial[0]],
-                                     'Teff': [trial[1]],
-                                     'Event': [trial[3]]})
-	        timedata = timedata.append(newdata,ignore_index=True)
-    # print timedata
+                                    'Teff': [trial[1]],
+                                    'Event': [trial[3]]})
+            timedata = timedata.append(newdata, ignore_index=True)
+
     collected_time_data = comm.gather(timedata, root=0)
 
     if rank == 0:
         collect = pd.concat(collected_time_data, ignore_index=True)
-	collect.reset_index('Time')
-	collect.index.name = 'Trial'
+        collect.reset_index('Time')
+        collect.index.name = 'Trial'
         collect.to_csv(filetitle+'_Allevents.csv', delimiter=',')
         ks_results = perform_ks_analysis(filetitle + '_Allevents.csv')
 
