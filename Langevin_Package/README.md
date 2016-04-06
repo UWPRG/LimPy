@@ -7,6 +7,7 @@ This package can be operated to run from the command line (`run_langevin.py`) or
 
 ----
 ## Use:
+
 ----
 ### Inputs:
 **Input File**
@@ -91,10 +92,16 @@ def your_potential(coords):
     if (# Input Rare Event
         and if hasattr(coords, "__len__") is True):
         Trigger = True
+        Event = 'A'
+    elif (# Input Other Rare Event
+          and if hasattr(coords, "__len__") is True):
+          Trigger = True
+        Event = 'B'
     else:
         Trigger = False
+        Event = ''
 
-    return (V, F, Trigger)
+    return (V, F, Trigger, Event)
 ```
 2) Then add the new function to the dictionary of function in `get_potential_dict()` in `potential_functions.py` and add an entry to the `dimension_dict` as well to indicate if it is a 1 or 2 dimensions. Note the entry must be present in both dictionaries and the dimension entry must be `1-D Potential` or `2-D Potential`.
 
@@ -142,3 +149,12 @@ def your_potential_bc(vnew,f2,coords):
 6) If you have a set of desired parameters you would like to run through the GUI, add them as a dictionary entry in `get_GUI_presets_dict()`. The key must be the same as the one used in the other dictionaries and the information is an array of strings of {x0,xmin,xmax,xinc,y0,ymin,ymax,yinc}.
 
 7) You can now call your new function from an input file using the key for the dictionary entries or select it from the dropdown menu in the GUI.
+
+----
+## More to Come:
+----
+- **Selectivity**
+
+- **Implement Reflective Boundary Conditions**
+
+- **Unit Tests**
