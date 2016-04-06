@@ -158,3 +158,5 @@ def your_potential_bc(vnew,f2,coords):
 - **Implement Reflective Boundary Conditions**
 
 - **Unit Tests**
+
+- **Bootstrapping of Error Analysis**
