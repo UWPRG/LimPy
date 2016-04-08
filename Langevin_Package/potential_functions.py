@@ -34,7 +34,7 @@ def cosine_potential(coords):
     """
     V = np.cos(coords) * 2.5
     F = np.sin(coords) * 2.5
-    Event=''
+    Event = ''
     if hasattr(coords, "__len__") is False and coords < -2.0:
         Trigger = True
         Event = 'A'
@@ -76,7 +76,7 @@ def two_gaussian_potential(coords):
     F = ((-5 * 2 * -1 * (coords - 2/0.75) * np.exp(-(coords - 2/0.75)**2) -
          10 * 2 * -1 * (coords + 2/0.75) * np.exp(-(coords + 2/0.75)**2)) *
          (-1))
-    Event='A'
+    Event = 'A'
     if type(coords) is np.float64 and coords < -2.0:
         Trigger = True
     else:
@@ -126,6 +126,7 @@ def pv_2D_potential(x, y):
         Fpotx = Fx * -1
         Fpoty = Fy * -1
         Trigger = False
+        Event = ''
 
     else:
 
@@ -143,8 +144,10 @@ def pv_2D_potential(x, y):
             Event = 'B'
         else:
             Trigger = False
+            Event = ''
     Fpot = np.array([Fpotx, Fpoty])
     return (V, Fpot, Trigger, Event)
+
 
 def C_Cl_potential(x, y):
     """
@@ -200,7 +203,7 @@ def C_Cl_potential(x, y):
         else:
             Trigger = False
     Fpot = np.array([Fpotx, Fpoty])
-    Event=''
+    Event = ''
     return (V, Fpot, Trigger, Event)
 
 
@@ -230,17 +233,17 @@ def muller_brown_potential(x, y):
               Has rare event occurred (True) or not (False)
 
     """
+    A = np.array([-200.0, -100.0, -170.0, 15.0])
+    a = np.array([-1.0, -1.0, -6.50, 0.7])
+    b = np.array([0.0, 0.0, 11.0, 0.6])
+    c = np.array([-10.0, -10.0, -6.50, 0.7])
+    x0 = np.array([1.0, 0.0, -0.50, -1.0])
+    y0 = np.array([0.0, 0.5, 1.50, 1.0])
     if type(x) is not np.float64:
 
         V = np.zeros([y.size, x.size])
         Fx = np.empty([y.size, x.size])
         Fy = np.empty([y.size, x.size])
-        A = np.array([-200.0, -100.0, -170.0, 15.0])
-        a = np.array([-1.0, -1.0, -6.50, 0.7])
-        b = np.array([0.0, 0.0, 11.0, 0.6])
-        c = np.array([-10.0, -10.0, -6.50, 0.7])
-        x0 = np.array([1.0, 0.0, -0.50, -1.0])
-        y0 = np.array([0.0, 0.5, 1.50, 1.0])
         for k in range(0, y.size - 1):
             for j in range(0, x.size - 1):
                 V[k, j] = sum(A * np.exp(a*(x[j]-x0)**2 +
@@ -286,8 +289,8 @@ def muller_brown_potential(x, y):
         else:
             Trigger = False
     Fpot = np.array([Fpotx, Fpoty])
-    Event=''
-    return (V, Fpot, Trigger)
+    Event = ''
+    return (V, Fpot, Trigger, Event)
 
 
 def get_potential_dict():
@@ -309,16 +312,18 @@ def get_potential_dict():
 
 def get_GUI_presets_dict():
     """Return a dictionary of all of the available potential functions."""
-    preset_dict = {'cosine_potential': np.array([3.14,-6.28,12.57,0.01,0,
-                                                    0,0,0]).astype(str),
-                      'two_gaussian_potential': np.array([2.67,-4,4,0.01,
-                                                          0,0,0,0]).astype(str),
-                      'pv_2D_potential': np.array([1.5,0,3.0,0.01,0.6,-2.0,
-                                                   2.0,0.01]).astype(str),
-                      'muller_brown_potential': np.array([0,0,0,0,0,0,0,
-                                                          0]).astype(str),
-                      'C_Cl_potential': np.array([0,0,0,0,0,0,0,0]).astype(str)
-                    }
+    preset_dict = {'cosine_potential': np.array([3.14, -6.28, 12.57, 0.01, 0,
+                                                 0, 0, 0]).astype(str),
+                   'two_gaussian_potential': np.array([2.67, -4, 4, 0.01,
+                                                       0, 0, 0,
+                                                       0]).astype(str),
+                   'pv_2D_potential': np.array([1.5, 0, 3.0, 0.01, 0.6,
+                                                -2.0, 2.0, 0.01]).astype(str),
+                   'muller_brown_potential': np.array([0, 0, 0, 0, 0, 0, 0,
+                                                       0]).astype(str),
+                   'C_Cl_potential': np.array([0, 0, 0, 0, 0, 0, 0,
+                                               ]).astype(str)
+                   }
 
     return preset_dict
 
@@ -450,7 +455,7 @@ def C_Cl_potential_bc(vnew, f2, coords):
     return (vnew, f2, coords, bcbias, is_periodic)
 
 
-def LJ_potential_bc(vnew,f2,coords):
+def LJ_potential_bc(vnew, f2, coords):
     """
     Apply Boundary Condition to the potential, force, and coordinates.
 

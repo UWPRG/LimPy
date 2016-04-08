@@ -60,7 +60,7 @@ def get_parameters(input_file):
     inputs.index = inputs['Parameter']
     inputs = inputs.transpose()
     inputs = inputs.ix[1:]
-    (_,dims) = get_potential_dict()
+    (_, dims) = get_potential_dict()
     method = str(inputs['Method'][0])
     filetitle = str(inputs['Data Filename'][0])
     inps = np.zeros(14)
@@ -282,7 +282,7 @@ def integrate_step(coords, history, w,  delta, DT, potfunc, p0, m, dt,
                   bias from boundary condition
 
     """
-    (pot_dict,_) = get_potential_dict()
+    (pot_dict, _) = get_potential_dict()
     try:
         selected_pot = pot_dict[potfunc]
     except KeyError:

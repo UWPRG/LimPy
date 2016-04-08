@@ -38,7 +38,7 @@ trials = mdps[-1]
 num_iter = 3
 
 if method == 'Infrequent WT MetaD':
-    for i in range(0, num_iter):
+    for i in range(0, 5):
         if dimension == '1-D Potential':
             trial = simulate_1Dsystem(inps, mdps, dimension, method, potfunc,
                                       filetitle, makeplot, plot_freq,
@@ -64,11 +64,21 @@ if method == 'Infrequent WT MetaD':
         collect.reset_index('Time')
         collect.index.name = 'Trial'
         collect.to_csv(filetitle+'_Allevents.csv', delimiter=',')
-        ks_results = perform_ks_analysis(filetitle + '_Allevents.csv')
-
+        ks_results = perform_ks_analysis(collect)
+        if len(timedata[timedata['Event'] == 'A']) > 0:
+            ks_resultsA = perform_ks_analysis(collect[collect['Event'] == 'A'])
+        if len(timedata[timedata['Event'] == 'B']) > 0:
+            ks_resultsB = perform_ks_analysis(collect[collect['Event'] == 'B'])
         with open(filetitle + '_statistics.csv', "ab") as f:
                 writer = csv.writer(f)
+                writer.writerow(['All Events'])
                 writer.writerow([ks_results])
+                if len(timedata[timedata['Event'] == 'A']) > 0:
+                    writer.writerow(['A Events'])
+                    writer.writerow([ks_resultsA])
+                if len(timedata[timedata['Event'] == 'B']) > 0:
+                    writer.writerow(['B Events'])
+                    writer.writerow([ks_resultsB])
 else:
         if dimension == '1-D Potential':
             trial = simulate_1Dsystem(inps, mdps,
