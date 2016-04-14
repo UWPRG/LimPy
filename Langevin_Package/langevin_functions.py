@@ -95,27 +95,27 @@ def get_parameters(input_file):
         plot_freq = int((inputs['Plot Freq'][0]))
         make_movie = str((inputs['Make Movie'][0]))
     else:
-        plot_freq = steps*2.0
+        plot_freq = inps[0]*2.0
         make_movie = 'False'
     mdps = np.zeros(5)
     if method == 'MD':
         mdps[0] = 0.0
         mdps[1] = 0.01
-        mdps[2] = steps*2.0
+        mdps[2] = inps[0]*2.0
         mdps[3] = 1.0
-        mdps[4] = 0.0
+        mdps[4] = 1.0
     elif method == 'Metadynamics':
             mdps[0] = float(inputs['Gaussian Height'][0])
             mdps[1] = float(inputs['Gaussian Width'][0])
             mdps[2] = float(inputs['Deposition Frequency'][0])
             mdps[3] = float("inf")
-            mdps[4] = 0.0
+            mdps[4] = 1.0
     elif method =='Well-Tempered Metadynamics':
             mdps[0] = float(inputs['Gaussian Height'][0])
             mdps[1] = float(inputs['Gaussian Width'][0])
             mdps[2] = float(inputs['Deposition Frequency'][0])
             mdps[3] = float(inputs['Well Temperature'][0])
-            mdps[4] = 0.0
+            mdps[4] = 1.0
     else:
         mdps[0] = float(inputs['Gaussian Height'][0])
         mdps[1] = float(inputs['Gaussian Width'][0])
@@ -415,3 +415,19 @@ def calc_rmsd(FES, beta, baseline):
     rmsds = np.array([rmsd, rmskld, rmsalignerr])
 
     return rmsds
+
+def calc_colvar(coords, history, w, delta, dimension, xlong, method, beta, T,
+                DT):
+    vbias = np.zeros_like(xlong)
+    if method == 'MD':
+        hist, bins=np.histogram(coords,bins=xlong,density=True)
+        F = np.log(hist)*-1/beta
+    elif method == 'Metadynamics':
+        for cv in range(0, xlong.size):
+            vbias[cv] =calc_biased_pot(xlong[cv], history, w, delta, dimension)
+        F = -1*vbias
+    else:
+        for cv in range(0, xlong.size):
+            vbias[cv] =calc_biased_pot(xlong[cv], history, w, delta, dimension)
+        F = -1*vbias*(T+DT)/DT
+    return (xlong,F)

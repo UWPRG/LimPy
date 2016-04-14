@@ -50,7 +50,7 @@ while checkprogress < trials:
     else:
 
         if dimension == '1-D Potential':
-            colvar = pd.DataFrame({'CV': trial[0], 'E': trial[1]})
+            colvar = pd.DataFrame({'CV': trial[1][0], 'E': trial[1][1]})
             colvar.reset_index('CV')
         else:
             colvar = pd.DataFrame({'CV1': trial[0][:, 0],
