@@ -9,7 +9,7 @@ from statistical_functions import perform_ks_analysis
 from mpi4py import MPI
 import sys
 import pandas as pd
-
+import pdb
 import numpy as np
 import csv
 
@@ -38,7 +38,7 @@ trials = mdps[-1]
 num_iter = 3
 
 if method == 'Infrequent WT MetaD':
-    for i in range(0, 5):
+    for i in range(0, 30):
         if dimension == '1-D Potential':
             trial = simulate_1Dsystem(inps, mdps, dimension, method, potfunc,
                                       filetitle, makeplot, plot_freq,
@@ -63,22 +63,24 @@ if method == 'Infrequent WT MetaD':
         collect = pd.concat(collected_time_data, ignore_index=True)
         collect.reset_index('Time')
         collect.index.name = 'Trial'
-        collect.to_csv(filetitle+'_Allevents.csv', delimiter=',')
+	# pdb.set_trace()
+	collect = collect[collect['Event'] != 'NULL']
         ks_results = perform_ks_analysis(collect)
-        if len(timedata[timedata['Event'] == 'A']) > 0:
-            ks_resultsA = perform_ks_analysis(collect[collect['Event'] == 'A'])
-        if len(timedata[timedata['Event'] == 'B']) > 0:
-            ks_resultsB = perform_ks_analysis(collect[collect['Event'] == 'B'])
+	if len(collect[collect['Event'] == 'A']) > 0:
+		ks_resultsA = perform_ks_analysis(collect[collect['Event'] == 'A'])
+	if len(collect[collect['Event'] == 'B']) > 0:
+		ks_resultsB = perform_ks_analysis(collect[collect['Event'] == 'B'])
         with open(filetitle + '_statistics.csv', "ab") as f:
                 writer = csv.writer(f)
-                writer.writerow(['All Events'])
+		writer.writerow(['All Events'])
                 writer.writerow([ks_results])
-                if len(timedata[timedata['Event'] == 'A']) > 0:
-                    writer.writerow(['A Events'])
-                    writer.writerow([ks_resultsA])
-                if len(timedata[timedata['Event'] == 'B']) > 0:
-                    writer.writerow(['B Events'])
-                    writer.writerow([ks_resultsB])
+		if len(collect[collect['Event'] == 'A']) > 0:
+                	writer.writerow(['A Events'])
+                	writer.writerow([ks_resultsA])
+                if len(collect[collect['Event'] == 'B']) > 0:
+			writer.writerow(['B Events'])
+                	writer.writerow([ks_resultsB])
+	collect.to_csv(filetitle+'_Allevents.csv', delimiter=',')
 else:
         if dimension == '1-D Potential':
             trial = simulate_1Dsystem(inps, mdps,

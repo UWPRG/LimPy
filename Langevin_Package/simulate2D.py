@@ -4,14 +4,14 @@ import numpy as np
 import scipy as sp
 import os
 import math
-import pdb
+
 
 from potential_functions import get_potential_dict, get_boundary_condition_dict
 import langevin_functions as lf
 
 
 def simulate_2Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
-                      makeplot, plot_freq, make_movie):
+                      makeplot, plot_frequency, make_movie):
     """
     Simulate a walker in a 2D potential.
 
@@ -146,7 +146,7 @@ def simulate_2Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
     coords[0, 0] = x0
     coords[0, 1] = y0
     cmap = plt.cm.PRGn
-    levels = np.arange(np.min(pot_base), np.max(pot_base)+0.25, 0.5)
+    levels = np.arange(np.min(pot_base), np.max(pot_base)+0.25, 0.25)
     v0x = np.random.normal(0, 1, 1)
     v0y = np.random.normal(0, 1, 1)
     T1x = m*v0x**2/kb
@@ -290,7 +290,6 @@ def simulate_2Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
                                                        dimension))
             plt.clf()
             plt.subplot(221)
-            plt.title('Walker on underlying potential w/o bias')
             cset2 = plt.contourf(xlong, ylong, pot_base, levels,
                                  cmap=plt.cm.get_cmap(cmap, levels.size - 1))
             plt.colorbar(cset2)
@@ -299,7 +298,6 @@ def simulate_2Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
             plt.xlabel("CV1")
             plt.ylabel("CV2")
             plt.subplot(222)
-            plt.title('Walker on potential w/bias')
             cset3 = plt.contourf(xlong, ylong, bias, levels,
                                  cmap=plt.cm.get_cmap(cmap, levels.size - 1))
             plt.colorbar(cset3)
@@ -308,7 +306,6 @@ def simulate_2Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
             plt.xlabel("CV1")
             plt.ylabel("CV2")
             plt.subplot(223)
-            plt.title('Walker on bias only')
             cset4 = plt.contourf(xlong, ylong, bias-pot_base, levels,
                                  cmap=plt.cm.get_cmap(cmap, levels.size - 1))
             plt.colorbar(cset4)
