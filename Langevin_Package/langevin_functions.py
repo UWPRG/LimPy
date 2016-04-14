@@ -63,32 +63,65 @@ def get_parameters(input_file):
     (_,dims) = get_potential_dict()
     method = str(inputs['Method'][0])
     filetitle = str(inputs['Data Filename'][0])
+    potfunc = str(inputs['Potential_Function'][0])
+    dimension = dims[potfunc]
     inps = np.zeros(14)
     inps[0] = float(inputs['Steps'][0])
     inps[1] = float(inputs['Step size'][0])
-    inps[2] = float(inputs['X0'][0])
     inps[3] = float(inputs['Temperature'][0])
     inps[4] = float(inputs['Mass'][0])
-    inps[5] = float(inputs['Xmin'][0])
-    inps[6] = float(inputs['Xmax'][0])
-    inps[7] = float(inputs['Xincrement'][0])
-    inps[8] = float(inputs['Y0'][0])
-    inps[9] = float(inputs['Ymin'][0])
-    inps[10] = float(inputs['Ymax'][0])
-    inps[11] = float(inputs['Yincrement'][0])
     inps[12] = float(inputs['Gamma'][0])
     inps[13] = float(inputs['Kb'][0])
     makeplot = str((inputs['Plotting'][0]))
-    plot_freq = int((inputs['Plot Freq'][0]))
-    make_movie = str((inputs['Make Movie'][0]))
-    potfunc = str(inputs['Potential_Function'][0])
-    dimension = dims[potfunc]
+    if dimension == '1-D Potential':
+            inps[2] = float(inputs['X0'][0])
+            inps[5] = float(inputs['Xmin'][0])
+            inps[6] = float(inputs['Xmax'][0])
+            inps[7] = float(inputs['Xincrement'][0])
+            inps[8] = 0.0
+            inps[9] = 0.0
+            inps[10] = 0.0
+            inps[11] = 0.0
+    elif dimension == '2-D Potential':
+            inps[2] = float(inputs['X0'][0])
+            inps[5] = float(inputs['Xmin'][0])
+            inps[6] = float(inputs['Xmax'][0])
+            inps[7] = float(inputs['Xincrement'][0])
+            inps[8] = float(inputs['Y0'][0])
+            inps[9] = float(inputs['Ymin'][0])
+            inps[10] = float(inputs['Ymax'][0])
+            inps[11] = float(inputs['Yincrement'][0])
+    if makeplot == 'True':
+        plot_freq = int((inputs['Plot Freq'][0]))
+        make_movie = str((inputs['Make Movie'][0]))
+    else:
+        plot_freq = steps*2.0
+        make_movie = 'False'
     mdps = np.zeros(5)
-    mdps[0] = float(inputs['Gaussian Height'][0])
-    mdps[1] = float(inputs['Gaussian Width'][0])
-    mdps[2] = float(inputs['Deposition Frequency'][0])
-    mdps[3] = float(inputs['Well Temperature'][0])
-    mdps[4] = float(inputs['Trials'][0])
+    if method == 'MD':
+        mdps[0] = 0.0
+        mdps[1] = 0.01
+        mdps[2] = steps*2.0
+        mdps[3] = 1.0
+        mdps[4] = 0.0
+    elif method == 'Metadynamics':
+            mdps[0] = float(inputs['Gaussian Height'][0])
+            mdps[1] = float(inputs['Gaussian Width'][0])
+            mdps[2] = float(inputs['Deposition Frequency'][0])
+            mdps[3] = float("inf")
+            mdps[4] = 0.0
+    elif method =='Well-Tempered Metadynamics':
+            mdps[0] = float(inputs['Gaussian Height'][0])
+            mdps[1] = float(inputs['Gaussian Width'][0])
+            mdps[2] = float(inputs['Deposition Frequency'][0])
+            mdps[3] = float(inputs['Well Temperature'][0])
+            mdps[4] = 0.0
+    else:
+        mdps[0] = float(inputs['Gaussian Height'][0])
+        mdps[1] = float(inputs['Gaussian Width'][0])
+        mdps[2] = float(inputs['Deposition Frequency'][0])
+        mdps[3] = float(inputs['Well Temperature'][0])
+        mdps[4] = float(inputs['Trials'][0])
 
     return (inps, mdps, dimension, method, potfunc, filetitle, makeplot,
             plot_freq, make_movie)

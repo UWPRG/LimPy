@@ -80,31 +80,11 @@ def simulate_2Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
     ymax = inps[10]
     yinc = inps[11]
     kb = inps[13]
-    if (method == 'Metadynamics'):
-        winit = mdps[0]
-        delta = mdps[1]
-        hfreq = mdps[2]
-        w = np.array([0.0])
-        DT = float("inf")
-
-    if (method == 'Well-Tempered Metadynamics'):
-        winit = mdps[0]
-        delta = mdps[1]
-        hfreq = mdps[2]
-        DT = mdps[3]
-        w = np.array([0.0])
-    if (method == 'MD'):
-        winit = 0
-        delta = 1
-        hfreq = steps*2
-        DT = 10000
-        w = np.array([0.0])
-    if (method == "Infrequent WT MetaD"):
-        winit = mdps[0]
-        delta = mdps[1]
-        hfreq = mdps[2]
-        DT = mdps[3]
-        w = np.array([0.0])
+    winit = mdps[0]
+    delta = mdps[1]
+    hfreq = mdps[2]
+    DT = mdps[3]
+    w = np.array([0.0])
 
     if (make_movie == 'True'):
         if os.path.exists(filetitle+"_movies"):
