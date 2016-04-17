@@ -10,7 +10,7 @@ from potential_functions import get_potential_dict, get_boundary_condition_dict
 import langevin_functions as lf
 
 
-def simulate_1Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
+def simulate_1Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
                       makeplot, plot_freq, make_movie):
     """
     Simulatesa walker in a 1D potential.
@@ -81,7 +81,8 @@ def simulate_1Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
     hfreq = mdps[2]
     DT = mdps[3]
     w = np.array([0.0])
-
+    bcs=bcs[0]
+    dimension = potfunc.dimension
     if (make_movie == 'True'):
         if os.path.exists(filetitle+"_movies"):
             os.rmdir(filetitle+"_movies")
@@ -100,20 +101,19 @@ def simulate_1Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
     time = np.array([0.0])
     walkerpot = np.array([0.0])
 
-    (pot_dict,_) = get_potential_dict()
-    bc_dict = get_boundary_condition_dict()
-    try:
-        selected_pot = pot_dict[potfunc]
-    except KeyError:
-        print 'That potential function has not been loaded into the dictionary'
-    try:
-        selected_bc = bc_dict[potfunc]
-    except KeyError:
-        print 'That boundary condition has not been loaded into the dictionary'
+    # (pot_dict,_) = get_potential_dict()
+    # bc_dict = get_boundary_condition_dict()
+    # try:
+    #     selected_pot = pot_dict[potfunc]
+    # except KeyError:
+    #     print 'That potential function has not been loaded into the dictionary'
+    # try:
+    #     selected_bc = bc_dict[potfunc]
+    # except KeyError:
+    #     print 'That boundary condition has not been loaded into the dictionary'
 
-    baseline = selected_pot(xlong)
-    iv = selected_pot(x0)[0]
-    pot_base = baseline[0]
+    pot_base = potfunc.get_potential(xlong)
+    iv = potfunc.get_potential(x0)
     coords[0] = x0
     if makeplot == 'True':
         plt.plot(xlong, pot_base, '-b')
@@ -129,7 +129,7 @@ def simulate_1Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
     T1 = m*v0**2/kb
     vscaled = v0 *(T/T1)**(0.5)
     p = vscaled * m
-    is_periodic = selected_bc(iv, selected_pot(x0)[1], coords[0])[4]
+    # is_periodic = selected_bc(iv, selected_pot(x0)[1], coords[0])[4]
 
     FES = np.zeros_like(xlong)
     icount = np.zeros_like(xlong)
@@ -145,10 +145,11 @@ def simulate_1Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
             'Well Temperature ' + str(DT) + '\n' + 'Gaussian ' + str(gamma) +
             '\n' + 'Potential ' + str(potfunc))
     i = 0
+
     while i < steps - 1:
 
         if (method == "Infrequent WT MetaD"):
-            (_,_,triggered,path) = selected_pot(coords[i])
+            (triggered,path) = potfunc.get_triggered(coords[i])
 
             if triggered is True:
 
@@ -160,18 +161,17 @@ def simulate_1Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
             if(i == hfreq):
                 history[0] = coords[i]
                 w[0] = winit
-                if is_periodic is True:
-                    history = np.append(history, coords[i]+(xmax-xmin))
-                    history = np.append(history, coords[i]-(xmax-xmin))
+                if bcs.type == 'Periodic':
+                    history = bcs.add_depositions(coords[i], history)
                     w = np.append(w, winit)
                     w = np.append(w, winit)
             else:
+
                 if method == 'Metadynamics':
                     history = np.append(history, coords[i])
                     w = np.append(w, winit)
-                    if is_periodic is True:
-                        history = np.append(history, coords[i]+(xmax-xmin))
-                        history = np.append(history, coords[i]-(xmax-xmin))
+                    if bcs.type == 'Periodic':
+                        (history) = bcs.add_depositions(coords[i], history)
                         w = np.append(w, winit)
                         w = np.append(w, winit)
                 elif (method == 'Well-Tempered Metadynamics' or
@@ -180,15 +180,14 @@ def simulate_1Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
                                             dimension)
                     history = np.append(history, coords[i])
                     w = np.append(w, winit * np.exp(-VR / (kb*DT)))
-                    if is_periodic is True:
-                        history = np.append(history, coords[i]+(xmax-xmin))
-                        history = np.append(history, coords[i]-(xmax-xmin))
+                    if bcs.type == 'Periodic':
+                        (history) = bcs.add_depositions(coords[i], history)
                         w = np.append(w, winit * np.exp(-VR / (kb*DT)))
                         w = np.append(w, winit * np.exp(-VR / (kb*DT)))
         [pnew, vnew, newcoord, bcbias] = lf.integrate_step(coords[i], history,
                                                            w, delta, DT,
-                                                           potfunc, p, m, dt,
-                                                           gamma, beta,
+                                                           potfunc, bcs, p, m,
+                                                           dt, gamma, beta,
                                                            dimension)
         p = pnew
 
@@ -229,7 +228,7 @@ def simulate_1Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
 
     if(method != "Infrequent WT MetaD"):
         colvar100 = lf.calc_colvar(coords, history, w, delta, dimension,
-                                   xlong, method, beta, T, DT):
+                                   xlong, method, beta, T, DT)
         rmsds = lf.calc_rmsd(colvar100[1], beta, pot_base)
 
         return (coords, colvar100, rmsds, info)

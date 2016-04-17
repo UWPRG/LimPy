@@ -4,14 +4,13 @@ import numpy as np
 import scipy as sp
 import os
 import math
+import pdb
 
-
-from potential_functions import get_potential_dict, get_boundary_condition_dict
 import langevin_functions as lf
 
 
-def simulate_2Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
-                      makeplot, plot_frequency, make_movie):
+def simulate_2Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
+                      makeplot, plot_freq, make_movie):
     """
     Simulate a walker in a 2D potential.
 
@@ -85,7 +84,9 @@ def simulate_2Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
     hfreq = mdps[2]
     DT = mdps[3]
     w = np.array([0.0])
-
+    xbc = bcs[0]
+    ybc = bcs[1]
+    dimension = potfunc.dimension
     if (make_movie == 'True'):
         if os.path.exists(filetitle+"_movies"):
             os.rmdir(filetitle+"_movies")
@@ -106,27 +107,25 @@ def simulate_2Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
     time = np.array([0.0])
     walkerpot = np.array([0.0])
 
-    (pot_dict,_) = get_potential_dict()
-    bc_dict = get_boundary_condition_dict()
-    try:
-        selected_pot = pot_dict[potfunc]
-    except KeyError:
-        print 'That potential function has not been loaded into the dictionary'
-    try:
-        selected_bc = bc_dict[potfunc]
-    except KeyError:
-        print 'That potential function has not been loaded into the dictionary'
-    baseline = selected_pot(xlong, ylong)
-    iv = selected_pot(x0, y0)[0]
-    is_periodic = selected_bc(iv, selected_pot(x0, y0)[1],
-                              np.array([x0, y0]))[4]
-    pot_base = baseline[0]
+    # (pot_dict,_) = get_potential_dict()
+    # bc_dict = get_boundary_condition_dict()
+    # try:
+    #     selected_pot = pot_dict[potfunc]
+    # except KeyError:
+    #     print 'That potential function has not been loaded into the dictionary'
+    # try:
+    #     selected_bc = bc_dict[potfunc]
+    # except KeyError:
+    #     print 'That potential function has not been loaded into the dictionary'
+
+    iv = potfunc.get_potential(np.array([x0, y0]))
+    pot_base = potfunc.get_potential(np.array([xlong, ylong]))
     FES = np.zeros_like(pot_base)
     icount = np.zeros_like(FES)
     coords[0, 0] = x0
     coords[0, 1] = y0
-    cmap = plt.cm.PRGn
-    levels = np.arange(np.min(pot_base), np.max(pot_base)+0.25, 0.25)
+    cmap = cmap = plt.cm.jet
+    levels = np.arange(-50, 10, 2)
     v0x = np.random.normal(0, 1, 1)
     v0y = np.random.normal(0, 1, 1)
     T1x = m*v0x**2/kb
@@ -171,7 +170,8 @@ def simulate_2Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
     while i < steps - 1:
 
         if (method == "Infrequent WT MetaD"):
-            (_,_,triggered,path) = selected_pot(coords[i, 0], coords[i, 1])
+            (triggered,path) = potfunc.get_triggered(np.array([coords[i, 0],
+                                                               coords[i, 1]]))
             if triggered is True:
                 totaltime = time[i]
                 teff = lf.calc_teff(walkerpot, beta, dt)
@@ -190,14 +190,14 @@ def simulate_2Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
                     history = np.vstack((history, np.array([coords[i, 0],
                                                            coords[i, 1]])))
 
-                    if is_periodic[0] is True:
+                    if xbc.type == 'Periodic':
                         history = np.vstack((history, np.array([coords[i, 0] +
                                              (xmax-xmin), coords[i, 1]])))
                         history = np.vstack((history, np.array([coords[i, 0] -
                                              (xmax-xmin), coords[i, 1]])))
                         w = np.append(w, winit)
                         w = np.append(w, winit)
-                    if is_periodic[1] is True:
+                    if ybc.type == 'Periodic':
                         history = np.vstack((history, np.array([coords[i, 0],
                                                                coords[i, 1] +
                                                                (ymax-ymin)])))
@@ -216,14 +216,14 @@ def simulate_2Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
                                                            coords[i, 1]])))
                     w = np.append(w, winit * np.exp(-VR / (kb*DT)))
 
-                    if is_periodic[0] is True:
+                    if xbc.type == 'Periodic':
                         history = np.vstack((history, np.array([coords[i, 0] +
                                              (xmax-xmin), coords[i, 1]])))
                         history = np.vstack((history, np.array([coords[i, 0] -
                                              (xmax-xmin), coords[i, 1]])))
                         w = np.append(w, winit * np.exp(-VR / (kb*DT)))
                         w = np.append(w, winit * np.exp(-VR / (kb*DT)))
-                    if is_periodic[1] is True:
+                    if ybc.type == 'Periodic':
                         history = np.vstack((history, np.array([coords[i, 0],
                                                                coords[i, 1] +
                                                                (ymax-ymin)])))
@@ -235,14 +235,13 @@ def simulate_2Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
 
         [pnew, vnew, newcoord, bcbias] = lf.integrate_step(coords[i], history,
                                                            w, delta, DT,
-                                                           potfunc, p, m, dt,
-                                                           gamma, beta,
+                                                           potfunc, bcs, p, m,
+                                                           dt, gamma, beta,
                                                            dimension)
         p = pnew
 
         coords[i+1, 0] = newcoord[0]
         coords[i+1, 1] = newcoord[1]
-        vnew = selected_pot(coords[i+1, 0], coords[i+1, 1])[0]
 
         E[i+1] = 0.5/m * (p[0]**2 + p[1]**2) + vnew
 
@@ -260,14 +259,14 @@ def simulate_2Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
                                            xinc, xmin, xmax,
                                            yinc, ymin, ymax, E[i+1])
         if makeplot == 'True' and sp.mod(i, plot_freq) == 0:
-            bias = np.copy(pot_base)
-            for yc in range(0, ylong.size):
-                for xc in range(0, xlong.size):
-                    bias[yc, xc] = (bias[yc, xc] +
-                                    lf.calc_biased_pot(np.array([xlong[xc],
-                                                                 ylong[yc]]),
-                                                       history, w, delta,
-                                                       dimension))
+            # bias = np.copy(pot_base)
+            # for yc in range(0, ylong.size):
+            #     for xc in range(0, xlong.size):
+            #         bias[yc, xc] = (bias[yc, xc] +
+            #                         lf.calc_biased_pot(np.array([xlong[xc],
+            #                                                      ylong[yc]]),
+            #                                            history, w, delta,
+            #                                            dimension))
             plt.clf()
             plt.subplot(221)
             cset2 = plt.contourf(xlong, ylong, pot_base, levels,
@@ -277,23 +276,23 @@ def simulate_2Dsystem(inps, mdps, dimension, method, potfunc, filetitle,
                         color='r', zorder=10)
             plt.xlabel("CV1")
             plt.ylabel("CV2")
-            plt.subplot(222)
-            cset3 = plt.contourf(xlong, ylong, bias, levels,
-                                 cmap=plt.cm.get_cmap(cmap, levels.size - 1))
-            plt.colorbar(cset3)
-            plt.scatter(coords[i+1, 0], coords[i+1, 1], marker='o',
-                        color='r', zorder=10)
-            plt.xlabel("CV1")
-            plt.ylabel("CV2")
-            plt.subplot(223)
-            cset4 = plt.contourf(xlong, ylong, bias-pot_base, levels,
-                                 cmap=plt.cm.get_cmap(cmap, levels.size - 1))
-            plt.colorbar(cset4)
-            plt.scatter(coords[i+1, 0], coords[i+1, 1], marker='o',
-                        color='r', zorder=10)
-            plt.xlabel("CV1")
-            plt.ylabel("CV2")
-            plt.draw()
+            # plt.subplot(222)
+            # cset3 = plt.contourf(xlong, ylong, bias, levels,
+            #                      cmap=plt.cm.get_cmap(cmap, levels.size - 1))
+            # plt.colorbar(cset3)
+            # plt.scatter(coords[i+1, 0], coords[i+1, 1], marker='o',
+            #             color='r', zorder=10)
+            # plt.xlabel("CV1")
+            # plt.ylabel("CV2")
+            # plt.subplot(223)
+            # cset4 = plt.contourf(xlong, ylong, bias-pot_base, levels,
+            #                      cmap=plt.cm.get_cmap(cmap, levels.size - 1))
+            # plt.colorbar(cset4)
+            # plt.scatter(coords[i+1, 0], coords[i+1, 1], marker='o',
+            #             color='r', zorder=10)
+            # plt.xlabel("CV1")
+            # plt.ylabel("CV2")
+            # plt.draw()
             plt.pause(0.0001)
             if (make_movie == 'True'):
                 filename = "movieframe" + str(frame)

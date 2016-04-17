@@ -1,7 +1,8 @@
 """This is a script to run the langevin integrator."""
 
 import langevin_functions as lf
-
+import potential_class as pc
+import boundarycondition as bcn
 from simulate1D import simulate_1Dsystem
 from simulate2D import simulate_2Dsystem
 from statistical_functions import perform_ks_analysis, sampling
@@ -16,9 +17,9 @@ inputsfile = sys.argv[1]
 received = lf.get_parameters(inputsfile)
 inps = received[0]
 mdps = received[1]
-dimension = received[2]
-method = received[3]
-potfunc = received[4]
+method = received[2]
+potfunc = received[3]
+bcs = received[4]
 filetitle = received[5]
 makeplot = received[6]
 plot_freq = received[7]
@@ -28,11 +29,11 @@ trials = mdps[-1]
 checkprogress = 0
 
 while checkprogress < trials:
-    if dimension == '1-D Potential':
-        trial = simulate_1Dsystem(inps, mdps, dimension, method, potfunc,
+    if potfunc.dimension == '1-D Potential':
+        trial = simulate_1Dsystem(inps, mdps, method, potfunc, bcs,
                                   filetitle, makeplot, plot_freq, make_movie)
     else:
-        trial = simulate_2Dsystem(inps, mdps, dimension, method, potfunc,
+        trial = simulate_2Dsystem(inps, mdps, method, potfunc, bcs,
                                   filetitle, makeplot, plot_freq, make_movie)
 
     if method == 'Infrequent WT MetaD':
@@ -49,7 +50,7 @@ while checkprogress < trials:
             checkprogress = len(timedata)
     else:
 
-        if dimension == '1-D Potential':
+        if potfunc.dimension == '1-D Potential':
             colvar = pd.DataFrame({'CV': trial[1][0], 'E': trial[1][1]})
             colvar.reset_index('CV')
         else:
