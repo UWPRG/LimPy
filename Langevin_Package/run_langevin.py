@@ -24,6 +24,7 @@ filetitle = received[5]
 makeplot = received[6]
 plot_freq = received[7]
 make_movie = received[8]
+ebound = received[9]
 np.set_printoptions(threshold=np.nan)
 trials = mdps[-1]
 checkprogress = 0
@@ -31,10 +32,12 @@ checkprogress = 0
 while checkprogress < trials:
     if potfunc.dimension == '1-D Potential':
         trial = simulate_1Dsystem(inps, mdps, method, potfunc, bcs,
-                                  filetitle, makeplot, plot_freq, make_movie)
+                                  filetitle, makeplot, plot_freq, make_movie,
+                                   ebound)
     else:
         trial = simulate_2Dsystem(inps, mdps, method, potfunc, bcs,
-                                  filetitle, makeplot, plot_freq, make_movie)
+                                  filetitle, makeplot, plot_freq, make_movie,
+                                  ebound)
 
     if method == 'Infrequent WT MetaD':
         if checkprogress == 0:
@@ -73,6 +76,7 @@ if os.path.isfile(filetitle + '_info.csv') is False:
 
 if method == 'Infrequent WT MetaD':
     timedata.to_csv(filetitle + '_Allevents.csv', delimiter=',')
+    pdb.set_trace()
     ks_results = perform_ks_analysis(timedata)
     if len(timedata[timedata['Event'] == 'A']) > 0:
         ks_resultsA = perform_ks_analysis(timedata[timedata['Event'] == 'A'])

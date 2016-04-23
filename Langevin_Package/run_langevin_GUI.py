@@ -1,17 +1,12 @@
 """This is a script to create a GUI for inputs for Langevin Integrator."""
-# import pdb
+
 import os
 import sys
-# import math
 import csv
 
-# import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-# import scipy as sp
-
-# from mpl_toolkits.mplot3d import Axes3D
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 

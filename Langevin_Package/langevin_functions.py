@@ -135,10 +135,15 @@ def get_parameters(input_file):
             bcs.append(ybc)
     if makeplot == 'True':
         plot_freq = int((inputs['Plot Freq'][0]))
+        plot_emax = int((inputs['Plot Emax'][0]))
+        plot_emin = int((inputs['Plot Emin'][0]))
         make_movie = str((inputs['Make Movie'][0]))
     else:
         plot_freq = inps[0]*2.0
+        plot_emax = 0.0
+        plot_emin = 0.0
         make_movie = 'False'
+    ebound = np.array([plot_emin, plot_emax])
     mdps = np.zeros(5)
     if method == 'MD':
         mdps[0] = 0.0
@@ -156,7 +161,8 @@ def get_parameters(input_file):
             mdps[0] = float(inputs['Gaussian Height'][0])
             mdps[1] = float(inputs['Gaussian Width'][0])
             mdps[2] = float(inputs['Deposition Frequency'][0])
-            mdps[3] = float(inputs['Well Temperature'][0])
+            biasfactor = float(inputs['Bias Factor'][0])
+            mdps[3] = (biasfactor-1)*inps[3]
             mdps[4] = 1.0
     else:
         mdps[0] = float(inputs['Gaussian Height'][0])
@@ -170,7 +176,7 @@ def get_parameters(input_file):
             potfunc.set_upper_rare_event(float(inputs['Upper Rare Event']))
 
     return (inps, mdps, method, potfunc, bcs, filetitle, makeplot,
-            plot_freq, make_movie)
+            plot_freq, make_movie, ebound)
 
 
 def calc_biased_pot(coords, history, w, delta, dimension):
@@ -372,7 +378,7 @@ def integrate_step(coords, history, w,  delta, DT, potfunc, bcs, p0, m, dt,
     #     apply_bc = bc_dict[potfunc]
     # except KeyError:
     #     print 'That boundary condition has not been loaded into the dictionary'
-
+    # pdb.set_trace()
     c1 = np.exp(-gamma * dt / 2)  # (Eq.13a)
     c2 = np.sqrt((1 - c1**2) * m / beta)  # (Eq.13b)
     if dimension == '1-D Potential':
@@ -458,10 +464,10 @@ def integrate_step(coords, history, w,  delta, DT, potfunc, bcs, p0, m, dt,
             bcbiasx = 0
             vnew = vnew_nobc
             f2x = f2_nobc[0]
-        if newcoords[1] < ybc.location[1]:
+        if newcoords[1] < ybc.location[0]:
             vnew = ybc.get_potential(newcoords[1],
                                      potfunc.get_potential(np.array([newcoords[0],
-                                                                     ybc.location[1]])))
+                                                                     ybc.location[0]])))
             f2y = ybc.get_force(newcoords[1], f2_nobc[1])
             newcoords[1] = ybc.get_new_location(newcoords[1])
             bcbiasy = ybc.get_bc_bias(newcoords[1])

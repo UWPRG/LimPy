@@ -10,7 +10,8 @@ import langevin_functions as lf
 
 
 def simulate_2Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
-                      makeplot, plot_freq, make_movie):
+                      makeplot, plot_freq, make_movie,
+                      ebound):
     """
     Simulate a walker in a 2D potential.
 
@@ -125,7 +126,7 @@ def simulate_2Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
     coords[0, 0] = x0
     coords[0, 1] = y0
     cmap = cmap = plt.cm.jet
-    levels = np.arange(-50, 10, 2)
+    levels = np.arange(ebound[0],ebound[1],(ebound[1]-ebound[0])/10)
     v0x = np.random.normal(0, 1, 1)
     v0y = np.random.normal(0, 1, 1)
     T1x = m*v0x**2/kb
@@ -140,7 +141,7 @@ def simulate_2Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
     if makeplot == 'True':
         plt.clf()
         plt.ion()
-        plt.subplot(221)
+        # plt.subplot(221)
 
         cset1 = plt.contourf(xlong, ylong, pot_base, levels,
                              cmap=plt.cm.get_cmap(cmap, levels.size - 1))
@@ -149,13 +150,13 @@ def simulate_2Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
         plt.xlabel("X")
         plt.ylabel("Y")
         plt.scatter(x0, y0, marker='o', color='r', zorder=10)
-
-        plt.subplot(222)
-        cset2 = plt.contourf(xlong, ylong, pot_base, levels,
-                             cmap=plt.cm.get_cmap(cmap, levels.size - 1))
-        plt.colorbar(cset2)
+        #
+        # plt.subplot(222)
+        # cset2 = plt.contourf(xlong, ylong, pot_base, levels,
+        #                      cmap=plt.cm.get_cmap(cmap, levels.size - 1))
+        # plt.colorbar(cset2)
         plt.draw()
-        plt.pause(0.0001)
+        plt.pause(0.000001)
 
     info = ('Parameters: \n' + 'Number of steps: ' + str(steps) + '\n' +
             'Initial x coordinate ' + str(x0) + 'Initial y coordinate ' +
@@ -168,7 +169,7 @@ def simulate_2Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
             '\n' + 'Potential ' + str(potfunc))
     i = 0
     while i < steps - 1:
-
+        # pdb.set_trace()
         if (method == "Infrequent WT MetaD"):
             (triggered,path) = potfunc.get_triggered(np.array([coords[i, 0],
                                                                coords[i, 1]]))
@@ -234,9 +235,9 @@ def simulate_2Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
                         w = np.append(w, winit * np.exp(-VR / (kb*DT)))
 
         [pnew, vnew, newcoord, bcbias] = lf.integrate_step(coords[i], history,
-                                                           w, delta, DT,
-                                                           potfunc, bcs, p, m,
-                                                           dt, gamma, beta,
+                                                       w, delta, DT,
+                                                       potfunc, bcs, p, m,
+                                                       dt, gamma, beta,
                                                            dimension)
         p = pnew
 
@@ -258,7 +259,8 @@ def simulate_2Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
                                                      coords[i+1, 1]]),
                                            xinc, xmin, xmax,
                                            yinc, ymin, ymax, E[i+1])
-        if makeplot == 'True' and sp.mod(i, plot_freq) == 0:
+        if makeplot == 'True' and sp.mod(i, plot_freq) == 0 and i>0:
+
             # bias = np.copy(pot_base)
             # for yc in range(0, ylong.size):
             #     for xc in range(0, xlong.size):
@@ -268,7 +270,6 @@ def simulate_2Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
             #                                            history, w, delta,
             #                                            dimension))
             plt.clf()
-            plt.subplot(221)
             cset2 = plt.contourf(xlong, ylong, pot_base, levels,
                                  cmap=plt.cm.get_cmap(cmap, levels.size - 1))
             plt.colorbar(cset2)
@@ -292,17 +293,20 @@ def simulate_2Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
             #             color='r', zorder=10)
             # plt.xlabel("CV1")
             # plt.ylabel("CV2")
-            # plt.draw()
+            # # plt.draw()
+            print i
             plt.pause(0.0001)
             if (make_movie == 'True'):
                 filename = "movieframe" + str(frame)
                 plt.savefig(filename + '.png', bbox_inches='tight')
                 frame = frame + 1
+
         i = i + 1
 
     if(method != "Infrequent WT MetaD"):
         editFES = np.array(0)
         editvcalc = np.array(0)
+        pdb.set_trace()
         for k in range(0, ylong.size):
             for j in range(0, xlong.size):
                 if(icount[k, j] > 0):

@@ -6,12 +6,12 @@ import os
 import pdb
 import math
 
-from potential_functions import get_potential_dict, get_boundary_condition_dict
+# from potential_functions import get_potential_dict, get_boundary_condition_dict
 import langevin_functions as lf
 
 
 def simulate_1Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
-                      makeplot, plot_freq, make_movie):
+                      makeplot, plot_freq, make_movie, ebound):
     """
     Simulatesa walker in a 1D potential.
 
@@ -118,8 +118,8 @@ def simulate_1Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
     if makeplot == 'True':
         plt.plot(xlong, pot_base, '-b')
         plt.plot(x0, iv, 'ro', markersize=10)
-        plt.axis([xmin, xmax, min(pot_base)-5,
-                 max(pot_base)+5])
+        plt.axis([xmin, xmax, ebound[0],
+                 ebound[1]])
         plt.xlabel("CV(s)")
         plt.ylabel("F")
         plt.draw()
@@ -214,8 +214,8 @@ def simulate_1Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
             plt.plot(xlong, bias, '-r')
             plt.plot(xlong, pot_base, '-b')
             plt.plot(coords[i+1], walkv, 'ro', markersize=10)
-            plt.axis([xmin, xmax, min(pot_base)-5,
-                     max(pot_base)+5])
+            plt.axis([xmin, xmax, ebound[0],
+                     ebound[1]])
             plt.xlabel("CV(s)")
             plt.ylabel("F")
             plt.draw()

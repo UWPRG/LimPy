@@ -48,7 +48,13 @@ class QuarticBoundary(BoundaryCondition):
         return origin_force
 
     def get_bc_bias(self, coords):
-        return 100.0*(coords - self.location)**4.0
+        # if coords > self.location[1]:
+        #     return 100.0*(coords - self.location[1])**4.0
+        # elif coords < self.location[0]:
+        #      return 100.0*(coords - self.location[0])**4.0
+        # else:
+        return 0.0
+
 
 class PeriodicBoundary(BoundaryCondition):
 
