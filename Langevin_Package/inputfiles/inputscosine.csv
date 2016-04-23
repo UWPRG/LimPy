@@ -1,4 +1,1 @@
-Parameter,InputMethod,Well-Tempered Metadynamics#Well-Tempered Metadynamics, MD, Infrequent WT MetaD, MetadynamicsPotential_Function,cosine_potentialPlotting,TrueSteps,500000Step size,0.01Temperature,500Mass,1X0,3.14159Xmin,-6.28Xmax,12.57Xincrement,0.01Y0,0.5Ymin,-2Ymax,2Yincrement,0.01Gaussian Height,0.25Gaussian Width,0.25Deposition Frequency,1000Well Temperature,10000Trials,100Data Filename,cosinerateTest_600K_3barrierGamma,5
-Plot Freq,2000
-Make Movie,False
-Kb,0.001987
+Parameter,InputMethod,Well-Tempered MetadynamicsPotential_Function,piece_wise_cosinePlotting,FalseSteps,100000Step size,0.01Temperature,300Mass,1X0,3.14Xmin,-6.28Xmax,6.28Xincrement,0.01Y0,0.5Ymin,-2Ymax,2Yincrement,0.01Gaussian Height,0.25Gaussian Width,0.25Deposition Frequency,500Well Temperature,10000Trials,100Data Filename,PotclassTest_10000strideGamma,5Kb,0.001987Plot Freq,1000Make Movie,FalseX Boundary Condition,QuarticUpper X BC,TrueLower X BC,FalsePotential Parameters,2.5 0 2.5 0
