@@ -1,9 +1,9 @@
-# Langevin_Package (Still a work in progress)
+# Langevin_Package (CURRENTLY OUTDATED README)
 ----
 Langevin_Package is a Langevin Integrator capable of carrying out Molecular Dynamics
 (MD), Metadynamics, Well-Tempered Metadynamics, and Infrequent Metadynamics.
 The integrator is capable of operating on, and visualizing, 1-D and 2-D potentials.
-This package can be operated to run from the command line (`run_langevin.py`) or through a GUI (`run_langevin_GUI.py`). A version of this code has also been created with MPI4Py so it may be implemented in parallel on multiple nodes (`run_langevin_parallel.py`)
+This package can be operated to run from the command line (`run_langevin.py`) or through a GUI (`run_GUI.py`). A version of this code has also been created with MPI4Py so it may be implemented in parallel on multiple nodes (`run_langevin_parallel.py`)
 
 ----
 ## Use:
@@ -17,138 +17,104 @@ The inputs files contains all of the specified inputs for the system of interest
 
 ```
 Parameter,Input
-Method,Well-Tempered Metadynamics#Well-Tempered Metadynamics, MD, Infrequent WT MetaD, Metadynamics
+Method,Well-Tempered Metadynamics
 Potential_Function,cosine_potential
-Plotting,True
+Plotting,False
 Steps,100000
 Step size,0.01
 Temperature,300
 Mass,1
-X0,3.14159
-Xmin,-0.31
-Xmax,6.5
+X0,3.14
+Xmin,-6.28
+Xmax,6.28
 Xincrement,0.01
 Y0,0.5
 Ymin,-2
 Ymax,2
 Yincrement,0.01
 Gaussian Height,0.25
-Gaussian Width,0.07
-Deposition Frequency,250
+Gaussian Width,0.25
+Deposition Frequency,500
 Well Temperature,10000
 Trials,100
-Data Filename,output
+Data Filename,PotclassTest_10000stride
 Gamma,5
+Kb,0.001987
 Plot Freq,1000
-Make Movie,True
-Kb,0.001987#kcal/mol
+Make Movie,False
+X Boundary Condition,Quartic
+Upper X BC,True
+Lower X BC,False
+Potential Parameters,2.5 0 2.5 0
 ```
 **All lines must be included for a properly formatted input file, however a line is not applicable to a system (i.e. Y parameters for a 1-D system), then just ignore those contents or change the values to 0.**
 
 Each of the definitions can be defined in the key below.
 
 ----
- ![alt text](https://github.com/UWPRG/Chris_Scripts/blob/master/Langevin_Package/Images/Input%20Definitions.png)
+ ![alt text](https://github.com/UWPRG/Chris_Scripts/blob/master/Langevin_Package/Images/Input_Definitions.png)
 ----
 **GUI**
 The user can also input parameters directly through a user interface. For the preloaded potential functions, default variables are preloaded as inputs! Just enter your input choices and push the Lock in Values button. The inputs are the very same for the ones in the input files, but can be brought up by clicking the HELP button.
 
 The user interface also provides the option to read the inputs from an input file. Just make sure the input file is in the inputfiles folder, type the name in the textbox, check the option Read File for Inputs, and click Lock in Values.
 
-![alt text](https://github.com/UWPRG/Chris_Scripts/blob/master/Langevin_Package/Images/GUI_window.png)
+![alt text](https://github.com/UWPRG/Chris_Scripts/blob/master/Langevin_Package/Images/GUI_Window.png)
 ----
 ### Adding a New Potential
 
 While the Langevin_Package comes with potential functions already pre-defined, a user can add new ones to the package in just a few easy steps!
 
-1) Open up `potential_functions.py` and add a new function following the template below. Just fill in the inputs.
+Open up `potential_class.py` and add a new function following the template below. Potential Functions are created as a class with preset functions and attributes. You can just create a child class of PotentialFunction1D or PotentialFunction2D and overwrite the functions as necessary. The outline of a PotentialFunction1D is given below.
 ```python
-def your_potential(coords):
-    """
-    Calculate the Potential Energy and Force. Determine if rare event has happened.
+class PotentialFunction1D:
+    """Basic Outline of a 1-D Potential Function"""
+    dimension='1-D Potential'
+    def __init__(self):
+        self.parameters=np.array([0,0])
+        self.rare_event = np.array([float("inf")*-1,float("inf")])
 
-    Parameters:
-    -----------
+    def get_potential(self, coords):
+        """
+        Equation that returns the potential energy at a CV
+        To be specified by child class
+        """
+        pass
 
-    coords  : float (if 1-D) or array of floats
-              If 2-D the replace coords with (x,y)
+    def set_parameters(self, values):
+        """Overwrites default parameters for potential function"""
+        self.parameters = values
 
+    def get_force(self, coords):
+        """
+        Equation that returns the force at a CV
+        To be specified by child class
+        """
+        pass
 
-    Returns:
-    --------
+    def set_lower_rare_event(self, lower):
+        """Overwrites default lower rare event for potential function"""
+        self.rare_event[0] = lower
 
-    V       : float (or array of floats)
-              Potential Energy
+    def set_upper_rare_event(self, upper):
+        """Overwrites default upper rare event for potential function"""
+        self.rare_event[1] = upper
 
-    F       : float (or array of floats)
-              Force
-
-    Trigger : Boolean
-              Has rare event occurred (True) or not (False)
-    """
-    V = # Input Potential Equation
-    F = # Input Force Equation
-
-    if (# Input Rare Event
-        and if hasattr(coords, "__len__") is True):
-        Trigger = True
-        Event = 'A'
-    elif (# Input Other Rare Event
-          and if hasattr(coords, "__len__") is True):
-          Trigger = True
-        Event = 'B'
-    else:
-        Trigger = False
-        Event = ''
-
-    return (V, F, Trigger, Event)
+    def get_triggered(self, coords):
+        """
+        Determines if rare event has happened, and specifies which one if
+        there are multiple
+        """
+        trigger = False
+        event = "null"
+        if coords < self.rare_event[0]:
+            trigger = True
+            event = "A"
+        elif coords > self.rare_event[1]:
+            trigger = True
+            event = "B"
+        return trigger, event
 ```
-2) Then add the new function to the dictionary of function in `get_potential_dict()` in `potential_functions.py` and add an entry to the `dimension_dict` as well to indicate if it is a 1 or 2 dimensions. Note the entry must be present in both dictionaries and the dimension entry must be `1-D Potential` or `2-D Potential`.
-
-4) Define the boundary condition function for the new function (even if there is none).
-
-```python
-def your_potential_bc(vnew,f2,coords):
-    """
-    Apply Boundary Condition to the potential, force, and coordinates.
-
-    Parameters:
-    -----------
-    vnew       : float (or array of floats)
-                 Potential Energy
-
-    f2         : float (or array of floats)
-                 Force
-
-    coords     : float
-                 coordinates
-
-    Returns:
-    --------
-
-    vnew       : float (or array of floats)
-                 Adjusted potential energy from boundary condition
-
-    F          : float (or array of floats)
-                 Adjusted force from boundary condition
-
-    coords     : float
-                 adjusted coordinates from boundary condition
-
-    bcbias     : float
-                 bias applied strictly from the boundary condition
-
-    is_periodic: Boolean
-                 indicates if the boundary is periodic (True) or not (False)
-    """
-    # Add changes that need to occur to potential, force, coordinates, or bias.
-    return (vnew, f2, coords, bcbias, is_periodic)
-```
-5) Add the new function to `get_boundary_condition_dict()` in `potential_functions.py` with the same key as the entry in the `get_potential_dict()`.
-
-6) If you have a set of desired parameters you would like to run through the GUI, add them as a dictionary entry in `get_GUI_presets_dict()`. The key must be the same as the one used in the other dictionaries and the information is an array of strings of {x0,xmin,xmax,xinc,y0,ymin,ymax,yinc}.
-
-7) You can now call your new function from an input file using the key for the dictionary entries or select it from the dropdown menu in the GUI.
 
 ----
 ## More to Come:
