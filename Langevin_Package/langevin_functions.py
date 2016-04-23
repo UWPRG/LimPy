@@ -12,10 +12,11 @@ potentials are supplied by the user
 import numpy as np
 import scipy as sp
 import pandas as pd
+import pdb
 
-
-from potential_functions import get_potential_dict, get_boundary_condition_dict
-
+#from potential_functions import get_potential_dict, get_boundary_condition_dict
+import potential_class
+import boundarycondition
 
 def get_parameters(input_file):
     """Organize input parameters for Langevin Integrator.
@@ -60,11 +61,35 @@ def get_parameters(input_file):
     inputs.index = inputs['Parameter']
     inputs = inputs.transpose()
     inputs = inputs.ix[1:]
-    (_,dims) = get_potential_dict()
+
     method = str(inputs['Method'][0])
     filetitle = str(inputs['Data Filename'][0])
     potfunc = str(inputs['Potential_Function'][0])
-    dimension = dims[potfunc]
+    pots = potential_class.get_potential_dict()
+    potential= pots[potfunc]
+    potfunc = potential()
+
+    if 'Potential Parameters' in inputs.columns:
+        potparams = inputs['Potential Parameters']
+        potparams = np.fromstring(potparams[0], dtype=float, sep=' ')
+        potfunc.set_parameters(potparams)
+    bc_dict = boundarycondition.get_boundary_condition_dict()
+    if 'X Boundary Condition' in inputs.columns:
+        xbc = inputs['X Boundary Condition'][0]
+        xbc = bc_dict[xbc]
+        xbc = xbc()
+        if xbc.type == 'Periodic':
+            xbc.set_new_upper_location(float(inputs['Xmax'][0]))
+            xbc.set_new_lower_location(float(inputs['Xmin'][0]))
+        else:
+            if inputs['Upper X BC'][0] == 'True':
+                xbc.set_new_upper_location(float(inputs['Xmax'][0]))
+            if inputs['Lower X BC'][0] == 'True':
+                xbc.set_new_lower_location(float(inputs['Xmin'][0]))
+    else:
+        xbc = bc_dict['Empty']
+        xbc = xbc()
+    bcs = [xbc]
     inps = np.zeros(14)
     inps[0] = float(inputs['Steps'][0])
     inps[1] = float(inputs['Step size'][0])
@@ -73,7 +98,7 @@ def get_parameters(input_file):
     inps[12] = float(inputs['Gamma'][0])
     inps[13] = float(inputs['Kb'][0])
     makeplot = str((inputs['Plotting'][0]))
-    if dimension == '1-D Potential':
+    if potfunc.dimension == '1-D Potential':
             inps[2] = float(inputs['X0'][0])
             inps[5] = float(inputs['Xmin'][0])
             inps[6] = float(inputs['Xmax'][0])
@@ -82,7 +107,7 @@ def get_parameters(input_file):
             inps[9] = 0.0
             inps[10] = 0.0
             inps[11] = 0.0
-    elif dimension == '2-D Potential':
+    elif potfunc.dimension == '2-D Potential':
             inps[2] = float(inputs['X0'][0])
             inps[5] = float(inputs['Xmin'][0])
             inps[6] = float(inputs['Xmax'][0])
@@ -91,12 +116,34 @@ def get_parameters(input_file):
             inps[9] = float(inputs['Ymin'][0])
             inps[10] = float(inputs['Ymax'][0])
             inps[11] = float(inputs['Yincrement'][0])
+            if 'Y Boundary Condition' in inputs.columns:
+                ybc = inputs['Y Boundary Condition'][0]
+                ybc = bc_dict[ybc]
+                ybc = ybc()
+                if ybc.type == 'Periodic':
+                    ybc.set_new_upper_location(float(inputs['Ymax'][0]))
+                    ybc.set_new_lower_location(float(inputs['Ymin'][0]))
+                else:
+                    if inputs['Upper Y BC'][0] == 'True':
+                        ybc.set_new_upper_location(float(inputs['Ymax'][0]))
+                    if inputs['Lower Y BC'][0] == 'True':
+                        ybc.set_new_lower_location(float(inputs['Ymin'][0]))
+
+            else:
+                ybc = bc_dict['Empty']
+                ybc = ybc()
+            bcs.append(ybc)
     if makeplot == 'True':
         plot_freq = int((inputs['Plot Freq'][0]))
+        plot_emax = int((inputs['Plot Emax'][0]))
+        plot_emin = int((inputs['Plot Emin'][0]))
         make_movie = str((inputs['Make Movie'][0]))
     else:
         plot_freq = inps[0]*2.0
+        plot_emax = 0.0
+        plot_emin = 0.0
         make_movie = 'False'
+    ebound = np.array([plot_emin, plot_emax])
     mdps = np.zeros(5)
     if method == 'MD':
         mdps[0] = 0.0
@@ -114,7 +161,8 @@ def get_parameters(input_file):
             mdps[0] = float(inputs['Gaussian Height'][0])
             mdps[1] = float(inputs['Gaussian Width'][0])
             mdps[2] = float(inputs['Deposition Frequency'][0])
-            mdps[3] = float(inputs['Well Temperature'][0])
+            biasfactor = float(inputs['Bias Factor'][0])
+            mdps[3] = (biasfactor-1)*inps[3]
             mdps[4] = 1.0
     else:
         mdps[0] = float(inputs['Gaussian Height'][0])
@@ -122,9 +170,13 @@ def get_parameters(input_file):
         mdps[2] = float(inputs['Deposition Frequency'][0])
         mdps[3] = float(inputs['Well Temperature'][0])
         mdps[4] = float(inputs['Trials'][0])
+        if 'Lower Rare Event' in inputs.columns:
+            potfunc.set_lower_rare_event(float(inputs['Lower Rare Event']))
+        if 'Upper Rare Event' in inputs.columns:
+            potfunc.set_upper_rare_event(float(inputs['Upper Rare Event']))
 
-    return (inps, mdps, dimension, method, potfunc, filetitle, makeplot,
-            plot_freq, make_movie)
+    return (inps, mdps, method, potfunc, bcs, filetitle, makeplot,
+            plot_freq, make_movie, ebound)
 
 
 def calc_biased_pot(coords, history, w, delta, dimension):
@@ -256,7 +308,7 @@ def calc_teff(walkerpot, beta, dt):
     return teff
 
 
-def integrate_step(coords, history, w,  delta, DT, potfunc, p0, m, dt,
+def integrate_step(coords, history, w,  delta, DT, potfunc, bcs, p0, m, dt,
                    gamma, beta, dimension):
     """
     Move walker by one step in 1D via Langevin Integrator.
@@ -315,24 +367,23 @@ def integrate_step(coords, history, w,  delta, DT, potfunc, p0, m, dt,
                   bias from boundary condition
 
     """
-    (pot_dict,_) = get_potential_dict()
-    try:
-        selected_pot = pot_dict[potfunc]
-    except KeyError:
-        print 'That potential function has not been loaded into the dictionary'
-
-    bc_dict = get_boundary_condition_dict()
-    try:
-        apply_bc = bc_dict[potfunc]
-    except KeyError:
-        print 'That boundary condition has not been loaded into the dictionary'
-
+    # (pot_dict,_) = get_potential_dict()
+    # try:
+    #     selected_pot = pot_dict[potfunc]
+    # except KeyError:
+    #     print 'That potential function has not been loaded into the dictionary'
+    #
+    # bc_dict = get_boundary_condition_dict()
+    # try:
+    #     apply_bc = bc_dict[potfunc]
+    # except KeyError:
+    #     print 'That boundary condition has not been loaded into the dictionary'
+    # pdb.set_trace()
     c1 = np.exp(-gamma * dt / 2)  # (Eq.13a)
     c2 = np.sqrt((1 - c1**2) * m / beta)  # (Eq.13b)
-
     if dimension == '1-D Potential':
 
-        f = selected_pot(coords)[1]
+        f = potfunc.get_force(coords)
         fbiased = calc_biased_force(coords, history, w, delta, f, dimension)
 
         R1 = np.random.normal(0, 1, 1)
@@ -341,15 +392,37 @@ def integrate_step(coords, history, w,  delta, DT, potfunc, p0, m, dt,
         pplus = c1*p0 + c2*R1
         newcoords = (coords + (pplus/m) * dt + fbiased/m * ((dt**2) / 2))[0]
 
-        [vnew, f2, _, _] = selected_pot(newcoords)
-        [vnew, f2, newcoords, bcbias, _] = apply_bc(vnew, f2, newcoords)
+        vnew_nobc = potfunc.get_potential(newcoords)
+        f2_nobc = potfunc.get_force(newcoords)
+        #[vnew, f2, newcoords, bcbias, _] = apply_bc(vnew, f2, newcoords)
+
+        if newcoords < bcs.location[0]:
+            vnew = bcs.get_potential(newcoords,
+                                     potfunc.get_potential( bcs.location[0]))
+            f2 = bcs.get_force(newcoords, f2_nobc)
+            newcoords = bcs.get_new_location(newcoords)
+            bcbias = bcs.get_bc_bias(coords)
+        elif newcoords > bcs.location[1]:
+            vnew = bcs.get_potential(newcoords,
+                                     potfunc.get_potential( bcs.location[1]))
+            f2 = bcs.get_force(newcoords, f2_nobc)
+            newcoords = bcs.get_new_location(newcoords)
+            bcbias = bcs.get_bc_bias(coords)
+        else:
+            bcbias = 0
+            vnew = vnew_nobc
+            f2 = f2_nobc
+
         f2biased = calc_biased_force(newcoords, history, w, delta, f2,
                                      dimension)
         pminus = pplus + (fbiased/2 + f2biased/2)*dt
         pnew = c1*pminus + c2*R2
 
     else:
-        f = selected_pot(coords[0], coords[1])[1]
+        xbc = bcs[0]
+        ybc = bcs[1]
+
+        f = potfunc.get_force(coords)
         [fbiasedx, fbiasedy] = calc_biased_force(coords, history,
                                                  w, delta, f, dimension)
         R1x = np.random.normal(0, 1, 1)
@@ -367,9 +440,49 @@ def integrate_step(coords, history, w,  delta, DT, potfunc, p0, m, dt,
         newcoordy = (coords[1] +
                      (pplusy/m) * dt + fbiasedy/m * ((dt**2) / 2))[0]
 
-        [vnew, f2, _, _] = selected_pot(newcoordx, newcoordy)
+        # [vnew, f2, _, _] = selected_pot(newcoordx, newcoordy)
         newcoords = np.array([newcoordx, newcoordy])
-        [vnew, f2, newcoords, bcbias, _] = apply_bc(vnew, f2, newcoords)
+        vnew_nobc = potfunc.get_potential(newcoords)
+        f2_nobc = potfunc.get_force(newcoords)
+
+        # [vnew, f2, newcoords, bcbias, _] = apply_bc(vnew, f2, newcoords)
+        if newcoords[0] < xbc.location[0]:
+            vnew = xbc.get_potential(newcoords[0],
+                                     potfunc.get_potential(np.array([xbc.location[0],
+                                                                     newcoords[1]])))
+            f2x = xbc.get_force(newcoords[0], f2_nobc[0])
+            newcoords[0] = xbc.get_new_location(newcoords[0])
+            bcbiasx = xbc.get_bc_bias(newcoords[0])
+        elif newcoords[0] > xbc.location[1]:
+            vnew = bcs.get_potential(newcoords,
+                                     potfunc.get_potential(np.array([xbc.location[0],
+                                                                    newcoords[1]])))
+            f2x = xbc.get_force(newcoords[0], f2_nobc[0])
+            newcoords [0]= xbc.get_new_location(newcoords[0])
+            bcbiasx = xbc.get_bc_bias(newcoords[0])
+        else:
+            bcbiasx = 0
+            vnew = vnew_nobc
+            f2x = f2_nobc[0]
+        if newcoords[1] < ybc.location[0]:
+            vnew = ybc.get_potential(newcoords[1],
+                                     potfunc.get_potential(np.array([newcoords[0],
+                                                                     ybc.location[0]])))
+            f2y = ybc.get_force(newcoords[1], f2_nobc[1])
+            newcoords[1] = ybc.get_new_location(newcoords[1])
+            bcbiasy = ybc.get_bc_bias(newcoords[1])
+        elif newcoords[1] > ybc.location[1]:
+            vnew = ybc.get_potential(newcoords[1],
+                                     potfunc.get_potential(np.array([newcoords[0],
+                                                                     ybc.location[1]])))
+            f2y = ybc.get_force(newcoords[1], f2_nobc[1])
+            newcoords[1] = ybc.get_new_location(newcoords[1])
+            bcbiasy = ybc.get_bc_bias(newcoords[1])
+        else:
+            bcbiasy = 0
+            vnew = vnew_nobc
+            f2y = f2_nobc[1]
+        f2=np.array([f2x,f2y])
         [f2biasedx, f2biasedy] = calc_biased_force(newcoords, history, w,
                                                    delta, f2, dimension)
 
@@ -380,7 +493,7 @@ def integrate_step(coords, history, w,  delta, DT, potfunc, p0, m, dt,
         pnewy = c1*pminusy + c2*R2y
 
         pnew = np.array([pnewx, pnewy])
-
+        bcbias = bcbiasx = bcbiasy
     return (pnew, vnew, newcoords, bcbias)
 
 

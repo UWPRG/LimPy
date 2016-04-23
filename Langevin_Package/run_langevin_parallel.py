@@ -36,51 +36,62 @@ plot_freq = inputdata[7]
 make_movie = inputdata[8]
 trials = mdps[-1]
 num_iter = 3
-
+monitor = 0
 if method == 'Infrequent WT MetaD':
-    for i in range(0, 30):
-        if dimension == '1-D Potential':
-            trial = simulate_1Dsystem(inps, mdps, dimension, method, potfunc,
-                                      filetitle, makeplot, plot_freq,
-                                      make_movie)
-        else:
-            trial = simulate_2Dsystem(inps, mdps, dimension, method, potfunc,
-                                      filetitle, makeplot, plot_freq,
-                                      make_movie)
-        if i == 0:
-            timedata = pd.DataFrame({'Time': [trial[0]],
-                                     'Teff': [trial[1]],
-                                     'Event': [trial[3]]})
-        else:
-            newdata = pd.DataFrame({'Time': [trial[0]],
-                                    'Teff': [trial[1]],
-                                    'Event': [trial[3]]})
-            timedata = timedata.append(newdata, ignore_index=True)
+    while monitor < 800:
+        for i in range(0, 5):
+            if dimension == '1-D Potential':
+                trial = simulate_1Dsystem(inps, mdps, dimension, method, potfunc,
+                                          filetitle, makeplot, plot_freq,
+                                          make_movie)
+            else:
+                trial = simulate_2Dsystem(inps, mdps, dimension, method, potfunc,
+                                          filetitle, makeplot, plot_freq,
+                                          make_movie)
+            if i == 0:
+                timedata = pd.DataFrame({'Time': [trial[0]],
+                                         'Teff': [trial[1]],
+                                         'Event': [trial[3]]})
+            else:
+                newdata = pd.DataFrame({'Time': [trial[0]],
+                                        'Teff': [trial[1]],
+                                        'Event': [trial[3]]})
+                timedata = timedata.append(newdata, ignore_index=True)
 
-    collected_time_data = comm.gather(timedata, root=0)
+        collected_time_data = comm.gather(timedata, root=0)
+
+        if rank == 0:
+            collect = pd.concat(collected_time_data, ignore_index=True)
+            collect.reset_index('Time')
+            collect.index.name = 'Trial'
+    	# pdb.set_trace()
+
+            if os.path.isfile(filetitle+'_Allevents.csv') == False:
+        	       collect.to_csv(filetitle+'_Allevents.csv')
+            else:
+                old_data = pd.read_csv(filetitle+'_Allevents.csv')
+                monitor = len(old_data)+len(collect)
+                with open(filetitle+'_Allevents.csv', 'a') as f:
+                    collect.to_csv(f, header=false)
 
     if rank == 0:
-        collect = pd.concat(collected_time_data, ignore_index=True)
-        collect.reset_index('Time')
-        collect.index.name = 'Trial'
-	# pdb.set_trace()
-	collect = collect[collect['Event'] != 'NULL']
-        ks_results = perform_ks_analysis(collect)
-	if len(collect[collect['Event'] == 'A']) > 0:
-		ks_resultsA = perform_ks_analysis(collect[collect['Event'] == 'A'])
-	if len(collect[collect['Event'] == 'B']) > 0:
-		ks_resultsB = perform_ks_analysis(collect[collect['Event'] == 'B'])
-        with open(filetitle + '_statistics.csv', "ab") as f:
-                writer = csv.writer(f)
-		writer.writerow(['All Events'])
-                writer.writerow([ks_results])
-		if len(collect[collect['Event'] == 'A']) > 0:
-                	writer.writerow(['A Events'])
-                	writer.writerow([ks_resultsA])
-                if len(collect[collect['Event'] == 'B']) > 0:
-			writer.writerow(['B Events'])
-                	writer.writerow([ks_resultsB])
-	collect.to_csv(filetitle+'_Allevents.csv', delimiter=',')
+        final_collect = pd.read_csv(filetitle+'_Allevents.csv')
+        final_collect = final_collect[final_collect['Event'] != 'NULL']
+            ks_results = perform_ks_analysis(final_collect)
+        if len(final_collect[final_collect['Event'] == 'A']) > 0:
+            ks_resultsA = perform_ks_analysis(final_collect[final_collect['Event'] == 'A'])
+        if len(final_collect[final_collect['Event'] == 'B']) > 0:
+            ks_resultsB = perform_ks_analysis(final_collect[final_collect['Event'] == 'B'])
+            with open(filetitle + '_statistics.csv', "ab") as f:
+                    writer = csv.writer(f)
+                    writer.writerow(['All Events'])
+                    writer.writerow([ks_results])
+                    if len(final_collect[final_collect['Event'] == 'A']) > 0:
+                                writer.writerow(['A Events'])
+                                writer.writerow([ks_resultsA])
+                    if len(final_collect[final_collect['Event'] == 'B']) > 0:
+                        writer.writerow(['B Events'])
+                        writer.writerow([ks_resultsB])
 else:
         if dimension == '1-D Potential':
             trial = simulate_1Dsystem(inps, mdps,
