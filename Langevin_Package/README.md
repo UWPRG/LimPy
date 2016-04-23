@@ -1,4 +1,4 @@
-# Langevin_Package (Still a work in progress)
+# Langevin_Package (CURRENTLY OUTDATED README)
 ----
 Langevin_Package is a Langevin Integrator capable of carrying out Molecular Dynamics
 (MD), Metadynamics, Well-Tempered Metadynamics, and Infrequent Metadynamics.
