@@ -45,14 +45,14 @@ Make Movie,False
 X Boundary Condition,Quartic
 Upper X BC,True
 Lower X BC,False
-Potential Parameters,2.5 0 2.5 0
+Potential Parameters,2.5 0
 ```
 **All lines must be included for a properly formatted input file, however a line is not applicable to a system (i.e. Y parameters for a 1-D system), then just ignore those contents or change the values to 0.**
 
 Each of the definitions can be defined in the key below.
 
 ----
- ![alt text](https://github.com/UWPRG/Chris_Scripts/blob/master/Langevin_Package/Images/Input_Definitions.png)
+ ![alt text](https://github.com/UWPRG/Chris_Scripts/blob/master/Langevin_Package/Images/Input_Defintions.png)
 ----
 **GUI**
 The user can also input parameters directly through a user interface. For the preloaded potential functions, default variables are preloaded as inputs! Just enter your input choices and push the Lock in Values button. The inputs are the very same for the ones in the input files, but can be brought up by clicking the HELP button.
