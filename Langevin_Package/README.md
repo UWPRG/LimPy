@@ -1,4 +1,4 @@
-# Langevin_Package (CURRENTLY OUTDATED README)
+# Langevin_Package
 ----
 Langevin_Package is a Langevin Integrator capable of carrying out Molecular Dynamics
 (MD), Metadynamics, Well-Tempered Metadynamics, and Infrequent Metadynamics.
@@ -59,7 +59,7 @@ The user can also input parameters directly through a user interface. For the pr
 
 The user interface also provides the option to read the inputs from an input file. Just make sure the input file is in the inputfiles folder, type the name in the textbox, check the option Read File for Inputs, and click Lock in Values.
 
-![alt text](https://github.com/UWPRG/Chris_Scripts/blob/master/Langevin_Package/Images/GUI_Window.png)
+![alt text](https://github.com/UWPRG/Chris_Scripts/blob/master/Langevin_Package/Images/GUI_window.png)
 ----
 ### Adding a New Potential
 
@@ -114,7 +114,7 @@ class PotentialFunction1D:
             trigger = True
             event = "B"
         return trigger, event
-
+```
 
 ----
 ## More to Come:
