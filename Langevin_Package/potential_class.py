@@ -1,33 +1,50 @@
+"""Defines the Potential Functions to be used as a class"""
 import numpy as np
 try:
     import cPickle as pickle
 except:
     import pickle
 import pdb
-class PotentialFunction1D:
 
+
+class PotentialFunction1D:
+    """Basic Outline of a 1-D Potential Function"""
     dimension='1-D Potential'
     def __init__(self):
         self.parameters=np.array([0,0])
         self.rare_event = np.array([float("inf")*-1,float("inf")])
-        #self.dimension='1-D Potential'
+
     def get_potential(self, coords):
+        """
+        Equation that returns the potential energy at a CV
+        To be specified by child class
+        """
         pass
 
     def set_parameters(self, values):
+        """Overwrites default parameters for potential function"""
         self.parameters = values
 
     def get_force(self, coords):
+        """
+        Equation that returns the force at a CV
+        To be specified by child class
+        """
         pass
 
     def set_lower_rare_event(self, lower):
+        """Overwrites default lower rare event for potential function"""
         self.rare_event[0] = lower
 
     def set_upper_rare_event(self, upper):
+        """Overwrites default upper rare event for potential function"""
         self.rare_event[1] = upper
 
     def get_triggered(self, coords):
-
+        """
+        Determines if rare event has happened, and specifies which one if
+        there are multiple 
+        """
         trigger = False
         event = "null"
         if coords < self.rare_event[0]:
