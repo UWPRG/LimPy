@@ -121,6 +121,7 @@ def simulate_2Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
 
     iv = potfunc.get_potential(np.array([x0, y0]))
     pot_base = potfunc.get_potential(np.array([xlong, ylong]))
+    bias = np.zeros_like(pot_base)
     FES = np.zeros_like(pot_base)
     icount = np.zeros_like(FES)
     coords[0, 0] = x0
@@ -168,8 +169,9 @@ def simulate_2Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
             'Well Temperature ' + str(DT) + '\n' + 'Gaussian ' + str(gamma) +
             '\n' + 'Potential ' + str(potfunc))
     i = 0
+    dep_count = 0
     while i < steps - 1:
-        # pdb.set_trace()
+
         if (method == "Infrequent WT MetaD"):
             (triggered,path) = potfunc.get_triggered(np.array([coords[i, 0],
                                                                coords[i, 1]]))
@@ -184,6 +186,7 @@ def simulate_2Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
                 history[0] = coords[i, 0]
                 history[1] = coords[i, 1]
                 w[0] = winit
+
             else:
 
                 if method == 'Metadynamics':
@@ -235,9 +238,9 @@ def simulate_2Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
                         w = np.append(w, winit * np.exp(-VR / (kb*DT)))
 
         [pnew, vnew, newcoord, bcbias] = lf.integrate_step(coords[i], history,
-                                                       w, delta, DT,
-                                                       potfunc, bcs, p, m,
-                                                       dt, gamma, beta,
+                                                           w, delta, DT,
+                                                           potfunc, bcs, p, m,
+                                                           dt, gamma, beta,
                                                            dimension)
         p = pnew
 
@@ -259,17 +262,20 @@ def simulate_2Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
                                                      coords[i+1, 1]]),
                                            xinc, xmin, xmax,
                                            yinc, ymin, ymax, E[i+1])
-        if makeplot == 'True' and sp.mod(i, plot_freq) == 0 and i>0:
+        if makeplot == 'True' and sp.mod(i, plot_freq) == 0 and i > 0:
+            # pdb.set_trace()
 
-            # bias = np.copy(pot_base)
-            # for yc in range(0, ylong.size):
-            #     for xc in range(0, xlong.size):
-            #         bias[yc, xc] = (bias[yc, xc] +
-            #                         lf.calc_biased_pot(np.array([xlong[xc],
-            #                                                      ylong[yc]]),
-            #                                            history, w, delta,
-            #                                            dimension))
+            for yc in range(0, ylong.size):
+                for xc in range(0, xlong.size):
+                    bias[yc, xc] = (bias[yc, xc] +
+                                    lf.calc_biased_pot(np.array([xlong[xc],
+                                                       ylong[yc]]),
+                                                       history[dep_count:],
+                                                       w[dep_count:],
+                                                       delta, dimension))
+            dep_count = len(history)
             plt.clf()
+            plt.subplot(221)
             cset2 = plt.contourf(xlong, ylong, pot_base, levels,
                                  cmap=plt.cm.get_cmap(cmap, levels.size - 1))
             plt.colorbar(cset2)
@@ -277,23 +283,24 @@ def simulate_2Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
                         color='r', zorder=10)
             plt.xlabel("CV1")
             plt.ylabel("CV2")
-            # plt.subplot(222)
-            # cset3 = plt.contourf(xlong, ylong, bias, levels,
-            #                      cmap=plt.cm.get_cmap(cmap, levels.size - 1))
-            # plt.colorbar(cset3)
-            # plt.scatter(coords[i+1, 0], coords[i+1, 1], marker='o',
-            #             color='r', zorder=10)
-            # plt.xlabel("CV1")
-            # plt.ylabel("CV2")
-            # plt.subplot(223)
-            # cset4 = plt.contourf(xlong, ylong, bias-pot_base, levels,
-            #                      cmap=plt.cm.get_cmap(cmap, levels.size - 1))
-            # plt.colorbar(cset4)
-            # plt.scatter(coords[i+1, 0], coords[i+1, 1], marker='o',
-            #             color='r', zorder=10)
-            # plt.xlabel("CV1")
-            # plt.ylabel("CV2")
-            # # plt.draw()
+            plt.subplot(222)
+            cset3 = plt.contourf(xlong, ylong, bias+pot_base, levels,
+                                 cmap=plt.cm.get_cmap(cmap, levels.size - 1))
+            plt.colorbar(cset3)
+            plt.scatter(coords[i+1, 0], coords[i+1, 1], marker='o',
+                        color='r', zorder=10)
+            plt.xlabel("CV1")
+            plt.ylabel("CV2")
+            plt.subplot(223)
+            levels2 = np.arange(0, ebound[0]*-1, (ebound[0]*-1-0)/10)
+            cset4 = plt.contourf(xlong, ylong, bias, levels2,
+                                 cmap=plt.cm.get_cmap(cmap, levels2.size - 1))
+            plt.colorbar(cset4)
+            plt.scatter(coords[i+1, 0], coords[i+1, 1], marker='o',
+                        color='r', zorder=10)
+            plt.xlabel("CV1")
+            plt.ylabel("CV2")
+            # plt.draw()
             print i
             plt.pause(0.0001)
             if (make_movie == 'True'):
@@ -306,7 +313,15 @@ def simulate_2Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
     if(method != "Infrequent WT MetaD"):
         editFES = np.array(0)
         editvcalc = np.array(0)
-        pdb.set_trace()
+        for yc in range(0, ylong.size):
+            for xc in range(0, xlong.size):
+                bias[yc, xc] = (bias[yc, xc] +
+                                lf.calc_biased_pot(np.array([xlong[xc],
+                                                   ylong[yc]]),
+                                                   history[-dep_count:],
+                                                   w[-dep_count:],
+                                                   delta, dimension))
+
         for k in range(0, ylong.size):
             for j in range(0, xlong.size):
                 if(icount[k, j] > 0):

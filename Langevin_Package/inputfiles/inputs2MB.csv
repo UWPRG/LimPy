@@ -1,4 +1,6 @@
-Parameter,InputMethod,Well-Tempered MetadynamicsPotential_Function,muller_brown_potentialPlotting,FalseSteps,500000Step size,0.01Temperature,300Mass,1X0,-0.558Xmin,-2.5Xmax,1.0Xincrement,0.01Y0,1.442Ymin,-0.5Ymax,2.0Yincrement,0.01Gaussian Height,0.25Gaussian Width,0.1Deposition Frequency,500Well Temperature,10000Trials,100Data Filename,2DPotclassTestGamma,5
+Parameter,InputMethod,Well-Tempered MetadynamicsPotential_Function,muller_brown_potentialPlotting,TrueSteps,500000Step size,0.001Temperature,300Mass,1X0,-0.05Xmin,-2.0Xmax,1.0Xincrement,0.01Y0,0.467Ymin,-0.5Ymax,2.0Yincrement,0.01Gaussian Height,1Gaussian Width,0.1Deposition Frequency,200Bias Factor,10Trials,100Data Filename,2DPotclassTestGamma,5
 Kb,0.001987
-Plot Freq,1000
+Plot Freq,10000
 Make Movie,False
+Plot Emax,20
+Plot Emin,-160

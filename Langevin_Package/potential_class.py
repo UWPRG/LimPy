@@ -43,7 +43,7 @@ class PotentialFunction1D:
     def get_triggered(self, coords):
         """
         Determines if rare event has happened, and specifies which one if
-        there are multiple 
+        there are multiple
         """
         trigger = False
         event = "null"
@@ -160,10 +160,10 @@ class MullerBrownPotential(PotentialFunction2D):
                 for j in range(0, x.size - 1):
                     V[k, j] = sum(A * np.exp(a*(x[j]-x0)**2 +
                                              b*(x[j]-x0)*(y[k]-y0) +
-                                             c*(y[k]-y0)**2))/4.184
+                                             c*(y[k]-y0)**2))
         else:
             V = sum(A * np.exp(a * (x-x0)**2 + b * (x-x0)*(y-y0) +
-                               c * (y-y0)**2))/4.184
+                               c * (y-y0)**2))
         return V
 
     def get_force(self, coords):
@@ -180,14 +180,14 @@ class MullerBrownPotential(PotentialFunction2D):
                  170*np.exp(-6.5*(0.5+x)**2+11*(0.5+x)*(-1.5+y) -
                  6.5*(-1.5+y)**2)*(-13*(0.5+x)+11*(-1.5+y)) -
                  15*np.exp(0.7*(1+x)**2+0.6*(1+x)*(y-1) +
-                 0.7*(y-1)**2)*(1.4*(1+x)+0.6*(y-1)))/4.184
+                 0.7*(y-1)**2)*(1.4*(1+x)+0.6*(y-1)))
         Fpoty = (170*np.exp(-6.5*(0.5+x)**2 +
                  11*(0.5+x)*(-1.5+y) -
                  6.5*(y-1.5)**2)*(11*(0.5+x)-13*(y-1.5)) -
                  15*np.exp(0.7*(1+x)**2+0.6*(1+x)*(y-1) +
                  0.7*(y-1)**2)*(0.6*(x+1)+1.4*(y-1)) -
                  2000*np.exp(-x**2-10*(y-0.5)**2)*(y-0.5) -
-                 4000*np.exp(-1*(x-1)**2-10*y**2)*y)/4.184
+                 4000*np.exp(-1*(x-1)**2-10*y**2)*y)
         Fpot = np.array([Fpotx, Fpoty])
         return Fpot
 
