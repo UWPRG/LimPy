@@ -256,14 +256,13 @@ def simulate_2Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
                                                             coords[i+1, 1]]),
                                                   history, w, delta,
                                                   dimension) + bcbias))
-        if method != "Infrequent WT MetaD":
-            [FES, icount] = recreate_2DFES(FES, icount,
-                                           np.array([coords[i+1, 0],
-                                                     coords[i+1, 1]]),
-                                           xinc, xmin, xmax,
-                                           yinc, ymin, ymax, E[i+1])
+        # if method != "Infrequent WT MetaD":
+        #     [FES, icount] = recreate_2DFES(FES, icount,
+        #                                    np.array([coords[i+1, 0],
+        #                                              coords[i+1, 1]]),
+        #                                    xinc, xmin, xmax,
+        #                                    yinc, ymin, ymax, E[i+1])
         if makeplot == 'True' and sp.mod(i, plot_freq) == 0 and i > 0:
-            # pdb.set_trace()
 
             for yc in range(0, ylong.size):
                 for xc in range(0, xlong.size):
@@ -273,11 +272,13 @@ def simulate_2Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
                                                        history[dep_count:],
                                                        w[dep_count:],
                                                        delta, dimension))
-            dep_count = len(history)
+
             plt.clf()
             plt.subplot(221)
             cset2 = plt.contourf(xlong, ylong, pot_base, levels,
                                  cmap=plt.cm.get_cmap(cmap, levels.size - 1))
+            plt.plot(coords[(dep_count)*hfreq:i+1, 0],
+                     coords[(dep_count)*hfreq:i+1, 1], 'r')
             plt.colorbar(cset2)
             plt.scatter(coords[i+1, 0], coords[i+1, 1], marker='o',
                         color='r', zorder=10)
@@ -302,6 +303,7 @@ def simulate_2Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
             plt.ylabel("CV2")
             # plt.draw()
             print i
+            dep_count = len(history)
             plt.pause(0.0001)
             if (make_movie == 'True'):
                 filename = "movieframe" + str(frame)
@@ -323,7 +325,7 @@ def simulate_2Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
                                                    delta, dimension))
         colvar100 = lf.calc_colvar_2D(coords, bias,
                                       xlong, ylong, method, beta, T, DT)
-        rmsds = lf.calc_rmsd(FES, beta, pot_base)
+        rmsds = lf.calc_rmsd(colvar100, beta, pot_base)
         pdb.set_trace()
         return (coords, E, rmsds, info)
 
