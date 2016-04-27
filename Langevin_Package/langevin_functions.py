@@ -152,23 +152,24 @@ def get_parameters(input_file):
         mdps[3] = 1.0
         mdps[4] = 1.0
     elif method == 'Metadynamics':
-            mdps[0] = float(inputs['Gaussian Height'][0])
-            mdps[1] = float(inputs['Gaussian Width'][0])
-            mdps[2] = float(inputs['Deposition Frequency'][0])
-            mdps[3] = float("inf")
-            mdps[4] = 1.0
+        mdps[0] = float(inputs['Gaussian Height'][0])
+        mdps[1] = float(inputs['Gaussian Width'][0])
+        mdps[2] = float(inputs['Deposition Frequency'][0])
+        mdps[3] = float("inf")
+        mdps[4] = 1.0
     elif method =='Well-Tempered Metadynamics':
-            mdps[0] = float(inputs['Gaussian Height'][0])
-            mdps[1] = float(inputs['Gaussian Width'][0])
-            mdps[2] = float(inputs['Deposition Frequency'][0])
-            biasfactor = float(inputs['Bias Factor'][0])
-            mdps[3] = (biasfactor-1)*inps[3]
-            mdps[4] = 1.0
+        mdps[0] = float(inputs['Gaussian Height'][0])
+        mdps[1] = float(inputs['Gaussian Width'][0])
+        mdps[2] = float(inputs['Deposition Frequency'][0])
+        biasfactor = float(inputs['Bias Factor'][0])
+        mdps[3] = (biasfactor-1)*inps[3]
+        mdps[4] = 1.0
     else:
         mdps[0] = float(inputs['Gaussian Height'][0])
         mdps[1] = float(inputs['Gaussian Width'][0])
         mdps[2] = float(inputs['Deposition Frequency'][0])
-        mdps[3] = float(inputs['Well Temperature'][0])
+        biasfactor = float(inputs['Bias Factor'][0])
+        mdps[3] = (biasfactor-1)*inps[3]
         mdps[4] = float(inputs['Trials'][0])
         if 'Lower Rare Event' in inputs.columns:
             potfunc.set_lower_rare_event(float(inputs['Lower Rare Event']))
