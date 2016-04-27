@@ -227,8 +227,8 @@ def simulate_1Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
         i = i + 1
 
     if(method != "Infrequent WT MetaD"):
-        colvar100 = lf.calc_colvar(coords, history, w, delta, dimension,
-                                   xlong, method, beta, T, DT)
+        colvar100 = lf.calc_colvar_1D(coords, history, w, delta,
+                                      xlong, method, beta, T, DT)
         rmsds = lf.calc_rmsd(colvar100[1], beta, pot_base)
 
         return (coords, colvar100, rmsds, info)

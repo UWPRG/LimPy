@@ -318,17 +318,13 @@ def simulate_2Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
                 bias[yc, xc] = (bias[yc, xc] +
                                 lf.calc_biased_pot(np.array([xlong[xc],
                                                    ylong[yc]]),
-                                                   history[-dep_count:],
-                                                   w[-dep_count:],
+                                                   history[dep_count:],
+                                                   w[dep_count:],
                                                    delta, dimension))
-
-        for k in range(0, ylong.size):
-            for j in range(0, xlong.size):
-                if(icount[k, j] > 0):
-                    editFES = np.append(editFES, FES[k, j])
-                    editvcalc = np.append(editvcalc, pot_base[k, j])
+        colvar100 = lf.calc_colvar_2D(coords, bias,
+                                      xlong, ylong, method, beta, T, DT)
         rmsds = lf.calc_rmsd(FES, beta, pot_base)
-
+        pdb.set_trace()
         return (coords, E, rmsds, info)
 
     elif(method == "Infrequent WT MetaD"):

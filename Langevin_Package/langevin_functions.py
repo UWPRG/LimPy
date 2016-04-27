@@ -529,18 +529,37 @@ def calc_rmsd(FES, beta, baseline):
 
     return rmsds
 
-def calc_colvar(coords, history, w, delta, dimension, xlong, method, beta, T,
-                DT):
+
+def calc_colvar_1D(coords, history, w, delta, xlong, method, beta,
+                   T, DT):
+
     vbias = np.zeros_like(xlong)
     if method == 'MD':
-        hist, bins=np.histogram(coords,bins=xlong,density=True)
+        hist, bins = np.histogram(coords, bins=xlong, density=True)
         F = np.log(hist)*-1/beta
     elif method == 'Metadynamics':
         for cv in range(0, xlong.size):
-            vbias[cv] =calc_biased_pot(xlong[cv], history, w, delta, dimension)
+            vbias[cv] = calc_biased_pot(xlong[cv], history, w, delta,
+                                        dimension)
         F = -1*vbias
     else:
         for cv in range(0, xlong.size):
-            vbias[cv] =calc_biased_pot(xlong[cv], history, w, delta, dimension)
+            vbias[cv] = calc_biased_pot(xlong[cv], history, w, delta,
+                                        dimension)
         F = -1*vbias*(T+DT)/DT
-    return (xlong,F)
+    return (xlong, F)
+
+
+def calc_colvar_2D(coords, bias, xlong, ylong, method,
+                   beta, T, DT):
+
+    if method == 'MD':
+        hist, xbins, ybins = np.histogram2d(coords,
+                                            bins=[len(xlong), len(ylong)],
+                                            density=True)
+        F = np.log(hist)*-1/beta
+    elif method == 'Metadynamics':
+        F = -1*bias
+    else:
+        F = -1*bias*(T+DT)/DT
+    return (xlong, F)
