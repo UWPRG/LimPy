@@ -216,7 +216,7 @@ class CHLCPotential(PotentialFunction2D):
 
     def __init__(self):
         self.parameters=np.array([0,0])
-        self.rare_event = np.array([0.20,0.25,float('inf'),float("inf")*-1])
+        self.rare_event = np.array([0.20E-9,0.25E-9,float('inf'),float("inf")*-1])
         self.pot = pickle.load(open("c_chl_potential.p", "rb"))
         self.fx = pickle.load(open("c_chl_fdx.p", "rb"))
         self.fy = pickle.load(open("c_chl_fdy.p", "rb"))

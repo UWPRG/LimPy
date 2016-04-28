@@ -178,6 +178,7 @@ def simulate_2Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
             if triggered is True:
                 totaltime = time[i]
                 teff = lf.calc_teff(walkerpot, beta, dt)
+                #print teff
                 return (totaltime, teff, info, path)
 
         if sp.mod(i, hfreq) == 0 and i > 0:
@@ -309,9 +310,9 @@ def simulate_2Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
                 filename = "movieframe" + str(frame)
                 plt.savefig(filename + '.png', bbox_inches='tight')
                 frame = frame + 1
-
-        if sp.mod(i, 10000) == 0 and i > 0:
-            print i
+        #
+        # if sp.mod(i, 100000) == 0 and i > 0:
+        #     print i
         i = i + 1
 
     if(method != "Infrequent WT MetaD"):
@@ -325,7 +326,7 @@ def simulate_2Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
                                                    history[dep_count:],
                                                    w[dep_count:],
                                                    delta, dimension))
-        pdb.set_trace()
+        # pdb.set_trace()
         colvar100 = lf.calc_colvar_2D(coords, bias,
                                       xlong, ylong, method, beta, T, DT)
         rmsds = lf.calc_rmsd(colvar100, beta, pot_base)
