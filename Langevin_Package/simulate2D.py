@@ -178,7 +178,6 @@ def simulate_2Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
             if triggered is True:
                 totaltime = time[i]
                 teff = lf.calc_teff(walkerpot, beta, dt)
-                #print teff
                 return (totaltime, teff, info, path)
 
         if sp.mod(i, hfreq) == 0 and i > 0:
@@ -310,7 +309,7 @@ def simulate_2Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
                 filename = "movieframe" + str(frame)
                 plt.savefig(filename + '.png', bbox_inches='tight')
                 frame = frame + 1
-        #
+
         # if sp.mod(i, 100000) == 0 and i > 0:
         #     print i
         i = i + 1

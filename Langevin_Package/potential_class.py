@@ -218,29 +218,29 @@ class CHLCPotential(PotentialFunction2D):
         self.parameters=np.array([0,0])
         self.rare_event = np.array([0.20E-9,0.25E-9,float('inf'),float("inf")*-1])
         self.pot = pickle.load(open("c_chl_potential.p", "rb"))
-        self.fx = pickle.load(open("c_chl_fdx.p", "rb"))
-        self.fy = pickle.load(open("c_chl_fdy.p", "rb"))
+        # self.fx = pickle.load(open("c_chl_fdx.p", "rb"))
+        # self.fy = pickle.load(open("c_chl_fdy.p", "rb"))
         #self.dimension='1-D Potential'
     def get_potential(self, coords):
-        x = coords[0]*1E9
-        y = coords[1]*1E9
+        x = coords[0]
+        y = coords[1]
         if hasattr(x, "__len__") is True:
-            V = np.zeros([x.size, y.size])
+            V = np.zeros([y.size, x.size])
             for k in range(0, x.size - 1):
                 for j in range(0, y.size - 1):
-                    V[k, j] = self.pot(x[k], y[j])
+                    V[j,k] = self.pot(y[j],x[k])
         else:
 
-            V= self.pot(x, y)
+            V = self.pot(y, x)
         return V
 
     def get_force(self, coords):
 
-        x = coords[0]*1E9
-        y = coords[1]*1E9
+        x = coords[0]
+        y = coords[1]
         # pdb.set_trace()
-        Fx = self.fx(x, y)
-        Fy = self.fy(x, y)
+        Fx = self.pot(y, x, dy=1)
+        Fy = self.pot(y, x, dx=1)
         Fpotx = Fx * -1
         Fpoty = Fy * -1
         Fpot = np.array([Fpotx, Fpoty])
