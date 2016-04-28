@@ -302,7 +302,7 @@ def simulate_2Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
             plt.xlabel("CV1")
             plt.ylabel("CV2")
             # plt.draw()
-            print i
+
             dep_count = len(history)
             plt.pause(0.0001)
             if (make_movie == 'True'):
@@ -310,6 +310,8 @@ def simulate_2Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
                 plt.savefig(filename + '.png', bbox_inches='tight')
                 frame = frame + 1
 
+        if sp.mod(i, 10000) == 0 and i > 0:
+            print i
         i = i + 1
 
     if(method != "Infrequent WT MetaD"):
@@ -323,10 +325,11 @@ def simulate_2Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
                                                    history[dep_count:],
                                                    w[dep_count:],
                                                    delta, dimension))
+        pdb.set_trace()
         colvar100 = lf.calc_colvar_2D(coords, bias,
                                       xlong, ylong, method, beta, T, DT)
         rmsds = lf.calc_rmsd(colvar100, beta, pot_base)
-        pdb.set_trace()
+
         return (coords, E, rmsds, info)
 
     elif(method == "Infrequent WT MetaD"):

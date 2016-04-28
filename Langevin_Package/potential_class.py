@@ -142,11 +142,13 @@ class TwoGaussianPotential(PotentialFunction1D):
 class MullerBrownPotential(PotentialFunction2D):
 
     def __init__(self):
-        self.parameters=np.array([0,0])
+        self.parameters=np.array([106])
         self.rare_event = np.array([-0.05,1,0.5,0.0])
         #self.dimension='1-D Potential'
     def get_potential(self, coords):
-        A = np.array([-200.0, -100.0, -170.0, 15.0])
+        Eb = self.parameters[0]
+        A = np.array([-200.0*Eb/106, -100.0*Eb/106, -170.0*Eb/106,
+                      15.0*Eb/106])
         a = np.array([-1.0, -1.0, -6.50, 0.7])
         b = np.array([0.0, 0.0, 11.0, 0.6])
         c = np.array([-10.0, -10.0, -6.50, 0.7])
@@ -167,7 +169,9 @@ class MullerBrownPotential(PotentialFunction2D):
         return V
 
     def get_force(self, coords):
-        A = np.array([-200.0, -100.0, -170.0, 15.0])
+        Eb = self.parameters[0]
+        A = np.array([-200.0*Eb/106, -100.0*Eb/106, -170.0*Eb/106,
+                      15.0*Eb/106])
         a = np.array([-1.0, -1.0, -6.50, 0.7])
         b = np.array([0.0, 0.0, 11.0, 0.6])
         c = np.array([-10.0, -10.0, -6.50, 0.7])
@@ -175,19 +179,24 @@ class MullerBrownPotential(PotentialFunction2D):
         y0 = np.array([0.0, 0.5, 1.50, 1.0])
         x = coords[0]
         y = coords[1]
-        Fpotx = (-400*np.exp(-1*(-1+x)**2 - 10*y**2)*(-1+x) -
-                 200*np.exp(-(x**2)-10*(-0.5+y)**2)*x +
-                 170*np.exp(-6.5*(0.5+x)**2+11*(0.5+x)*(-1.5+y) -
-                 6.5*(-1.5+y)**2)*(-13*(0.5+x)+11*(-1.5+y)) -
-                 15*np.exp(0.7*(1+x)**2+0.6*(1+x)*(y-1) +
-                 0.7*(y-1)**2)*(1.4*(1+x)+0.6*(y-1)))
-        Fpoty = (170*np.exp(-6.5*(0.5+x)**2 +
-                 11*(0.5+x)*(-1.5+y) -
-                 6.5*(y-1.5)**2)*(11*(0.5+x)-13*(y-1.5)) -
-                 15*np.exp(0.7*(1+x)**2+0.6*(1+x)*(y-1) +
-                 0.7*(y-1)**2)*(0.6*(x+1)+1.4*(y-1)) -
-                 2000*np.exp(-x**2-10*(y-0.5)**2)*(y-0.5) -
-                 4000*np.exp(-1*(x-1)**2-10*y**2)*y)
+        Fpotx = (200.0/53.0*np.exp(-(x-1)**2-10*y**2)*Eb*(x-1) +
+                 100.0/53.0*np.exp(-x**2-10*(y-0.5)**2)*Eb*x -
+                 85.0/53.0*np.exp(-6.5*(0.5+x)**2 +
+                                  11*(0.5+x)*(y-1.5) -
+                                  6.5*(y-1.5)**2)*Eb*(-13*(x+0.5)+11*(y-1.5)) +
+                 15.0/106.0*np.exp(0.7*(1+x)**2 +
+                                   0.6*(1+x)*(y-1) +
+                                   0.7*(y-1)**2)*Eb*(1.4*(1+x)+0.6*(y-1)))*-1
+
+        Fpoty = ((-85.0/53.0)*np.exp(-6.5*(0.5+x)**2 +
+                                     11.0*(0.5+x)*(y-1.5) -
+                                     6.5*(-1.5+y)**2)*Eb*(11*(x+0.5) -
+                                                          13*(y-1.5)) +
+                 (15.0/106.0)*np.exp(0.7*(1+x)**2+0.6*(1+x)*(y-1) +
+                                     0.7*(y-1)**2)*Eb*(0.6*(1+x)+1.4*(y-1)) +
+                 (1000.0/53.0)*np.exp(-x**2-10*(y-0.5)**2)*Eb*(y-0.5) +
+                 (2000.0/53.0)*np.exp(-(x-1)**2-10*y**2)*Eb*y
+                 )*-1
         Fpot = np.array([Fpotx, Fpoty])
         return Fpot
 
