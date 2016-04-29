@@ -216,6 +216,7 @@ def calc_biased_pot(coords, history, w, delta, dimension):
             VR = sum(w*np.exp(-(coords[0] - history[:, 0])**2 / 2 / delta**2) *
                      np.exp(-(coords[1] - history[:, 1])**2 / 2 / delta**2))
         else:
+
             VR = sum(w*np.exp(-(coords[0] - history[0])**2 / 2 / delta**2) *
                      np.exp(-(coords[1] - history[1])**2 / 2 / delta**2))
     return VR
@@ -518,7 +519,7 @@ def calc_rmsd(FES, beta, baseline):
         rmsds    : Array of floats
                    Holds RMSDs of calculated FES and actual FES
     """
-    rmsd = np.sqrt(np.sum((((FES-baseline)) * beta)**2) / FES.shape[0])
+    rmsd = np.sqrt(np.sum((((FES-baseline)) * beta)**2) / FES.size)
     rmskld = np.sqrt(np.sum(np.multiply(np.power(((FES - FES.mean()) -
                      (baseline-baseline.mean())) * beta, 2),
                      np.exp((-baseline*beta)))) / np.sum(np.exp((-baseline) *

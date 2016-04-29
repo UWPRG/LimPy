@@ -155,7 +155,20 @@ def simulate_1Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
 
                 totaltime = time[i]
                 teff = lf.calc_teff(walkerpot, beta, dt)
-                return (totaltime, teff, info, path)
+                if path == 'A':
+
+                    rare_bias =(lf.calc_biased_pot(np.array([potfunc.rare_event[0]
+                                                            ]),
+                                 history, w, delta,dimension))
+                elif path == 'B':
+                    rare_bias =(lf.calc_biased_pot(np.array([potfunc.rare_event[1]
+                                                            ]),
+                                 history, w, delta,dimension))
+                initial_point_bias = (lf.calc_biased_pot(coords[0],
+                                      history, w, delta, dimension))
+               	barrier = initial_point_bias - rare_bias
+
+                return (totaltime, teff, info, path, barrier)
 
         if sp.mod(i, hfreq) == 0 and i > 0:
             if(i == hfreq):

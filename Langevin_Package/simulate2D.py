@@ -170,6 +170,7 @@ def simulate_2Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
             '\n' + 'Potential ' + str(potfunc))
     i = 0
     dep_count = 0
+
     while i < steps - 1:
 
         if (method == "Infrequent WT MetaD"):
@@ -177,8 +178,38 @@ def simulate_2Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
                                                                coords[i, 1]]))
             if triggered is True:
                 totaltime = time[i]
+
                 teff = lf.calc_teff(walkerpot, beta, dt)
-                return (totaltime, teff, info, path)
+                for yc in range(0, ylong.size):
+                    for xc in range(0, xlong.size):
+                        bias[yc, xc] = (bias[yc, xc] +
+                                        lf.calc_biased_pot(np.array([xlong[xc],
+                                                           ylong[yc]]),
+                                                           history[dep_count:],
+                                                           w[dep_count:],
+                                                           delta, dimension))
+                if path == 'A':
+
+                    rare_bias =(lf.calc_biased_pot(np.array([potfunc.rare_event[0],
+                                                             potfunc.rare_event[1]
+                                                            ]),
+                                 history, w, delta,dimension))
+                elif path == 'B':
+                    rare_bias =(lf.calc_biased_pot(np.array([potfunc.rare_event[2],
+                                                             potfunc.rare_event[3]
+                                                            ]),
+                                 history, w, delta,dimension))
+                initial_point_bias = (lf.calc_biased_pot(np.array([coords[0, 0],
+                                                                   coords[0, 1]
+                                                                   ]),
+                                       history, w, delta,dimension))
+               	barrier = initial_point_bias - rare_bias
+                # pdb.set_trace()
+                # if barrier < 0:
+                #     print barrier
+                #     pdb.set_trace()
+
+                return (totaltime, teff, info, path, barrier)
 
         if sp.mod(i, hfreq) == 0 and i > 0:
 
@@ -237,6 +268,7 @@ def simulate_2Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
                         w = np.append(w, winit * np.exp(-VR / (kb*DT)))
                         w = np.append(w, winit * np.exp(-VR / (kb*DT)))
 
+
         [pnew, vnew, newcoord, bcbias] = lf.integrate_step(coords[i], history,
                                                            w, delta, DT,
                                                            potfunc, bcs, p, m,
@@ -262,6 +294,7 @@ def simulate_2Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
         #                                              coords[i+1, 1]]),
         #                                    xinc, xmin, xmax,
         #                                    yinc, ymin, ymax, E[i+1])
+
         if makeplot == 'True' and sp.mod(i, plot_freq) == 0 and i > 0:
 
             for yc in range(0, ylong.size):
@@ -303,7 +336,7 @@ def simulate_2Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
             plt.ylabel("CV2")
             # plt.draw()
 
-            dep_count = len(history)
+
             plt.pause(0.0001)
             if (make_movie == 'True'):
                 filename = "movieframe" + str(frame)
@@ -312,6 +345,7 @@ def simulate_2Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
 
         # if sp.mod(i, 100000) == 0 and i > 0:
         #     print i
+            dep_count = len(history)
         i = i + 1
 
     if(method != "Infrequent WT MetaD"):
@@ -325,7 +359,7 @@ def simulate_2Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
                                                    history[dep_count:],
                                                    w[dep_count:],
                                                    delta, dimension))
-        # pdb.set_trace()
+        pdb.set_trace()
         colvar100 = lf.calc_colvar_2D(coords, bias,
                                       xlong, ylong, method, beta, T, DT)
         rmsds = lf.calc_rmsd(colvar100, beta, pot_base)

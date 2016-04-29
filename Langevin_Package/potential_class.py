@@ -143,7 +143,7 @@ class MullerBrownPotential(PotentialFunction2D):
 
     def __init__(self):
         self.parameters=np.array([106])
-        self.rare_event = np.array([-0.05,1,0.5,0.0])
+        self.rare_event = np.array([-0.05,1,0.5,0.1])
         #self.dimension='1-D Potential'
     def get_potential(self, coords):
         Eb = self.parameters[0]

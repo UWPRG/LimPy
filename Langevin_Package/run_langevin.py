@@ -43,12 +43,14 @@ while checkprogress < trials:
         if checkprogress == 0:
             timedata = pd.DataFrame({'Time': [trial[0]],
                                      'Teff': [trial[1]],
-                                     'Event': [trial[3]]})
+                                     'Event': [trial[3]],
+                                     'First Pass': [trial[4]]})
             checkprogress = len(timedata)
         else:
             newdata = pd.DataFrame({'Time': [trial[0]],
                                     'Teff': [trial[1]],
-                                    'Event': [trial[3]]})
+                                    'Event': [trial[3]],
+                                    'First Pass': [trial[4]]})
             timedata = timedata.append(newdata, ignore_index=True)
             checkprogress = len(timedata)
     else:
@@ -76,7 +78,6 @@ if os.path.isfile(filetitle + '_info.csv') is False:
 
 if method == 'Infrequent WT MetaD':
     timedata.to_csv(filetitle + '_Allevents.csv', delimiter=',')
-    pdb.set_trace()
     ks_results = perform_ks_analysis(timedata)
     if len(timedata[timedata['Event'] == 'A']) > 0:
         ks_resultsA = perform_ks_analysis(timedata[timedata['Event'] == 'A'])
