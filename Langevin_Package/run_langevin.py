@@ -33,7 +33,7 @@ while checkprogress < trials:
     if potfunc.dimension == '1-D Potential':
         trial = simulate_1Dsystem(inps, mdps, method, potfunc, bcs,
                                   filetitle, makeplot, plot_freq, make_movie,
-                                   ebound)
+                                  ebound)
     else:
         trial = simulate_2Dsystem(inps, mdps, method, potfunc, bcs,
                                   filetitle, makeplot, plot_freq, make_movie,

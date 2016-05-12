@@ -1,5 +1,10 @@
-"""Defines the Potential Functions to be used as a class"""
+"""
+This file defines the classes for 1 and 2 dimensional potential energy
+surfaces, along with the standard properties and functions to normalize how
+they can be used.
+"""
 import numpy as np
+# for importing data to make a PES.
 try:
     import cPickle as pickle
 except:
@@ -9,10 +14,17 @@ import pdb
 
 class PotentialFunction1D:
     """Basic Outline of a 1-D Potential Function"""
-    dimension='1-D Potential'
+    dimension = '1-D Potential'
+
     def __init__(self):
-        self.parameters=np.array([0,0])
-        self.rare_event = np.array([float("inf")*-1,float("inf")])
+        """
+        Initializes the potential energy surface. Parameters are set to zero
+        so there are no adjustments to default barriers and the rare events
+        are to set negative and positive infinity so infrequent metadynamics
+        is not used.
+        """
+        self.parameters = np.array([0, 0])
+        self.rare_event = np.array([float("inf")*-1, float("inf")])
 
     def get_potential(self, coords):
         """
@@ -22,7 +34,15 @@ class PotentialFunction1D:
         pass
 
     def set_parameters(self, values):
-        """Overwrites default parameters for potential function"""
+        """
+        Overwrites default parameters for potential function.
+        This is handy for scaling energy barriers.
+
+        Parameters:
+        -----------
+        values    :     float
+                        Parameters to scale/adjust potential energy values
+        """
         self.parameters = values
 
     def get_force(self, coords):
@@ -33,17 +53,42 @@ class PotentialFunction1D:
         pass
 
     def set_lower_rare_event(self, lower):
-        """Overwrites default lower rare event for potential function"""
+        """
+        Overwrites default lower rare event for potential function
+        Parameters:
+        -----------
+        lower    :      float
+                        Set the lower bound for a rare event
+        """
         self.rare_event[0] = lower
 
     def set_upper_rare_event(self, upper):
-        """Overwrites default upper rare event for potential function"""
+        """
+        Overwrites default upper rare event for potential function
+        Parameters:
+        -----------
+        upper    :      float
+                        Set the upper bound for a rare event
+        """
         self.rare_event[1] = upper
 
     def get_triggered(self, coords):
         """
         Determines if rare event has happened, and specifies which one if
         there are multiple
+        Parameters:
+        -----------
+        coords    :      float
+                         coordinates of walker.
+
+        Returns:
+        ----------
+        trigger   :      boolean
+                         True if rare event has happended, otherwise False
+
+        event     :      String
+                         Distinguishes which path/rare event occurs if multiple
+                         paths are present
         """
         trigger = False
         event = "null"
@@ -55,97 +100,270 @@ class PotentialFunction1D:
             event = "B"
         return trigger, event
 
-class PotentialFunction2D:
 
-    dimension='2-D Potential'
+class PotentialFunction2D:
+    """
+    Basic Outline of a 2-D Potential Function
+    """
+    dimension = '2-D Potential'
+
     def __init__(self):
-        self.parameters=np.array([0,0,0,0])
-        self.rare_event = np.array([[float("inf")*-1,float("inf")],
-                                    [float("inf")*-1,float("inf")]])
-        #self.dimension='1-D Potential'
+        """
+        Initializes the potential energy surface. Parameters are set to zero
+        so there are no adjustments to default barriers and the rare events
+        are to set negative and positive infinity so infrequent metadynamics
+        is not used.
+        """
+        self.parameters = np.array([0, 0, 0, 0])
+        self.rare_event = np.array([[float("inf")*-1, float("inf")],
+                                    [float("inf")*-1, float("inf")]])
+
     def get_potential(self, coords):
+        """
+        Equation that returns the potential energy at a CV
+        To be specified by child class
+        """
         pass
 
     def set_parameters(self, values):
+        """
+        Overwrites default parameters for potential function.
+        This is handy for scaling energy barriers.
+
+        Parameters:
+        -----------
+        values    :     array of floats
+                        Parameters to scale/adjust potential energy values
+        """
         self.parameters = values
 
     def get_force(self, coords):
+        """
+        Equation that returns the force at a CV
+        To be specified by child class
+        """
         pass
 
     def set_lower_rare_event(self, lowerx, lowery):
+        """
+        Overwrites default lower rare event for potential function
+        Parameters:
+        -----------
+        lowerx    :      float
+                        Set the lower bound for a rare event x coordinate
+
+        lowery   :      float
+                        Set the lower bound for a rare event y coordinate
+        """
         self.rare_event[0][0] = lowerx
         self.rare_event[0][1] = lowery
 
     def set_upper_rare_event(self, upperx, uppery):
+        """
+        Overwrites default upper rare event for potential function
+        Parameters:
+        -----------
+        upperx    :      float
+                        Set the upper bound for a rare event x coordinate
+
+        uppery   :      float
+                        Set the upper bound for a rare event y coordinate
+        """
         self.rare_event[1][0] = upperx
         self.rare_event[1][1] = uppery
 
     def get_triggered(self, coords):
+        """
+        Determines if rare event has happened, and specifies which one if
+        there are multiple
+        """
         pass
 
 
 class CosinePotential(PotentialFunction1D):
 
     def __init__(self):
-        self.parameters=np.array([1,0])
+        """
+        Initializes the 1-D potential energy surface for a cosine function.
+        Parameters are set to zero so there are no adjustments to
+        default barriers and rare events are initialized as well.
+        """
+        self.parameters = np.array([1, 0])
         self.rare_event = np.array([-2.0, 8.28])
-        #self.dimension='1-D Potential'
+
     def get_potential(self, coords):
-        return self.parameters[0]*np.cos(coords)+self.parameters[1]
+        """
+        Returns the potential energy at a coordinate.
+
+        Parameters:
+        -----------
+        coords      :   float
+                        coordinate of walker
+
+        Returns:
+        ----------
+        the_pot     :   float
+                        potential energy at the present location.
+        """
+        the_pot = self.parameters[0]*np.cos(coords)+self.parameters[1]
+        return the_pot
 
     def get_force(self, coords):
-        return self.parameters[0]*np.sin(coords)
+        """
+        Returns the force acting on the walker at a coordinate.
+
+        Parameters:
+        -----------
+        coords      :   float
+                        coordinate of walker
+
+        Returns:
+        ----------
+        the_force   :   float
+                        forces at the present location.
+        """
+        the_force = self.parameters[0]*np.sin(coords)
+        return the_force
+
 
 class PieceWiseCosinePotential(PotentialFunction1D):
 
     def __init__(self):
-        self.parameters=np.array([1,0, 1,0])
+        """
+        Initializes the 1-D potential energy surface for a cosine function.
+        Parameters are set to zero so there are no adjustments to
+        default barriers and rare events are initialized as well.
+        """
+        self.parameters = np.array([1, 0, 1, 0])
         self.rare_event = np.array([-2.0, 8.28])
 
     def get_potential(self, coords):
+        """
+        Returns the potential energy at a coordinate.
 
+        Parameters:
+        -----------
+        coords      :   float
+                        coordinate of walker
+
+        Returns:
+        ----------
+        V           :   float
+                        potential energy at the present location.
+        """
         if hasattr(coords, "__len__") is True:
             V = np.zeros_like(coords)
-            for i in range(0,len(coords)):
+            for i in range(0, len(coords)):
                 if coords[i] < np.pi:
-                    V[i] = (self.parameters[0]*np.cos(coords[i])+
+                    V[i] = (self.parameters[0]*np.cos(coords[i]) +
                             self.parameters[1])
 
                 elif coords[i] > np.pi:
-                    V[i] = (self.parameters[2]*np.cos(coords[i])+
+                    V[i] = (self.parameters[2]*np.cos(coords[i]) +
                             self.parameters[3])
             return V
         else:
             if coords < np.pi:
-                return self.parameters[0]*np.cos(coords)+self.parameters[1]
+                V = self.parameters[0]*np.cos(coords)+self.parameters[1]
+                return V
 
             elif coords > np.pi:
-                return self.parameters[2]*np.cos(coords)+self.parameters[3]
+                V = self.parameters[2]*np.cos(coords)+self.parameters[3]
+                return V
 
     def get_force(self, coords):
-        return self.parameters[0]*np.sin(coords)
+        """
+        Returns the force acting on the walker at a coordinate.
+
+        Parameters:
+        -----------
+        coords      :   float
+                        coordinate of walker
+
+        Returns:
+        ----------
+        the_force   :   float
+                        forces at the present location.
+        """
+        the_force = self.parameters[0]*np.sin(coords)
+        return the_force
+
 
 class TwoGaussianPotential(PotentialFunction1D):
 
     def __init__(self):
-        self.parameters=np.array([-5,10])
+        """
+        Initializes the 1-D potential energy surface for a two gaussian
+        function. Parameters are set to zero so there are no adjustments to
+        default barriers and rare events are initialized as well.
+        """
+        self.parameters = np.array([-5, 10])
         self.rare_event = np.array([-2.0, float("inf")])
+
     def get_potential(self, coords):
-        return (self.parameters[0]* np.exp(-(coords - 2/0.75)**2) -
-                self.parameters[1]*np.exp(-(coords + 2/0.75)**2))
+        """
+        Returns the potential energy at a coordinate.
+
+        Parameters:
+        -----------
+        coords      :   float
+                        coordinate of walker
+
+        Returns:
+        ----------
+        V           :   float
+                        potential energy at the present location.
+        """
+        V = (self.parameters[0] * np.exp(-(coords - 2/0.75)**2) -
+             self.parameters[1] * np.exp(-(coords + 2/0.75)**2))
+        return V
 
     def get_force(self, coords):
-        return ((self.parameters[0] * 2 * -1 * (coords - 2/0.75) *
-                 np.exp(-(coords - 2/0.75)**2) -  self.parameters[1] * 2 *
-                 -1 * (coords + 2/0.75) * np.exp(-(coords + 2/0.75)**2)) * (-1))
+        """
+        Returns the force acting on the walker at a coordinate.
+
+        Parameters:
+        -----------
+        coords      :   float
+                        coordinate of walker
+
+        Returns:
+        ----------
+        the_force   :   float
+                        forces at the present location.
+        """
+        the_force = ((self.parameters[0] * 2 * -1 * (coords - 2/0.75) *
+                      np.exp(-(coords - 2/0.75)**2) - self.parameters[1] * 2 *
+                      (-1) * (coords + 2/0.75) *
+                      np.exp(-(coords + 2/0.75)**2)) * (-1))
+        return the_force
+
 
 class MullerBrownPotential(PotentialFunction2D):
 
     def __init__(self):
-        self.parameters=np.array([106])
-        self.rare_event = np.array([-0.05,1,0.5,0.1])
-        #self.dimension='1-D Potential'
+        """
+        Initializes the 2-D potential energy surface for a Muller Brown
+        Potential. Parameters are set to zero so there are no adjustments to
+        default barriers and rare events are initialized as well.
+        """
+        self.parameters = np.array([106])
+        self.rare_event = np.array([-0.5, 1, 0.5, 0.1])
+
     def get_potential(self, coords):
+        """
+        Returns the potential energy at a coordinate.
+
+        Parameters:
+        -----------
+        coords      :   array of floats
+                        coordinate of walker
+
+        Returns:
+        ----------
+        V           :   float
+                        potential energy at the present location.
+        """
         Eb = self.parameters[0]
         A = np.array([-200.0*Eb/106, -100.0*Eb/106, -170.0*Eb/106,
                       15.0*Eb/106])
@@ -169,6 +387,19 @@ class MullerBrownPotential(PotentialFunction2D):
         return V
 
     def get_force(self, coords):
+        """
+        Returns the force acting on the walker at a coordinate.
+
+        Parameters:
+        -----------
+        coords      :   array of floats
+                        coordinate of walker
+
+        Returns:
+        ----------
+        Fpot        :   float
+                        forces at the present location.
+        """
         Eb = self.parameters[0]
         A = np.array([-200.0*Eb/106, -100.0*Eb/106, -170.0*Eb/106,
                       15.0*Eb/106])
@@ -201,6 +432,23 @@ class MullerBrownPotential(PotentialFunction2D):
         return Fpot
 
     def get_triggered(self, coords):
+        """
+        Determines if rare event has happened, and specifies which one if
+        there are multiple
+        Parameters:
+        -----------
+        coords    :      float
+                         coordinates of walker.
+
+        Returns:
+        ----------
+        trigger   :      boolean
+                         True if rare event has happended, otherwise False
+
+        event     :      String
+                         Distinguishes which path/rare event occurs if multiple
+                         paths are present
+        """
         trigger = False
         event = "null"
         if coords[0] < self.rare_event[0] and coords[1] > self.rare_event[1]:
@@ -215,39 +463,88 @@ class MullerBrownPotential(PotentialFunction2D):
 class CHLCPotential(PotentialFunction2D):
 
     def __init__(self):
-        self.parameters=np.array([0,0])
-        self.rare_event = np.array([0.20E-9,0.25E-9,float('inf'),float("inf")*-1])
-        self.pot = pickle.load(open("c_chl_potential.p", "rb"))
-        # self.fx = pickle.load(open("c_chl_fdx.p", "rb"))
-        # self.fy = pickle.load(open("c_chl_fdy.p", "rb"))
-        #self.dimension='1-D Potential'
+        """
+        Initializes the 2-D potential energy surface for a CH3l + Cl potential.
+        Parameters are set to zero so there are no adjustments to
+        default barriers and rare events are initialized as well.
+        Imports the potential energy function.
+        """
+        self.parameters = np.array([0, 0])
+        self.rare_event = np.array([0.20E-9, 0.25E-9,
+                                    float('inf'), float("inf")*-1])
+        self.pot = pickle.load(open("c_chl_newplumed_potential.p", "rb"))
+        self.fx = pickle.load(open("c_chl_newplumed_fx.p", "rb"))
+        self.fy = pickle.load(open("c_chl_newplumed_fy.p", "rb"))
+
     def get_potential(self, coords):
+        """
+        Returns the potential energy at a coordinate.
+
+        Parameters:
+        -----------
+        coords      :   array of floats
+                        coordinate of walker
+
+        Returns:
+        ----------
+        V           :   float
+                        potential energy at the present location.
+        """
         x = coords[0]
         y = coords[1]
         if hasattr(x, "__len__") is True:
             V = np.zeros([y.size, x.size])
             for k in range(0, x.size - 1):
                 for j in range(0, y.size - 1):
-                    V[j,k] = self.pot(y[j],x[k])
+                    V[j, k] = self.pot(y[j], x[k])
         else:
 
             V = self.pot(y, x)
         return V
 
     def get_force(self, coords):
+        """
+        Returns the force acting on the walker at a coordinate.
 
+        Parameters:
+        -----------
+        coords      :   array of floats
+                        coordinate of walker
+
+        Returns:
+        ----------
+        Fpot        :   array of floats
+                        forces at the present location.
+        """
         x = coords[0]
         y = coords[1]
         # pdb.set_trace()
-        Fx = self.pot(y, x, dy=1)
-        Fy = self.pot(y, x, dx=1)
-        Fpotx = Fx * -1
-        Fpoty = Fy * -1
+        Fx = self.fx(y, x)
+        Fy = self.fy(y, x)
+        Fpotx = Fx
+        Fpoty = Fy
         Fpot = np.array([Fpotx, Fpoty])
         # print Fpot
         return Fpot
 
     def get_triggered(self, coords):
+        """
+        Determines if rare event has happened, and specifies which one if
+        there are multiple
+        Parameters:
+        -----------
+        coords    :      array of floats
+                         coordinates of walker.
+
+        Returns:
+        ----------
+        trigger   :      boolean
+                         True if rare event has happended, otherwise False
+
+        event     :      String
+                         Distinguishes which path/rare event occurs if multiple
+                         paths are present
+        """
         trigger = False
         event = "null"
         if coords[0] < self.rare_event[0] and coords[1] > self.rare_event[1]:
@@ -258,28 +555,128 @@ class CHLCPotential(PotentialFunction2D):
             event = "B"
         return trigger, event
 
+
+class CyclePotential(PotentialFunction2D):
+
+    def __init__(self):
+        """
+        Initializes the 2-D potential energy surface for a cyclization reaction
+        potential. Parameters are set to zero so there are no adjustments to
+        default barriers and rare events are initialized as well.
+        Imports the potential energy function.
+        """
+        self.parameters = np.array([0, 0])
+        self.rare_event = np.array([0.10E-9, 0.2E-9,
+                                   float('inf'), float("inf")*-1])
+        self.pot = pickle.load(open("cycle_potential.p", "rb"))
+        self.fx = pickle.load(open("cycle_fx.p", "rb"))
+        self.fy = pickle.load(open("cycle_fy.p", "rb"))
+
+    def get_potential(self, coords):
+        """
+        Returns the potential energy at a coordinate.
+
+        Parameters:
+        -----------
+        coords      :   array of floats
+                        coordinate of walker
+
+        Returns:
+        ----------
+        V           :   float
+                        potential energy at the present location.
+        """
+        x = coords[0]
+        y = coords[1]
+        if hasattr(x, "__len__") is True:
+            V = np.zeros([y.size, x.size])
+            for k in range(0, x.size - 1):
+                for j in range(0, y.size - 1):
+                    V[j, k] = self.pot(y[j], x[k])
+        else:
+
+            V = self.pot(y, x)
+        return V
+
+    def get_force(self, coords):
+        """
+        Returns the force acting on the walker at a coordinate.
+
+        Parameters:
+        -----------
+        coords      :   array of floats
+                        coordinate of walker
+
+        Returns:
+        ----------
+        Fpot        :   array of floats
+                        forces at the present location.
+        """
+        x = coords[0]
+        y = coords[1]
+        # pdb.set_trace()
+        Fx = self.fx(y, x)
+        Fy = self.fy(y, x)
+        Fpotx = Fx
+        Fpoty = Fy
+        Fpot = np.array([Fpotx, Fpoty])
+        # print Fpot
+        return Fpot
+
+    def get_triggered(self, coords):
+        """
+        Determines if rare event has happened, and specifies which one if
+        there are multiple
+        Parameters:
+        -----------
+        coords    :      array of floats
+                         coordinates of walker.
+
+        Returns:
+        ----------
+        trigger   :      boolean
+                         True if rare event has happended, otherwise False
+
+        event     :      String
+                         Distinguishes which path/rare event occurs if multiple
+                         paths are present
+        """
+        trigger = False
+        event = "null"
+        if coords[0] < self.rare_event[0] and coords[1] > self.rare_event[1]:
+            trigger = True
+            event = "A"
+        elif coords[0] > self.rare_event[2] and coords[1] < self.rare_event[3]:
+            trigger = True
+            event = "B"
+        return trigger, event
+
+
 def get_potential_dict():
     """Return a dictionary of all of the available potential functions."""
     potential_dict = {'cosine_potential': CosinePotential,
                       'two_gaussian_potential': TwoGaussianPotential,
                       'muller_brown_potential': MullerBrownPotential,
                       'piece_wise_cosine': PieceWiseCosinePotential,
-                      'c_chl_potential': CHLCPotential
-                     }
-
+                      'c_chl_potential': CHLCPotential,
+                      'cycle_potential': CyclePotential
+                      }
 
     return potential_dict
 
+
 def get_GUI_presets_dict():
     """Return a dictionary of all of the available potential functions."""
-    preset_dict = {'cosine_potential': np.array([3.14,-6.28,12.57,0.01,0,
-                                                    0,0,0]).astype(str),
-                      'two_gaussian_potential': np.array([2.67,-4,4,0.01,
-                                                          0,0,0,0]).astype(str),
-                      'pv_2D_potential': np.array([1.5,0,3.0,0.01,0.6,-2.0,
-                                                   2.0,0.01]).astype(str),
-                      'muller_brown_potential': np.array([0,0,0,0,0,0,0,
-                                                          0]).astype(str),
-                      'C_Cl_potential': np.array([0,0,0,0,0,0,0,0]).astype(str)
-                    }
+    preset_dict = {'cosine_potential': np.array([3.14, -6.28, 12.57, 0.01, 0,
+                                                 0, 0, 0]).astype(str),
+                   'two_gaussian_potential': np.array([2.67, -4, 4, 0.01,
+                                                       0, 0, 0,
+                                                       0]).astype(str),
+                   'pv_2D_potential': np.array([1.5, 0, 3.0, 0.01, 0.6, -2.0,
+                                                2.0, 0.01]).astype(str),
+                   'muller_brown_potential': np.array([0, 0, 0, 0, 0, 0, 0,
+                                                       0]).astype(str),
+                   'C_Cl_potential': np.array([0, 0, 0, 0, 0, 0, 0,
+                                               0]).astype(str)
+                   }
     return preset_dict

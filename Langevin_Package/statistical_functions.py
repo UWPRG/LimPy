@@ -6,8 +6,21 @@ from scipy.stats import ks_2samp
 from scipy import stats
 import pandas as pd
 
+
 def perform_ks_analysis(dataframe):
-    """Perform the KS Test and determines statistics."""
+    """
+    Perform the KS Test and determines statistics.
+
+    Parameters:
+    -----------
+    dataframe   : panda dataframe
+                  Contains the effective times of rare events.
+
+    Returns:
+    ----------
+    statistics  : string
+                  Displays the statistical information of the KS test.
+    """
     data = dataframe['Teff']
     min = np.min(data)
     max = np.max(data)
@@ -33,17 +46,6 @@ def perform_ks_analysis(dataframe):
     # the same as the data points from the analytical fit
     stat, p = ks_2samp(data, randdata)
 
-    # print "mu:", np.mean(data)
-    # print "mu_sem:", stats.sem(data)
-    # print "sigma:", np.std(data, ddof=1)
-    # print "t_m:", np.median(data)
-    # print "tau:", taufit
-    # print "mu_sigma_ratio:", np.mean(data)/np.std(data, ddof=1)
-    # print "log2mu_median_ratio:", np.log(2)*np.mean(data)/np.median(data)
-    # print "tau_mu_ratio:", taufit/np.mean(data)
-    # print "p-value:", p
-    # print "ks-stat:", stat
-    # print "events recorded:",  np.size(data)
     statistics = ("mu:" + str(np.mean(data)) + "\n" + "mu_sem:" +
                   str(stats.sem(data)) + "\n" + "sigma:" +
                   str(np.std(data, ddof=1)) + "\n" + "t_m:" +
@@ -61,7 +63,29 @@ def perform_ks_analysis(dataframe):
 
 
 def sampling(dataframe, num_iters, sampsize):
-    """Perform boostrapping procedure for error analysis."""
+    """
+    Perform boostrapping procedure for error analysis.
+
+    Parameters:
+    -----------
+    dataframe   : panda dataframe
+                  Contains the effective times of rare events.
+
+    num_iters   : int
+                  Number of iterations for bootstrapping
+
+    sampsize    : int
+                  Size of bootstrapped samples
+
+    Returns:
+    ----------
+    means       : array of floats
+                  Average effective times of each accepted bootstrapped sample
+    pvals       : array of floats
+                  P values of each accepted bootstrapped sample
+    rejects     : int
+                  Number of samples rejected
+    """
     # if sampsize > 100
     # sampsize = 100
     data = dataframe['Teff']

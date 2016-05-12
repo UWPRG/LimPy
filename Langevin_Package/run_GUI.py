@@ -80,7 +80,7 @@ class Form(QWidget):
         combo3.addItems(["Energy Units", "Kcal/mol", "KJ/mol",
                         "Joule/mol", "cal/mol"])
         combo4 = QComboBox()
-        combo4.addItems(["Boundary Conditions", "Periodic", "Quartic" ,
+        combo4.addItems(["Boundary Conditions", "Periodic", "Quartic",
                          "No BC"])
         global count
         global cc
@@ -140,7 +140,7 @@ class Form(QWidget):
             global paramlength
             # Dropdown menu for 1-D or 2-D Potential
 
-            pot_dict= potential_class.get_potential_dict()
+            pot_dict = potential_class.get_potential_dict()
             pot = pot_dict[str(text)]
             pot = pot()
             paramlength = len(pot.parameters)
@@ -150,7 +150,7 @@ class Form(QWidget):
                 presetvals = psets[str(text)]
 
             except:
-                presetvals = np.array([0,0,0,0,0,0,0,0]).astype(str)
+                presetvals = np.array([0, 0, 0, 0, 0, 0, 0, 0]).astype(str)
             if (pdim == "1-D Potential"):
                 if count == 1:
                     layout.removeWidget(Labely)
@@ -342,7 +342,7 @@ class Form(QWidget):
                         bc_actx.deleteLater()
 
                     cbxbclow = QCheckBox('Enable Lower X BC')
-                    layout.addWidget(cbxbclow , 9, 3)
+                    layout.addWidget(cbxbclow, 9, 3)
                     cbxbchigh = QCheckBox('Enable Higher X BC')
                     layout.addWidget(cbxbchigh, 10, 3)
                     bccount = 1
@@ -361,11 +361,11 @@ class Form(QWidget):
                         layout.removeWidget(bc_actx)
                         bc_actx.deleteLater()
                     cbxbclow = QCheckBox('Enable Lower X BC')
-                    layout.addWidget(cbxbclow , 9, 3)
+                    layout.addWidget(cbxbclow, 9, 3)
                     cbxbchigh = QCheckBox('Enable Higher X BC')
                     layout.addWidget(cbxbchigh, 10, 3)
                     cbybclow = QCheckBox('Enable Lower Y BC')
-                    layout.addWidget(cbybclow , 11, 3)
+                    layout.addWidget(cbybclow, 11, 3)
                     cbybchigh = QCheckBox('Enable High Y BC')
                     layout.addWidget(cbybchigh, 12, 3)
                     bccount = 2
@@ -416,7 +416,6 @@ class Form(QWidget):
                     bc_actx.deleteLater()
                     bc_acty.deleteLater()
                 bccount = 0
-
 
         def onActive(text):
             """Create the dropdown menu options for the method."""
@@ -686,13 +685,10 @@ class Form(QWidget):
         cbsp.stateChanged.connect(on_checked)
         layout.addWidget(combo2, 0, 3)
         layout.addWidget(combo3, 0, 4)
-        layout.addWidget(combo4,8,3)
+        layout.addWidget(combo4, 8, 3)
         w.setLayout(layout)
-        w.resize(1000,500)
+        w.resize(1000, 500)
         w.connect(btn, SIGNAL("clicked()"), w, SLOT("close()"))
-
-
-
 
         def on_click():
             """Assign variables once button is clicked to lock in inputs."""
@@ -732,7 +728,8 @@ class Form(QWidget):
             #                                           makeplot, plot_freq,
             #                                           make_movie)
             #             if its == 0:
-            #                 timedata = np.array([trial[0], trial[1],trial[3]])
+            #                 timedata = np.array([trial[0], trial[1],
+            #                                      trial[3]])
             #             else:
             #                 timedata = np.append(timedata,
             #                                      np.array([trial[0],
@@ -753,7 +750,7 @@ class Form(QWidget):
             #                                       potfunc, filetitle,
             #                                       makeplot, plot_freq,
             #                                       make_movie)
-            #             colvar = pd.DataFrame({'CV': trial[0], 'E': trial[1]})
+            #             colvar = pd.DataFrame({'CV': trial[0], 'E':trial[1]})
             #             colvar.reset_index('CV')
             #         else:
             #             trial = simulate_2Dsystem(inps, mdps,
@@ -781,8 +778,6 @@ class Form(QWidget):
             #             writer.writerow([trial[0]])
             #             writer.writerow([trial[1]])
 
-
-
             if cbsp.isChecked():
                 makeplot = 'True'
                 plot_freq = float(textboxguf.text())
@@ -796,7 +791,7 @@ class Form(QWidget):
                 makeplot = 'False'
                 make_movie = 'False'
                 plot_freq = 0.0
-                ebound = np.array([0,1])
+                ebound = np.array([0, 1])
             method = str(combo2.currentText())
             potential = str(combo.currentText())
             potential_dictionary = potential_class.get_potential_dict()
@@ -868,17 +863,17 @@ class Form(QWidget):
             bc_dict = boundarycondition.get_boundary_condition_dict()
 
             if (str(combo4.currentText()) == 'Periodic' and
-                  bc_actx.isChecked()):
-                 xbc = bc_dict[str(combo4.currentText())]
-                 xbc = xbc()
-                 xbc.set_new_upper_location(float(textbox32.text()))
-                 xbc.set_new_lower_location(float(textbox31.text()))
+               bc_actx.isChecked()):
+                xbc = bc_dict[str(combo4.currentText())]
+                xbc = xbc()
+                xbc.set_new_upper_location(float(textbox32.text()))
+                xbc.set_new_lower_location(float(textbox31.text()))
             elif str(combo4.currentText()) == 'Quartic':
-                 xbc = bc_dict[str(combo4.currentText())]
-                 xbc = xbc()
-                 if cbxbchigh.isChecked():
+                xbc = bc_dict[str(combo4.currentText())]
+                xbc = xbc()
+                if cbxbchigh.isChecked():
                     xbc.set_new_upper_location(float(textbox32.text()))
-                 if cbxbclow.isChecked():
+                if cbxbclow.isChecked():
                     xbc.set_new_lower_location(float(textbox31.text()))
             else:
                 xbc = bc_dict['Empty']
@@ -911,11 +906,11 @@ class Form(QWidget):
                                 float(textboxgm.text()),
                                 float(kb)])
                 if (str(combo4.currentText()) == 'Periodic' and
-                      bc_acty.isChecked()):
-                     ybc = bc_dict[str(combo4.currentText())]
-                     ybc = ybc()
-                     ybc.set_new_upper_location(float(textboxy2.text()))
-                     ybc.set_new_lower_location(float(textboxy1.text()))
+                   bc_acty.isChecked()):
+                    ybc = bc_dict[str(combo4.currentText())]
+                    ybc = ybc()
+                    ybc.set_new_upper_location(float(textboxy2.text()))
+                    ybc.set_new_lower_location(float(textboxy1.text()))
                 elif str(combo4.currentText()) == 'Quartic':
                     if cbxbchigh.isChecked():
                         ybc.set_new_upper_location(float(textboxy2.text()))
@@ -930,7 +925,7 @@ class Form(QWidget):
                                 float(textbox7.text()),
                                 float(textbox8.text())])
             elif method == 'MD':
-                mdps = np.array([0.0,0.01,inps[0]*2,1.0,1.0])
+                mdps = np.array([0.0, 0.01, inps[0]*2, 1.0, 1.0])
             elif (method == 'Well-Tempered Metadynamics'):
                 biasfactor = float(textbox9.text())
                 DT = (biasfactor-1)*float(textbox4.text())
@@ -1010,22 +1005,28 @@ class Form(QWidget):
                 timedata.to_csv(filetitle + '_Allevents.csv', delimiter=',')
                 ks_results = perform_ks_analysis(timedata)
                 if len(timedata[timedata['Event'] == 'A']) > 0:
-                    ks_resultsA = perform_ks_analysis(timedata[timedata['Event'] == 'A'])
+                    path_A = timedata[timedata['Event'] == 'A']
+                    ks_resultsA = perform_ks_analysis(path_A)
                 if len(timedata[timedata['Event'] == 'B']) > 0:
-                    ks_resultsB = perform_ks_analysis(timedata[timedata['Event'] == 'B'])
+                    path_B = timedata[timedata['Event'] == 'B']
+                    ks_resultsB = perform_ks_analysis(path_B)
                 # if os.path.isfile('bootstrapped.csv') is False:
                 #     with open('bootstrapped.csv', "ab") as f:
                 #             writer = csv.writer(f)
-                #             writer = writer.writerow(['Means', 'Pvals', 'Rejected'])
+                #             writer = writer.writerow(['Means', 'Pvals',
+                #                             'Rejected'])
                 # while monitor <= 1000:
-                #     (means, pvals, reject) = sampling(filetitle + '_Allevents.csv', 1000,
+                #     (means, pvals, reject) = sampling(filetitle +
+                #                                       '_Allevents.csv', 1000,
                 #                                       round(len(timedata)/2))
                 #     with open('bootstrapped.csv', "ab") as f:
                 #             writer = csv.writer(f)
                 #             writer.writerow([means, pvals, reject])
                 #     checkprogress = pd.read_csv('bootstrapped.csv')
-                #     checkaccept = checkprogress[checkprogress['Rejected'] == 'No']
-                #     if ((len(checkprogress) - len(checkaccept))/len(checkprogress) >
+                #     checkaccept = checkprogress[checkprogress['Rejected'] ==
+                #                                 'No']
+                #     if ((len(checkprogress) - len(checkaccept))/
+                #          len(checkprogress) >
                 #        0.90 and len(checkprogress) > 100):
                 #         break
                 #     monitor = len(checkaccept)
@@ -1036,8 +1037,10 @@ class Form(QWidget):
                 if os.path.isfile(filetitle + '_statistics.csv') is False:
                     with open(filetitle + '_statistics.csv', "ab") as f:
                             writer = csv.writer(f)
-                            # writer.writerow(['Bootstrapped: Mean Escape Time',
-                            #                  'Mean p-value', '# of Trials Rejected'])
+                            # writer.writerow(['Bootstrapped:
+                            #                   Mean Escape Time',
+                            #                  'Mean p-value',
+                            #                  '# of Trials Rejected'])
                             # writer.writerow([validdata['Means'].mean(),
                             #                  validdata['Pvals'].mean(),
                             #                  rejectedtrials])
@@ -1049,7 +1052,6 @@ class Form(QWidget):
                             if len(timedata[timedata['Event'] == 'B']) > 0:
                                 writer.writerow(['B events'])
                                 writer.writerow([ks_resultsB])
-
 
         btn.clicked.connect(on_click)
         helpbtn.clicked.connect(showhelp)

@@ -6,7 +6,6 @@ import os
 import pdb
 import math
 
-# from potential_functions import get_potential_dict, get_boundary_condition_dict
 import langevin_functions as lf
 
 
@@ -81,7 +80,7 @@ def simulate_1Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
     hfreq = mdps[2]
     DT = mdps[3]
     w = np.array([0.0])
-    bcs=bcs[0]
+    bcs = bcs[0]
     dimension = potfunc.dimension
     if (make_movie == 'True'):
         if os.path.exists(filetitle+"_movies"):
@@ -97,22 +96,12 @@ def simulate_1Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
     coords = np.empty(int(steps))
     E = np.empty(int(steps))
     history = np.array([0.0])
-
+    dep_count = 0
     time = np.array([0.0])
     walkerpot = np.array([0.0])
 
-    # (pot_dict,_) = get_potential_dict()
-    # bc_dict = get_boundary_condition_dict()
-    # try:
-    #     selected_pot = pot_dict[potfunc]
-    # except KeyError:
-    #     print 'That potential function has not been loaded into the dictionary'
-    # try:
-    #     selected_bc = bc_dict[potfunc]
-    # except KeyError:
-    #     print 'That boundary condition has not been loaded into the dictionary'
-
     pot_base = potfunc.get_potential(xlong)
+    bias = np.zeros_like(pot_base)
     iv = potfunc.get_potential(x0)
     coords[0] = x0
     if makeplot == 'True':
@@ -127,7 +116,7 @@ def simulate_1Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
 
     v0 = np.random.normal(0, 1, 1)
     T1 = m*v0**2/kb
-    vscaled = v0 *(T/T1)**(0.5)
+    vscaled = v0 * (T/T1)**(0.5)
     p = vscaled * m
     # is_periodic = selected_bc(iv, selected_pot(x0)[1], coords[0])[4]
 
@@ -149,25 +138,36 @@ def simulate_1Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
     while i < steps - 1:
 
         if (method == "Infrequent WT MetaD"):
-            (triggered,path) = potfunc.get_triggered(coords[i])
+            (triggered, path) = potfunc.get_triggered(coords[i])
 
             if triggered is True:
-
                 totaltime = time[i]
                 teff = lf.calc_teff(walkerpot, beta, dt)
-                if path == 'A':
+                for xc in range(0, xlong.size):
+                    bias[xc] = bias[xc]+lf.calc_biased_pot(xlong[xc],
+                                                           history[dep_count:],
+                                                           w[dep_count:],
+                                                           delta, dimension)
+                [bins, FES] = lf.calc_FES_1D(coords, bias, xlong, method,
+                                             beta, T, DT)
 
-                    rare_bias =(lf.calc_biased_pot(np.array([potfunc.rare_event[0]
-                                                            ]),
-                                 history, w, delta,dimension))
-                elif path == 'B':
-                    rare_bias =(lf.calc_biased_pot(np.array([potfunc.rare_event[1]
-                                                            ]),
-                                 history, w, delta,dimension))
-                initial_point_bias = (lf.calc_biased_pot(coords[0],
-                                      history, w, delta, dimension))
-               	barrier = initial_point_bias - rare_bias
+                init_center_point = int((x0 - np.min(bins))/(bins[1]-bins[0]))
+                end_center_point = int((coords[i] - np.min(bins)) /
+                                       (bins[1]-bins[0]))
 
+                rare_E = FES[end_center_point]
+                initial_E = FES[init_center_point]
+                for a in range(-100, 100):
+                    if (end_center_point + a <= FES.size and
+                       end_center_point + a > 0):
+                        other_rare_E = FES[end_center_point + a]
+                        other_initial_E = FES[init_center_point + a]
+                        if other_rare_E > rare_E:
+                            rare_E = other_rare_E
+                        if other_initial_E < initial_E:
+                            initial_E = other_initial_E
+                barrier = rare_E - initial_E
+                pdb.set_trace()
                 return (totaltime, teff, info, path, barrier)
 
         if sp.mod(i, hfreq) == 0 and i > 0:
@@ -216,15 +216,18 @@ def simulate_1Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
             [FES, icount] = recreate_1DFES(FES, icount, coords[i+1],
                                            xinc, xmin, xmax, E[i+1])
         if makeplot == 'True' and sp.mod(i, plot_freq) == 0:
-            bias = np.copy(pot_base)
+
             for xc in range(0, xlong.size):
-                bias[xc] = bias[xc] + lf.calc_biased_pot(xlong[xc], history,
-                                                         w, delta, dimension)
+
+                bias[xc] = bias[xc] + lf.calc_biased_pot(xlong[xc],
+                                                         history[dep_count:],
+                                                         w[dep_count:],
+                                                         delta, dimension)
             walkv = vnew + lf.calc_biased_pot(coords[i+1], history, w, delta,
                                               dimension)
-
+            dep_count = len(history)
             plt.clf()
-            plt.plot(xlong, bias, '-r')
+            plt.plot(xlong, bias+pot_base, '-r')
             plt.plot(xlong, pot_base, '-b')
             plt.plot(coords[i+1], walkv, 'ro', markersize=10)
             plt.axis([xmin, xmax, ebound[0],
@@ -240,11 +243,16 @@ def simulate_1Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
         i = i + 1
 
     if(method != "Infrequent WT MetaD"):
-        colvar100 = lf.calc_colvar_1D(coords, history, w, delta,
-                                      xlong, method, beta, T, DT)
-        rmsds = lf.calc_rmsd(colvar100[1], beta, pot_base)
+        for xc in range(0, xlong.size):
+            bias[xc] = bias[xc] + lf.calc_biased_pot(xlong[xc],
+                                                     history[dep_count:],
+                                                     w, delta, dimension)
 
-        return (coords, colvar100, rmsds, info)
+        FES = lf.calc_FES_1D(coords, bias,
+                             xlong, method, beta, T, DT)
+        rmsds = lf.calc_rmsd(colvar100[1], beta, pot_base)
+        pdb.set_trace()
+        return (coords, E, FES, rmsds, info)
 
     elif(method == "Infrequent WT MetaD"):
         teff = 0

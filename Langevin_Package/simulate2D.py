@@ -108,17 +108,6 @@ def simulate_2Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
     time = np.array([0.0])
     walkerpot = np.array([0.0])
 
-    # (pot_dict,_) = get_potential_dict()
-    # bc_dict = get_boundary_condition_dict()
-    # try:
-    #     selected_pot = pot_dict[potfunc]
-    # except KeyError:
-    #     print 'That potential function has not been loaded into the dictionary'
-    # try:
-    #     selected_bc = bc_dict[potfunc]
-    # except KeyError:
-    #     print 'That potential function has not been loaded into the dictionary'
-
     iv = potfunc.get_potential(np.array([x0, y0]))
     pot_base = potfunc.get_potential(np.array([xlong, ylong]))
     bias = np.zeros_like(pot_base)
@@ -127,13 +116,13 @@ def simulate_2Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
     coords[0, 0] = x0
     coords[0, 1] = y0
     cmap = cmap = plt.cm.jet
-    levels = np.arange(ebound[0],ebound[1],(ebound[1]-ebound[0])/10)
+    levels = np.arange(ebound[0], ebound[1], (ebound[1]-ebound[0])/10)
     v0x = np.random.normal(0, 1, 1)
     v0y = np.random.normal(0, 1, 1)
     T1x = m*v0x**2/kb
     T1y = m*v0y**2/kb
-    vscaledx = v0x *(T/T1x)**(0.5)
-    vscaledy = v0y *(T/T1y)**(0.5)
+    vscaledx = v0x * (T/T1x)**(0.5)
+    vscaledy = v0y * (T/T1y)**(0.5)
     px = vscaledx * m
     py = vscaledy * m
     p = np.array([px, py])
@@ -174,12 +163,12 @@ def simulate_2Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
     while i < steps - 1:
 
         if (method == "Infrequent WT MetaD"):
-            (triggered,path) = potfunc.get_triggered(np.array([coords[i, 0],
+            (triggered, path) = potfunc.get_triggered(np.array([coords[i, 0],
                                                                coords[i, 1]]))
             if triggered is True:
                 totaltime = time[i]
-
                 teff = lf.calc_teff(walkerpot, beta, dt)
+                print teff
                 for yc in range(0, ylong.size):
                     for xc in range(0, xlong.size):
                         bias[yc, xc] = (bias[yc, xc] +
@@ -188,31 +177,48 @@ def simulate_2Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
                                                            history[dep_count:],
                                                            w[dep_count:],
                                                            delta, dimension))
-                if path == 'A':
+                [bins, FES] = lf.calc_FES_2D(coords, bias, xlong, ylong,
+                                             method, beta, T, DT)
 
-                    rare_bias =(lf.calc_biased_pot(np.array([potfunc.rare_event[0],
-                                                             potfunc.rare_event[1]
-                                                            ]),
-                                 history, w, delta,dimension))
-                elif path == 'B':
-                    rare_bias =(lf.calc_biased_pot(np.array([potfunc.rare_event[2],
-                                                             potfunc.rare_event[3]
-                                                            ]),
-                                 history, w, delta,dimension))
-                initial_point_bias = (lf.calc_biased_pot(np.array([coords[0, 0],
-                                                                   coords[0, 1]
-                                                                   ]),
-                                       history, w, delta,dimension))
-               	barrier = initial_point_bias - rare_bias
-                # pdb.set_trace()
-                # if barrier < 0:
-                #     print barrier
-                #     pdb.set_trace()
+                init_center_point_x = int((x0 - np.min(bins[1])) /
+                                          (bins[1][1]-bins[1][0]))
+                init_center_point_y = int((y0 - np.min(bins[0])) /
+                                          (bins[0][1]-bins[0][0]))
+                end_center_point_x = int((coords[i, 0] - np.min(bins[1])) /
+                                         (bins[1][1] - bins[1][0]))
+                end_center_point_y = int((coords[i, 1] - np.min(bins[0])) /
+                                         (bins[0][1]-bins[0][0]))
+
+                rare_E = FES[end_center_point_y, end_center_point_x]
+                initial_E = FES[init_center_point_y, init_center_point_x]
+
+                for a in range(-100, 100):
+                    for b in range(-100, 100):
+                        if (end_center_point_y + a < bins[0].size and
+                           end_center_point_y + a > 0 and
+                           end_center_point_x + b < bins[1].size and
+                           end_center_point_x + b > 0):
+
+                            other_rare_E = FES[end_center_point_y + a,
+                                               end_center_point_x + b]
+                            if other_rare_E > rare_E:
+                                rare_E = other_rare_E
+                        if (init_center_point_y + a < bins[0].size and
+                           init_center_point_y + a > 0 and
+                           init_center_point_x + b < bins[1].size and
+                           init_center_point_x + b > 0):
+
+                            other_initial_E = FES[init_center_point_y + a,
+                                                  init_center_point_x + b]
+
+                            if other_initial_E < initial_E:
+                                initial_E = other_initial_E
+                barrier = rare_E - initial_E
 
                 return (totaltime, teff, info, path, barrier)
 
         if sp.mod(i, hfreq) == 0 and i > 0:
-
+            # pdb.set_trace()
             if(i == hfreq):
                 history[0] = coords[i, 0]
                 history[1] = coords[i, 1]
@@ -267,7 +273,6 @@ def simulate_2Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
                                                                (ymax-ymin)])))
                         w = np.append(w, winit * np.exp(-VR / (kb*DT)))
                         w = np.append(w, winit * np.exp(-VR / (kb*DT)))
-
 
         [pnew, vnew, newcoord, bcbias] = lf.integrate_step(coords[i], history,
                                                            w, delta, DT,
@@ -336,7 +341,6 @@ def simulate_2Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
             plt.ylabel("CV2")
             # plt.draw()
 
-
             plt.pause(0.0001)
             if (make_movie == 'True'):
                 filename = "movieframe" + str(frame)
@@ -359,18 +363,18 @@ def simulate_2Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
                                                    history[dep_count:],
                                                    w[dep_count:],
                                                    delta, dimension))
-        pdb.set_trace()
-        colvar100 = lf.calc_colvar_2D(coords, bias,
-                                      xlong, ylong, method, beta, T, DT)
+        # pdb.set_trace()
+        FES = lf.calc_colvar_2D(coords, bias,
+                                xlong, ylong, method, beta, T, DT)
         rmsds = lf.calc_rmsd(colvar100, beta, pot_base)
 
-        return (coords, E, rmsds, info)
+        return (coords, E, FES, rmsds, info)
 
     elif(method == "Infrequent WT MetaD"):
         teff = 0
         info = info + 'NO RARE EVENT'
         totaltime = 0
-        path="NULL"
+        path = "NULL"
         return (coords, E, teff, totaltime, info, path)
 
 

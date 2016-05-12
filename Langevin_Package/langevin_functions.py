@@ -14,9 +14,9 @@ import scipy as sp
 import pandas as pd
 import pdb
 
-#from potential_functions import get_potential_dict, get_boundary_condition_dict
 import potential_class
 import boundarycondition
+
 
 def get_parameters(input_file):
     """Organize input parameters for Langevin Integrator.
@@ -66,10 +66,10 @@ def get_parameters(input_file):
     filetitle = str(inputs['Data Filename'][0])
     potfunc = str(inputs['Potential_Function'][0])
     pots = potential_class.get_potential_dict()
-    potential= pots[potfunc]
+    potential = pots[potfunc]
     potfunc = potential()
 
-    if 'Potential Parameters' in inputs.columns:
+    if 'Pot8ential Parameters' in inputs.columns:
         potparams = inputs['Potential Parameters']
         potparams = np.fromstring(potparams[0], dtype=float, sep=' ')
         potfunc.set_parameters(potparams)
@@ -157,7 +157,7 @@ def get_parameters(input_file):
         mdps[2] = float(inputs['Deposition Frequency'][0])
         mdps[3] = float("inf")
         mdps[4] = 1.0
-    elif method =='Well-Tempered Metadynamics':
+    elif method == 'Well-Tempered Metadynamics':
         mdps[0] = float(inputs['Gaussian Height'][0])
         mdps[1] = float(inputs['Gaussian Width'][0])
         mdps[2] = float(inputs['Deposition Frequency'][0])
@@ -209,6 +209,8 @@ def calc_biased_pot(coords, history, w, delta, dimension):
                   Bias potential
 
     """
+    if coords.size > 2:
+        pdb.set_trace()
     if dimension == '1-D Potential':
         VR = sum(w*np.exp(-(coords-history)**2 / 2 / delta**2))
     elif dimension == '2-D Potential':
@@ -369,18 +371,7 @@ def integrate_step(coords, history, w,  delta, DT, potfunc, bcs, p0, m, dt,
                   bias from boundary condition
 
     """
-    # (pot_dict,_) = get_potential_dict()
-    # try:
-    #     selected_pot = pot_dict[potfunc]
-    # except KeyError:
-    #     print 'That potential function has not been loaded into the dictionary'
-    #
-    # bc_dict = get_boundary_condition_dict()
-    # try:
-    #     apply_bc = bc_dict[potfunc]
-    # except KeyError:
-    #     print 'That boundary condition has not been loaded into the dictionary'
-    # pdb.set_trace()
+
     c1 = np.exp(-gamma * dt / 2)  # (Eq.13a)
     c2 = np.sqrt((1 - c1**2) * m / beta)  # (Eq.13b)
     if dimension == '1-D Potential':
@@ -396,17 +387,16 @@ def integrate_step(coords, history, w,  delta, DT, potfunc, bcs, p0, m, dt,
 
         vnew_nobc = potfunc.get_potential(newcoords)
         f2_nobc = potfunc.get_force(newcoords)
-        #[vnew, f2, newcoords, bcbias, _] = apply_bc(vnew, f2, newcoords)
 
         if newcoords < bcs.location[0]:
             vnew = bcs.get_potential(newcoords,
-                                     potfunc.get_potential( bcs.location[0]))
+                                     potfunc.get_potential(bcs.location[0]))
             f2 = bcs.get_force(newcoords, f2_nobc)
             newcoords = bcs.get_new_location(newcoords)
             bcbias = bcs.get_bc_bias(coords)
         elif newcoords > bcs.location[1]:
             vnew = bcs.get_potential(newcoords,
-                                     potfunc.get_potential( bcs.location[1]))
+                                     potfunc.get_potential(bcs.location[1]))
             f2 = bcs.get_force(newcoords, f2_nobc)
             newcoords = bcs.get_new_location(newcoords)
             bcbias = bcs.get_bc_bias(coords)
@@ -442,49 +432,59 @@ def integrate_step(coords, history, w,  delta, DT, potfunc, bcs, p0, m, dt,
         newcoordy = (coords[1] +
                      (pplusy/m) * dt + fbiasedy/m * ((dt**2) / 2))[0]
 
-        # [vnew, f2, _, _] = selected_pot(newcoordx, newcoordy)
         newcoords = np.array([newcoordx, newcoordy])
         vnew_nobc = potfunc.get_potential(newcoords)
         f2_nobc = potfunc.get_force(newcoords)
 
-        # [vnew, f2, newcoords, bcbias, _] = apply_bc(vnew, f2, newcoords)
         if newcoords[0] < xbc.location[0]:
+            ncx = np.array([xbc.location[0], newcoords[1]])
             vnew = xbc.get_potential(newcoords[0],
-                                     potfunc.get_potential(np.array([xbc.location[0],
-                                                                     newcoords[1]])))
+                                     potfunc.get_potential(ncx))
             f2x = xbc.get_force(newcoords[0], f2_nobc[0])
             newcoords[0] = xbc.get_new_location(newcoords[0])
             bcbiasx = xbc.get_bc_bias(newcoords[0])
         elif newcoords[0] > xbc.location[1]:
+            ncx = np.array([xbc.location[0], newcoords[1]])
             vnew = bcs.get_potential(newcoords,
-                                     potfunc.get_potential(np.array([xbc.location[0],
-                                                                    newcoords[1]])))
+                                     potfunc.get_potential(ncx))
             f2x = xbc.get_force(newcoords[0], f2_nobc[0])
-            newcoords [0]= xbc.get_new_location(newcoords[0])
+            newcoords[0] = xbc.get_new_location(newcoords[0])
             bcbiasx = xbc.get_bc_bias(newcoords[0])
         else:
             bcbiasx = 0
             vnew = vnew_nobc
             f2x = f2_nobc[0]
         if newcoords[1] < ybc.location[0]:
+            ncy = np.array([newcoords[0], ybc.location[0]])
             vnew = ybc.get_potential(newcoords[1],
-                                     potfunc.get_potential(np.array([newcoords[0],
-                                                                     ybc.location[0]])))
-            f2y = ybc.get_force(newcoords[1], f2_nobc[1])
-            newcoords[1] = ybc.get_new_location(newcoords[1])
-            bcbiasy = ybc.get_bc_bias(newcoords[1])
+                                     potfunc.get_potential(ncy))
+            if vnew < vnew_nobc:
+
+                bcbiasy = 0
+                vnew = vnew_nobc
+                f2y = f2_nobc[1]
+            else:
+                # pdb.set_trace()
+                f2y = ybc.get_force(newcoords[1], f2_nobc[1])
+                newcoords[1] = ybc.get_new_location(newcoords[1])
+                bcbiasy = ybc.get_bc_bias(newcoords[1])
+
         elif newcoords[1] > ybc.location[1]:
+            ncy = np.array([newcoords[0], ybc.location[1]])
             vnew = ybc.get_potential(newcoords[1],
-                                     potfunc.get_potential(np.array([newcoords[0],
-                                                                     ybc.location[1]])))
+                                     potfunc.get_potential(ncy))
             f2y = ybc.get_force(newcoords[1], f2_nobc[1])
             newcoords[1] = ybc.get_new_location(newcoords[1])
             bcbiasy = ybc.get_bc_bias(newcoords[1])
+            if vnew < vnew_nobc:
+                bcbiasy = 0
+                vnew = vnew_nobc
+                f2y = f2_nobc[1]
         else:
             bcbiasy = 0
             vnew = vnew_nobc
             f2y = f2_nobc[1]
-        f2=np.array([f2x,f2y])
+        f2 = np.array([f2x, f2y])
         [f2biasedx, f2biasedy] = calc_biased_force(newcoords, history, w,
                                                    delta, f2, dimension)
 
@@ -532,36 +532,106 @@ def calc_rmsd(FES, beta, baseline):
     return rmsds
 
 
-def calc_colvar_1D(coords, history, w, delta, xlong, method, beta,
-                   T, DT):
+def calc_FES_1D(coords, bias, xlong, method, beta,
+                T, DT):
+    """
+    Parameters:
+    -----------
+        coords      : Array of floats
+                      CV explored by the walker
 
-    vbias = np.zeros_like(xlong)
+        bias        : Array of floats
+                      Grid space that has the hills depoisited
+
+        xlong       : Array of floats
+                      coordinates of entire dimension
+
+        method      : String
+                      Specifies if Metadynamics, MD, WT MetaD, Infrequent MetaD
+
+        beta        : floats
+                      1/kT
+
+        T           : float
+                      Temperature
+
+        DT          : float
+                      Hills Temperature
+
+    Returns:
+    --------
+        center      : Array of flotat
+                      grid points for which free energy is calculated for
+
+        F           : Array of floats
+                      Free energy values for the points in center
+
+    """
+
     if method == 'MD':
-        hist, bins = np.histogram(coords, bins=xlong, density=True)
-        F = np.log(hist)*-1/beta
-    elif method == 'Metadynamics':
-        for cv in range(0, xlong.size):
-            vbias[cv] = calc_biased_pot(xlong[cv], history, w, delta,
-                                        dimension)
-        F = -1*vbias
-    else:
-        for cv in range(0, xlong.size):
-            vbias[cv] = calc_biased_pot(xlong[cv], history, w, delta,
-                                        dimension)
-        F = -1*vbias*(T+DT)/DT
-    return (xlong, F)
-
-
-def calc_colvar_2D(coords, bias, xlong, ylong, method,
-                   beta, T, DT):
-
-    if method == 'MD':
-        hist, xbins, ybins = np.histogram2d(coords,
-                                            bins=[len(xlong), len(ylong)],
-                                            density=True)
+        hist, bins = np.histogram(coords, bins=np.arange(np.min(coords),
+                                                         np.max(coords), 0.01),
+                                  density=True)
+        width = 1.0 * (bins[1] - bins[0])
+        center = (bins[:-1] + bins[1:]) / 2
         F = np.log(hist)*-1/beta
     elif method == 'Metadynamics':
         F = -1*bias
+        center = xlong
     else:
         F = -1*bias*(T+DT)/DT
-    return (xlong, F)
+        center = xlong
+
+    return (center, F)
+
+
+def calc_FES_2D(coords, bias, xlong, ylong, method,
+                beta, T, DT):
+    """
+    Parameters:
+    -----------
+        coords      : Array of floats
+                      CV explored by the walker
+
+        bias        : Array of floats
+                      Grid space that has the hills depoisited
+
+        xlong       : Array of floats
+                      coordinates of entire x-dimension
+
+        ylong       : Array of floats
+                      coordinates of entire y-dimension
+
+        method      : String
+                      Specifies if Metadynamics, MD, WT MetaD, Infrequent MetaD
+
+        beta        : floats
+                      1/kT
+
+        T           : float
+                      Temperature
+
+        DT          : float
+                      Hills Temperature
+    Returns:
+    --------
+        center      : Array of flotat
+                      grid points for which free energy is calculated for
+
+        F           : Array of floats
+                      Free energy values for the points in center
+
+    """
+    if method == 'MD':
+        hist, xbins, ybins = np.histogram2d(coords,
+                                            bins=[len(ylong), len(xlong)],
+                                            density=True)
+        F = np.log(hist)*-1/beta
+        center = np.array([[ybins], [xbins]])
+    elif method == 'Metadynamics':
+        F = -1*bias
+        center = np.array([ylong, xlong])
+    else:
+        F = -1*bias*(T+DT)/DT
+        center = np.array([ylong, xlong])
+    return (center, F)
