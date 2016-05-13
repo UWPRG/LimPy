@@ -69,7 +69,7 @@ def get_parameters(input_file):
     potential = pots[potfunc]
     potfunc = potential()
 
-    if 'Pot8ential Parameters' in inputs.columns:
+    if 'Potential Parameters' in inputs.columns:
         potparams = inputs['Potential Parameters']
         potparams = np.fromstring(potparams[0], dtype=float, sep=' ')
         potfunc.set_parameters(potparams)
@@ -209,8 +209,6 @@ def calc_biased_pot(coords, history, w, delta, dimension):
                   Bias potential
 
     """
-    if coords.size > 2:
-        pdb.set_trace()
     if dimension == '1-D Potential':
         VR = sum(w*np.exp(-(coords-history)**2 / 2 / delta**2))
     elif dimension == '2-D Potential':
@@ -464,7 +462,7 @@ def integrate_step(coords, history, w,  delta, DT, potfunc, bcs, p0, m, dt,
                 vnew = vnew_nobc
                 f2y = f2_nobc[1]
             else:
-                # pdb.set_trace()
+
                 f2y = ybc.get_force(newcoords[1], f2_nobc[1])
                 newcoords[1] = ybc.get_new_location(newcoords[1])
                 bcbiasy = ybc.get_bc_bias(newcoords[1])

@@ -167,7 +167,7 @@ def simulate_1Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
                         if other_initial_E < initial_E:
                             initial_E = other_initial_E
                 barrier = rare_E - initial_E
-                pdb.set_trace()
+
                 return (totaltime, teff, info, path, barrier)
 
         if sp.mod(i, hfreq) == 0 and i > 0:
@@ -225,7 +225,12 @@ def simulate_1Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
                                                          delta, dimension)
             walkv = vnew + lf.calc_biased_pot(coords[i+1], history, w, delta,
                                               dimension)
+            # pdb.set_trace()
+
             dep_count = len(history)
+            if len(history) == 1:
+                dep_count = dep_count-1
+
             plt.clf()
             plt.plot(xlong, bias+pot_base, '-r')
             plt.plot(xlong, pot_base, '-b')
@@ -250,8 +255,8 @@ def simulate_1Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
 
         FES = lf.calc_FES_1D(coords, bias,
                              xlong, method, beta, T, DT)
-        rmsds = lf.calc_rmsd(colvar100[1], beta, pot_base)
-        pdb.set_trace()
+        rmsds = lf.calc_rmsd(FES[1], beta, pot_base)
+
         return (coords, E, FES, rmsds, info)
 
     elif(method == "Infrequent WT MetaD"):
@@ -259,7 +264,8 @@ def simulate_1Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
         info = info + 'NO RARE EVENT'
         totaltime = 0
         path = 'NULL'
-        return (totaltime, teff, info, path)
+        barrier = 0
+        return (totaltime, teff, info, path, barrier)
 
 
 def recreate_1DFES(FES, icount, coord, xinc, xmin, xmax, E):

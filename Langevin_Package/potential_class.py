@@ -254,7 +254,7 @@ class PieceWiseCosinePotential(PotentialFunction1D):
         if hasattr(coords, "__len__") is True:
             V = np.zeros_like(coords)
             for i in range(0, len(coords)):
-                if coords[i] < np.pi:
+                if coords[i] <= np.pi:
                     V[i] = (self.parameters[0]*np.cos(coords[i]) +
                             self.parameters[1])
 
@@ -263,7 +263,7 @@ class PieceWiseCosinePotential(PotentialFunction1D):
                             self.parameters[3])
             return V
         else:
-            if coords < np.pi:
+            if coords <= np.pi:
                 V = self.parameters[0]*np.cos(coords)+self.parameters[1]
                 return V
 
@@ -285,8 +285,13 @@ class PieceWiseCosinePotential(PotentialFunction1D):
         the_force   :   float
                         forces at the present location.
         """
-        the_force = self.parameters[0]*np.sin(coords)
-        return the_force
+        if coords <= np.pi:
+            V = self.parameters[0]*np.sin(coords)
+            return the_force
+
+        elif coords > np.pi:
+            V = self.parameters[2]*np.sin(coords)
+            return the_force
 
 
 class TwoGaussianPotential(PotentialFunction1D):

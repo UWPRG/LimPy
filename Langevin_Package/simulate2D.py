@@ -349,6 +349,7 @@ def simulate_2Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
 
         # if sp.mod(i, 100000) == 0 and i > 0:
         #     print i
+            # pdb.set_trace()
             dep_count = len(history)
         i = i + 1
 
