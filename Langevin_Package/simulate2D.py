@@ -218,7 +218,7 @@ def simulate_2Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
                 return (totaltime, teff, info, path, barrier)
 
         if sp.mod(i, hfreq) == 0 and i > 0:
-            # pdb.set_trace()
+
             if(i == hfreq):
                 history[0] = coords[i, 0]
                 history[1] = coords[i, 1]
@@ -304,6 +304,7 @@ def simulate_2Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
 
             for yc in range(0, ylong.size):
                 for xc in range(0, xlong.size):
+
                     bias[yc, xc] = (bias[yc, xc] +
                                     lf.calc_biased_pot(np.array([xlong[xc],
                                                        ylong[yc]]),

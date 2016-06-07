@@ -477,9 +477,9 @@ class CHLCPotential(PotentialFunction2D):
         self.parameters = np.array([0, 0])
         self.rare_event = np.array([0.20E-9, 0.25E-9,
                                     float('inf'), float("inf")*-1])
-        self.pot = pickle.load(open("c_chl_newplumed_potential.p", "rb"))
-        self.fx = pickle.load(open("c_chl_newplumed_fx.p", "rb"))
-        self.fy = pickle.load(open("c_chl_newplumed_fy.p", "rb"))
+        self.pot = pickle.load(open("final_c_chl_potential.p", "rb"))
+        self.fx = pickle.load(open("final_c_chl_fx.p", "rb"))
+        self.fy = pickle.load(open("final_c_chl_fy.p", "rb"))
 
     def get_potential(self, coords):
         """
@@ -552,7 +552,7 @@ class CHLCPotential(PotentialFunction2D):
         """
         trigger = False
         event = "null"
-        if coords[0] < self.rare_event[0] and coords[1] > self.rare_event[1]:
+        if coords[0] > self.rare_event[0] and coords[1] < self.rare_event[1]:
             trigger = True
             event = "A"
         elif coords[0] > self.rare_event[2] and coords[1] < self.rare_event[3]:

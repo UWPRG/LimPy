@@ -66,6 +66,7 @@ def simulate_1Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
         coords     : array of floats
                      Coordinates of walker
     """
+
     steps = inps[0]
     dt = inps[1]
     x0 = inps[2]

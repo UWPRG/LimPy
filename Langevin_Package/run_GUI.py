@@ -923,7 +923,8 @@ class Form(QWidget):
             if (method == 'Metadynamics'):
                 mdps = np.array([float(textbox6.text()),
                                 float(textbox7.text()),
-                                float(textbox8.text())])
+                                float(textbox8.text()),
+                                np.inf])
             elif method == 'MD':
                 mdps = np.array([0.0, 0.01, inps[0]*2, 1.0, 1.0])
             elif (method == 'Well-Tempered Metadynamics'):
