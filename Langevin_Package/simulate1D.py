@@ -5,7 +5,7 @@ import scipy as sp
 import os
 import pdb
 import math
-
+import pdb
 import langevin_functions as lf
 
 
@@ -249,10 +249,12 @@ def simulate_1Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
         i = i + 1
 
     if(method != "Infrequent WT MetaD"):
-        for xc in range(0, xlong.size):
-            bias[xc] = bias[xc] + lf.calc_biased_pot(xlong[xc],
-                                                     history[dep_count:],
-                                                     w, delta, dimension)
+        if dep_count < len(history):
+            pdb.set_trace()
+            for xc in range(0, xlong.size):
+                bias[xc] = bias[xc] + lf.calc_biased_pot(xlong[xc],
+                                                         history[dep_count:],
+                                                         w[dep_count:], delta, dimension)
 
         FES = lf.calc_FES_1D(coords, bias,
                              xlong, method, beta, T, DT)
