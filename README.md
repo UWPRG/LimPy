@@ -1,7 +1,9 @@
-# Langevin_Package
+# LimPy
 ----
-Langevin_Package is a Langevin Integrator capable of carrying out Molecular Dynamics
-(MD), Metadynamics, Well-Tempered Metadynamics, and Infrequent Metadynamics.
+LimPy (Langevin Integrator Metadynamics) is a Langevin Integrator capable of carrying out simple Molecular Dynamics
+(MD) simulations and implementing the Metadynamics (MetaD) enhanced sampling method. Specifically, the well-tempered MetaD and infrequent metadynamics are implemented in addition to the standard MetaD method. The Langevin integrator was constructed following the details outlined by Bussi and Parrinello which can be found [here](https://arxiv.org/abs/0803.4083). More information regarding metadynamics and related methods can also be found [here](http://www.annualreviews.org/doi/abs/10.1146/annurev-physchem-040215-112229).
+
+
 The integrator is capable of operating on, and visualizing, 1-D and 2-D potentials.
 This package can be operated to run from the command line (`run_langevin.py`) or through a GUI (`run_GUI.py`). A version of this code has also been created with MPI4Py so it may be implemented in parallel on multiple nodes (`run_langevin_parallel.py`)
 
@@ -119,9 +121,7 @@ class PotentialFunction1D:
 ----
 ## More to Come:
 ----
-- **Selectivity**
-
-- **Implement Reflective Boundary Conditions**
+- **PBMetaD**
 
 - **Unit Tests**
 
