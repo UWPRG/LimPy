@@ -54,14 +54,14 @@ Potential Parameters,2.5 0
 Each of the definitions can be defined in the key below.
 
 ----
- ![alt text](https://github.com/UWPRG/Chris_Scripts/blob/master/Langevin_Package/Images/Input_Defintions.png)
+ ![alt text](https://github.com/UWPRG/Chris_Scripts/blob/master/LimPy/Images/Input_Defintions.png)
 ----
 **GUI**
 The user can also input parameters directly through a user interface. For the preloaded potential functions, default variables are preloaded as inputs! Just enter your input choices and push the Lock in Values button. The inputs are the very same for the ones in the input files, but can be brought up by clicking the HELP button.
 
 The user interface also provides the option to read the inputs from an input file. Just make sure the input file is in the inputfiles folder, type the name in the textbox, check the option Read File for Inputs, and click Lock in Values.
 
-![alt text](https://github.com/UWPRG/Chris_Scripts/blob/master/Langevin_Package/Images/GUI_window.png)
+![alt text](https://github.com/UWPRG/Chris_Scripts/blob/master/LimPy/Images/GUI_window.png)
 ----
 ### Adding a New Potential
 
