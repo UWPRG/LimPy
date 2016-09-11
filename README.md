@@ -9,7 +9,7 @@ This package can be operated to run from the command line (`run_langevin.py`) or
 
 ----
 ## Use:
-
+Cite as: [![DOI](https://zenodo.org/badge/24359/UWPRG/LimPy.svg)](https://zenodo.org/badge/latestdoi/24359/UWPRG/LimPy)
 ----
 ### Inputs:
 **Input File**
