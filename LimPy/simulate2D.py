@@ -1,4 +1,4 @@
-"""Simulate a 1D system."""
+"""Simulate a 2D system."""
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy as sp
@@ -365,10 +365,10 @@ def simulate_2Dsystem(inps, mdps, method, potfunc, bcs, filetitle,
                                                    history[dep_count:],
                                                    w[dep_count:],
                                                    delta, dimension))
-        # pdb.set_trace()
-        FES = lf.calc_colvar_2D(coords, bias,
+        #pdb.set_trace()
+        FES = lf.calc_FES_2D(coords, bias,
                                 xlong, ylong, method, beta, T, DT)
-        rmsds = lf.calc_rmsd(colvar100, beta, pot_base)
+        rmsds = lf.calc_rmsd(FES[1], beta, pot_base)
 
         return (coords, E, FES, rmsds, info)
 

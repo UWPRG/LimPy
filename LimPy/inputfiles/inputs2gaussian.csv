@@ -1,4 +1,4 @@
-Parameter,InputMethod,Infrequent WT MetaDPotential_Function,two_gaussian_potentialPlotting,TrueSteps,500000Step size,0.01Temperature,300Mass,1X0,2.666Xmin,-4Xmax,4Xincrement,0.01Y0,0.5Ymin,-2Ymax,2Yincrement,0.01Gaussian Height,0.25Gaussian Width,0.1Deposition Frequency,500Well Temperature,10000Trials,100Data Filename,PotclassTestGamma,5
+Parameter,InputMethod,Well-Tempered MetadynamicsPotential_Function,two_gaussian_potentialPlotting,TrueSteps,5000Step size,0.01Temperature,300Mass,1X0,2.666Xmin,-4Xmax,4Xincrement,0.01Y0,0.5Ymin,-2Ymax,2Yincrement,0.01Gaussian Height,0.25Gaussian Width,0.1Deposition Frequency,500Bias Factor,10Trials,100Data Filename,PotclassTestGamma,5
 Kb,0.001987
 Plot Freq,1000
 Make Movie,False
